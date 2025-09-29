@@ -1,14 +1,14 @@
 # Proje Rehberi
 
-Bu doküman app321 ve app48 uygulamalarının ortak kavramlarını ve uygulamaya özel kurallarını açıklar. Tüm açıklamalar Türkçe'dir ve en güncel davranışları yansıtır.
+Bu doküman app321, app48, app72, app80 ve app120 uygulamalarının ortak kavramlarını ve uygulamaya özel kurallarını açıklar. Tüm açıklamalar Türkçe'dir ve en güncel davranışları yansıtır.
 
 ## Temel Kavramlar
 - **Sayı dizileri:** Sayım işlemleri belirlenmiş sabit dizilere göre ilerler. Şu an desteklenen diziler:
   - **S1:** `1, 3, 7, 13, 21, 31, 43, 57, 73, 91, 111, 133, 157`
   - **S2:** `1, 5, 9, 17, 25, 37, 49, 65, 81, 101, 121, 145, 169`
 - **Mum verisi:** Sayım için giriş olarak CSV dosyaları kullanılır. Her satır bir mumdur.
-- **Timeframe:** app321 için 60 dakikalık, app48 için 48 dakikalık mumlar işlenir.
-- **Varsayılan başlangıç saati:** Her iki uygulama da varsayılan olarak 18:00 mumundan saymaya başlar.
+- **Timeframe:** app321 için 60 dakikalık, app48 için 48 dakikalık, app72 için 72 dakikalık, app80 için 80 dakikalık, app120 için 120 dakikalık mumlar işlenir.
+- **Varsayılan başlangıç saati:** Tüm uygulamalar varsayılan olarak 18:00 mumundan saymaya başlar.
 
 ## CSV Formatı
 Aşağıdaki başlıklar zorunludur (eş anlamlılar desteklenir):
@@ -50,6 +50,14 @@ Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın z
 ## DC İstisna Saatleri
 - **app321 (60m):** 13:00–20:00 aralığındaki DC mumları normal mum gibi sayılır.
 - **app48 (48m):** 13:12–19:36 aralığındaki DC mumları normal mum gibi sayılır.
+- **app72 (72m):** 
+  - **18:00 mumu ASLA DC olamaz** (Pazar günü dahil - 2 haftalık veri için 2. hafta başlangıcı)
+  - **Cuma 16:48 mumu ASLA DC olamaz** (2 haftalık veri için 1. hafta bitimindeki son mum)
+  - **Pazar hariç, 19:12 ve 20:24 mumları DC olamaz** (günlük cycle noktaları)
+  - **Hafta kapanış mumu (Cuma 16:00) DC olamaz**
+- **app80 (80m):**
+  - **Pazar hariç, 18:00, 19:20 ve 20:40 mumları DC olamaz** (günlük cycle noktaları: 18:00, 18:00+80dk, 18:00+160dk)
+  - **Hafta kapanış mumu (Cuma 16:00) DC olamaz**
 - **app120 (120m):** DC istisnası yoktur; tüm DC mumlar saatten bağımsız şekilde atlanır (kapsayıcı kural geçerli). Hafta kapanışı sayılan 16:00 mumları (ardından >120 dakikalık boşluk başlayanlar) DC kabul edilmez.
 
 İstisna dışında kalan DC mumları sayımda atlanır ancak kapsayıcı kural gereği ilgili adımın zamanı olarak yazılabilir.
@@ -72,24 +80,74 @@ Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın z
 - **DC ve Matrix Listeleri:** app48 için de DC listesi ve matrix görünümü aynı mantıkla sunulur (48 dakikalık adımlar dikkate alınarak).
 - **12m → 48m Converter:** app48 arayüzündeki yeni "12-48" sekmesi, UTC-5 12 dakikalık mumları UTC-4 48 dakikalık mumlara dönüştürür. Yüklenen veri önce +1 saat kaydırılır, ardından her gün 18:00'e hizalanan 48 dakikalık bloklar oluşturulur (18:00, 18:48, 19:36 ...). Her bloktaki close değeri bir sonraki bloğun open değerine eşitlenir; eğer bu değer bloktaki high/low sınırlarını aşıyorsa ilgili sınır close ile güncellenir. CSV çıktısında gereksiz sondaki sıfırlar kaldırılır.
 
+### app72
+- 72 dakikalık mumlar kullanılır; 18:00 başlangıç saati standart.
+- **Sayım Mantığı:**
+  - S1 ve S2 dizileri desteklenir (varsayılan S2).
+  - Offset sistemi: -3 ile +3 arası (her adım 72 dakika).
+  - **Özel DC Kuralları (2 Haftalık Veri İçin):**
+    - **18:00 mumu ASLA DC olamaz** → Pazar günü dahil (ikinci hafta başlangıcı için kritik)
+    - **Cuma 16:48 mumu ASLA DC olamaz** → Birinci hafta bitimindeki son mum (16:00 kapanıştan 12 dk önce)
+    - **Pazar hariç 19:12 ve 20:24 DC olamaz** → Günlük cycle noktaları (18:00 + 72dk, 18:00 + 144dk)
+    - **Cuma 16:00 (hafta kapanış) DC olamaz**
+- **12m → 72m Converter (CLI: `python3 -m app72.main`):**
+  - 12 dakikalık UTC-5 mumları alır, UTC-4 72 dakikalık mumlara dönüştürür.
+  - Her 72 dakikalık mum 7 tane 12 dakikalık mumdan oluşur (7 × 12 = 84 ama offset mantığıyla 72 dakikaya düşer).
+  - Hafta sonu boşluğu: Cumartesi mumları atlanır, Pazar 18:00'dan önce mumlar göz ardı edilir.
+- **Web Arayüzü (`python3 -m app72.web`, port: 2172):**
+  1. **Analiz:** 72m sayım, sequence/offset seçimi, OC/PrevOC, DC gösterimi.
+  2. **DC List:** Tüm DC mumlarının listesi (2 haftalık veri kurallarına göre).
+  3. **Matrix:** Tüm offset'ler (-3..+3) için tek ekranda özet tablo.
+  4. **12→72 Converter:** 12m CSV yükle, 72m CSV indir.
+
+### app80
+- 80 dakikalık mumlar kullanılır; 18:00 başlangıç saati standart.
+- **Sayım Mantığı:**
+  - S1 ve S2 dizileri desteklenir (varsayılan S2).
+  - Offset sistemi: -3 ile +3 arası (her adım 80 dakika).
+  - **DC Kuralları:**
+    - **Pazar hariç, 18:00, 19:20 ve 20:40 mumları DC olamaz** → Günlük cycle noktaları (18:00, 18:00+80dk, 18:00+160dk)
+    - **Hafta kapanış mumu (Cuma 16:00) DC olamaz**
+- **20m → 80m Converter (CLI: `python3 -m app80.main`):**
+  - 20 dakikalık UTC-5 mumları alır, UTC-4 80 dakikalık mumlara dönüştürür.
+  - Her 80 dakikalık mum 4 tane 20 dakikalık mumdan oluşur (4 × 20 = 80).
+  - Hafta sonu boşluğu: Cumartesi mumları atlanır, Pazar 18:00'dan önce mumlar göz ardı edilir.
+  - Dönüştürme sırasında: Open = ilk mumun open, Close = son mumun close, High = max(high), Low = min(low).
+- **Web Arayüzü (`python3 -m app80.web`, port: 2180):**
+  1. **Analiz:** 80m sayım, sequence/offset seçimi, OC/PrevOC, DC gösterimi.
+  2. **DC List:** Tüm DC mumlarının listesi.
+  3. **Matrix:** Tüm offset'ler (-3..+3) için tek ekranda özet tablo.
+  4. **20→80 Converter:** 20m CSV yükle, 80m CSV indir.
+
 ### app120
 - app321/app48 mantığındaki 120m sayımı ve 60→120 dönüştürücüyü tek pakette birleşik sunar.
 - **Sayım (CLI: `python3 -m app120.counter`):**
   - 120 dakikalık mumları 18:00 başlangıcına göre sayar; DC istisnası yoktur.
   - OC/PrevOC bilgilerini aynı formatta raporlar; tahmin satırları `OC=- PrevOC=-` şeklinde etiketlenir.
 - **Dönüştürücü (CLI: `python3 -m app120`):** 60m UTC-5 verisini UTC-4 120m mumlarına çevirir; gereksiz trailing sıfırları temizler. Cumartesi mumları ile Pazar 18:00 öncesi mumlar yok sayılır; Cuma 16:00 kapanışından sonra doğrudan Pazar 18:00 açılış mumuna geçilir.
-- **Web Arayüzü (`python3 -m app120.web`):** Dört sekme içerir:
+- **Web Arayüzü (`python3 -m app120.web`, port: 2120):** Dört sekme içerir:
   1. **Analiz:** 120m sayım, OC/PrevOC, DC bilgileri.
   2. **DC List:** Tüm DC mumlarının listesi (UTC dönüşümü kullanılarak).
-  3. **Matrix:** Tüm offset’ler için tek tabloda zaman/OC/PrevOC özetleri.
+  3. **Matrix:** Tüm offset'ler için tek tabloda zaman/OC/PrevOC özetleri.
   4. **60→120 Converter:** 60m CSV yükleyip dönüştürülmüş 120m CSV indirme.
 
 ## Özet
 - Giriş CSV’si düzgün formatlanmış olmalı ve zorunlu kolonları içermelidir.
 - Varsayılan başlangıç 18:00 mumu olup offset bu zaman üzerinden uygulanır.
-- DC’ler normalde atlanır (app321/app48 için belirtilen saat istisnaları geçerli, app120’de istisna yok). 18:00 hiçbir zaman DC olamaz ve ardışık iki DC bulunmaz.
+- **DC Kuralları Özeti:**
+  - **app321:** 13:00–20:00 DC istisna saatleri
+  - **app48:** 13:12–19:36 DC istisna saatleri
+  - **app72:** 18:00 (Pazar dahil) ve Cuma 16:48 ASLA DC olamaz; Pazar hariç 19:12 ve 20:24 DC olamaz
+  - **app80:** Pazar hariç 18:00, 19:20, 20:40 DC olamaz
+  - **app120:** DC istisnası yok, tüm DC'ler atılır
+- 18:00 mumu genelde DC olamaz (app72'de Pazar dahil) ve ardışık iki DC bulunmaz.
 - Her gerçek adım, mumun OC ve PrevOC değerleri ile birlikte raporlanır; tahmini satırlarda değerler `-` olarak gösterilir.
 - Eksik veriler tahmini zamanlarla (`pred`) gösterilir.
 - Tüm uygulamalar UTC-4/UTC-5 girişlerine uygun şekilde çıktı üretir.
+- **Converter Özeti:**
+  - **app48:** 12m → 48m (4 × 12m = 48m)
+  - **app72:** 12m → 72m (7 × 12m ≈ 72m, offset mantığıyla)
+  - **app80:** 20m → 80m (4 × 20m = 80m)
+  - **app120:** 60m → 120m (2 × 60m = 120m)
 
 Bu rehber, uygulamaların geliştirme ve kullanımında referans kabul edilmelidir.
