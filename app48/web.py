@@ -415,9 +415,35 @@ class AppHandler(BaseHTTPRequestHandler):
                 start_ref_ts = alignment.start_ref_ts
 
                 def predicted_ts_for(v: int) -> str:
+                    # 48m prediction - DC'leri dikkate al
                     first = seq_values[0]
-                    delta_steps = max(0, v - first)
                     use_target = alignment.missing_steps and v <= alignment.missing_steps
+                    
+                    if not use_target:
+                        # Son dizideki bilinen değeri bul
+                        last_known_v = None
+                        last_known_ts = None
+                        last_known_idx = -1
+                        for seq_v, seq_hit in zip(seq_values, alignment.hits):
+                            if seq_hit.idx is not None and seq_hit.ts is not None and 0 <= seq_hit.idx < len(candles):
+                                last_known_v = seq_v
+                                last_known_ts = seq_hit.ts
+                                last_known_idx = seq_hit.idx
+                        
+                        if last_known_v is not None and v > last_known_v:
+                            # Son gerçek mumdan başla
+                            actual_last_candle_ts = candles[-1].ts
+                            actual_last_idx = len(candles) - 1
+                            # DC'leri dikkate al
+                            non_dc_steps_from_last_known_to_end = 0
+                            for i in range(last_known_idx + 1, actual_last_idx + 1):
+                                is_dc = dc_flags_all[i] if i < len(dc_flags_all) else False
+                                if not is_dc:
+                                    non_dc_steps_from_last_known_to_end += 1
+                            steps_from_end_to_v = (v - last_known_v) - non_dc_steps_from_last_known_to_end
+                            return (actual_last_candle_ts + __import__('datetime').timedelta(minutes=48 * steps_from_end_to_v)).strftime("%Y-%m-%d %H:%M:%S")
+                    
+                    delta_steps = max(0, v - first)
                     base_ts = alignment.target_ts if use_target else start_ref_ts
                     return (base_ts + __import__('datetime').timedelta(minutes=48*delta_steps)).strftime("%Y-%m-%d %H:%M:%S")
 

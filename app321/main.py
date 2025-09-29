@@ -412,8 +412,38 @@ def main(argv: Optional[List[str]] = None) -> int:
     hits = alignment.hits
 
     def predicted_ts_for(v: int, use_target: bool = False) -> datetime:
-        # 60m sabit adım: start_ts + (v - first)*60m
+        # 60m prediction - DC'leri dikkate al
         first = seq_values[0]
+        
+        # Eğer veri dışındaysak, son gerçek mumdan başla
+        if not use_target:
+            # Son dizideki bilinen değeri bul
+            last_known_v = None
+            last_known_ts = None
+            last_known_idx = -1
+            for seq_v, hit in zip(seq_values, alignment.hits):
+                if hit.idx is not None and hit.ts is not None and 0 <= hit.idx < len(candles):
+                    last_known_v = seq_v
+                    last_known_ts = hit.ts
+                    last_known_idx = hit.idx
+            
+            # Eğer v son bilinen değerden sonraysa:
+            if last_known_v is not None and v > last_known_v:
+                # Son gerçek mumdan başla
+                actual_last_candle_ts = candles[-1].ts
+                actual_last_idx = len(candles) - 1
+                
+                # DC'leri dikkate al - sadece NON-DC adımları say
+                non_dc_steps_from_last_known_to_end = 0
+                for i in range(last_known_idx + 1, actual_last_idx + 1):
+                    is_dc = dc_flags[i] if i < len(dc_flags) else False
+                    if not is_dc:
+                        non_dc_steps_from_last_known_to_end += 1
+                
+                steps_from_end_to_v = (v - last_known_v) - non_dc_steps_from_last_known_to_end
+                return actual_last_candle_ts + timedelta(minutes=60 * steps_from_end_to_v)
+        
+        # Aksi halde dizinin başından hesapla
         delta_steps = max(0, v - first)
         base_ts = alignment.target_ts if use_target else start_ref_ts
         return base_ts + timedelta(minutes=60 * delta_steps)

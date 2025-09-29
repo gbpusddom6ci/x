@@ -354,10 +354,37 @@ class AppHandler(BaseHTTPRequestHandler):
                     ts = hit.ts
                     if idx is None or ts is None or not (0 <= idx < len(candles)):
                         first = seq_values[0]
-                        delta_steps = max(0, v - first)
                         use_target = alignment.missing_steps and v <= alignment.missing_steps
-                        base_ts = alignment.target_ts if use_target else start_ref_ts
-                        pred_ts_dt = base_ts + __import__('datetime').timedelta(minutes=60*delta_steps)
+                        
+                        # DC'leri dikkate al
+                        if not use_target:
+                            last_known_v = None
+                            last_known_ts = None
+                            last_known_idx = -1
+                            for seq_v, seq_hit in zip(seq_values, hits):
+                                if seq_hit.idx is not None and seq_hit.ts is not None and 0 <= seq_hit.idx < len(candles):
+                                    last_known_v = seq_v
+                                    last_known_ts = seq_hit.ts
+                                    last_known_idx = seq_hit.idx
+                            if last_known_v is not None and v > last_known_v:
+                                actual_last_candle_ts = candles[-1].ts
+                                actual_last_idx = len(candles) - 1
+                                non_dc_steps_from_last_known_to_end = 0
+                                for i in range(last_known_idx + 1, actual_last_idx + 1):
+                                    is_dc = dc_flags_all[i] if i < len(dc_flags_all) else False
+                                    if not is_dc:
+                                        non_dc_steps_from_last_known_to_end += 1
+                                steps_from_end_to_v = (v - last_known_v) - non_dc_steps_from_last_known_to_end
+                                pred_ts_dt = actual_last_candle_ts + __import__('datetime').timedelta(minutes=60 * steps_from_end_to_v)
+                            else:
+                                delta_steps = max(0, v - first)
+                                base_ts = start_ref_ts or alignment.target_ts
+                                pred_ts_dt = base_ts + __import__('datetime').timedelta(minutes=60 * delta_steps)
+                        else:
+                            delta_steps = max(0, v - first)
+                            base_ts = alignment.target_ts if use_target else start_ref_ts
+                            pred_ts_dt = base_ts + __import__('datetime').timedelta(minutes=60 * delta_steps)
+                        
                         pred_ts = pred_ts_dt.strftime("%Y-%m-%d %H:%M:%S")
                         pred_cell = f"{pred_ts} (pred, OC -, PrevOC -)"
                         if show_dc:
