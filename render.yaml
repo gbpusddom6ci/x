@@ -1,0 +1,30 @@
+services:
+  # Tüm uygulamaları tek bir sunucuda birleştiren ana servis
+  - type: web
+    name: candles-trading-suite
+    env: python
+    region: frankfurt  # veya oregon, singapore - size yakın olanı seçin
+    plan: free  # Ücretsiz plan için 'free', ücretli için 'starter' veya daha yükseği
+    buildCommand: pip install -r requirements.txt
+    # appsuite.web modülünü kullanarak tüm uygulamaları başlatır
+    startCommand: python -m appsuite.web --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: PORT
+        fromGroup: web
+    # Health check endpoint
+    healthCheckPath: /health
+    
+  # Alternatif: Sadece landing page'i deploy etmek isterseniz
+  # - type: web
+  #   name: candles-landing
+  #   env: python
+  #   region: frankfurt
+  #   plan: free
+  #   buildCommand: pip install -r requirements.txt
+  #   startCommand: python -m landing.web --host 0.0.0.0 --port $PORT
+  #   envVars:
+  #     - key: PYTHON_VERSION
+  #       value: 3.11.0
+  #   healthCheckPath: /health
