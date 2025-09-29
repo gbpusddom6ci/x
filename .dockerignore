@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Deployment configs (diğer platformlar için)
+render.yaml
+railway.json
+RENDER_DEPLOYMENT.md
+DEPLOYMENT_ALTERNATIVES.md
+
+# Test files
+test*.csv

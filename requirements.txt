@@ -1,0 +1,12 @@
+# Python 3.11+ gereklidir
+# Render.com'da Python runtime sürümünü belirtmek için .python-version dosyası da kullanılabilir
+
+# Web sunucusu için Gunicorn (production kullanımı için önerilir)
+gunicorn>=21.2.0
+
+# Eğer pandas kullanıyorsanız (CSV dosyaları için)
+# pandas>=2.0.0
+# numpy>=1.24.0
+
+# Standart kütüphane dışında bir bağımlılık göremedim
+# Gerekirse diğer paketleri ekleyin
