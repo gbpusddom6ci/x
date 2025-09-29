@@ -467,20 +467,38 @@ def main(argv: Optional[List[str]] = None) -> int:
         # Haftasonu boşluğunu dikkate alarak prediction yap
         first = seq_values[0]
         
-        # Eğer veri dışındaysak, son bilinen değerden başla
+        # Eğer veri dışındaysak, son gerçek mumdan başla
         if not use_target:
-            # Son gerçek veriyi bul
+            # Son dizideki bilinen değeri bul
             last_known_v = None
             last_known_ts = None
+            last_known_idx = -1
             for seq_v, hit in zip(seq_values, alignment.hits):
                 if hit.idx is not None and hit.ts is not None and 0 <= hit.idx < len(candles):
                     last_known_v = seq_v
                     last_known_ts = hit.ts
+                    last_known_idx = hit.idx
             
-            # Eğer v son bilinen değerden sonraysa, ondan başla
+            # Eğer v son bilinen değerden sonraysa:
             if last_known_v is not None and v > last_known_v:
-                delta_steps = v - last_known_v
-                return predict_time_after_n_steps(last_known_ts, delta_steps)
+                # Son gerçek mumdan başla (verinin en sonundan)
+                actual_last_candle_ts = candles[-1].ts
+                actual_last_idx = len(candles) - 1
+                
+                # Son dizideki değerden son gerçek muma kadar kaç NON-DC adım var?
+                # DC'ler sayımda atlanıyor, bu yüzden DC olmayan mumları saymalıyız
+                non_dc_steps_from_last_known_to_end = 0
+                for i in range(last_known_idx + 1, actual_last_idx + 1):
+                    is_dc = dc_flags[i] if i < len(dc_flags) else False
+                    if not is_dc:
+                        non_dc_steps_from_last_known_to_end += 1
+                
+                # v'ye ulaşmak için toplam adım sayısı (DC'siz)
+                # v - last_known_v = gereken toplam adım
+                # non_dc_steps_from_last_known_to_end = zaten geçilmiş adımlar
+                steps_from_end_to_v = (v - last_known_v) - non_dc_steps_from_last_known_to_end
+                
+                return predict_time_after_n_steps(actual_last_candle_ts, steps_from_end_to_v)
         
         # Aksi halde dizinin başından hesapla (eski mantık)
         delta_steps = max(0, v - first)
