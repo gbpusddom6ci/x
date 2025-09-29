@@ -16,6 +16,7 @@ from .counter import (
     find_start_index,
     compute_dc_flags,
     compute_offset_alignment,
+    predict_time_after_n_steps,
 )
 from .main import (
     Candle as ConverterCandle,
@@ -410,7 +411,7 @@ class App120Handler(BaseHTTPRequestHandler):
                         use_target = alignment.missing_steps and v <= alignment.missing_steps
                         base_ts = alignment.target_ts if use_target else alignment.start_ref_ts
                         base_ts = base_ts or alignment.target_ts or candles[base_idx].ts
-                        pred_ts = base_ts + timedelta(minutes=MINUTES_PER_STEP * delta_steps)
+                        pred_ts = predict_time_after_n_steps(base_ts, delta_steps)
                         pred_label = html.escape(pred_ts.strftime('%Y-%m-%d %H:%M:%S')) + " (pred, OC -, PrevOC -)"
                         if show_dc:
                             rows_html.append(f"<tr><td>{v}</td><td>-</td><td>{pred_label}</td><td>-</td></tr>")
@@ -501,7 +502,7 @@ class App120Handler(BaseHTTPRequestHandler):
                             use_target = alignment.missing_steps and v <= alignment.missing_steps
                             base_ts = alignment.target_ts if use_target else alignment.start_ref_ts
                             base_ts = base_ts or alignment.target_ts or candles[base_idx].ts
-                            ts_pred = base_ts + timedelta(minutes=MINUTES_PER_STEP * delta_steps)
+                            ts_pred = predict_time_after_n_steps(base_ts, delta_steps)
                             cells.append(f"<td>{html.escape(ts_pred.strftime('%Y-%m-%d %H:%M:%S'))} (pred, OC -, PrevOC -)</td>")
                     rows.append(f"<tr>{''.join(cells)}</tr>")
 

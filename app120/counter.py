@@ -377,6 +377,42 @@ def fmt_ts(dt: Optional[datetime]) -> str:
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 
+def predict_next_candle_time(current_ts: datetime, minutes_per_step: int = MINUTES_PER_STEP) -> datetime:
+    """
+    Haftasonu boşluğunu dikkate alarak bir sonraki mum zamanını hesaplar.
+    Piyasa: Cuma 16:00'da kapanır, Pazar 18:00'da açılır.
+    """
+    next_ts = current_ts + timedelta(minutes=minutes_per_step)
+    
+    # Cuma 16:00 sonrası kontrolü - hafta kapanışı
+    weekday = current_ts.weekday()  # 0=Pazartesi, 4=Cuma, 5=Cumartesi, 6=Pazar
+    
+    # Eğer mevcut mum Cuma 16:00 ise, sonraki mum Pazar 18:00 olmalı
+    if weekday == 4 and current_ts.hour == 16 and current_ts.minute == 0:
+        # Cuma 16:00'dan sonra Pazar 18:00'a geç
+        days_to_sunday = 2  # Cuma'dan Pazar'a
+        next_ts = datetime.combine(current_ts.date() + timedelta(days=days_to_sunday), dtime(hour=18, minute=0))
+        return next_ts
+    
+    # Eğer mevcut mum Cuma 14:00 ise ve bir sonraki mum 16:00'ı geçiyorsa
+    if weekday == 4 and current_ts.hour == 14 and current_ts.minute == 0:
+        # Bu durumda sonraki mum Cuma 16:00 (son mum)
+        return datetime.combine(current_ts.date(), dtime(hour=16, minute=0))
+    
+    # Normal durum: basitçe dakika ekle
+    return next_ts
+
+
+def predict_time_after_n_steps(base_ts: datetime, n_steps: int, minutes_per_step: int = MINUTES_PER_STEP) -> datetime:
+    """
+    Verilen zamandan n adım sonrasını hesaplar, haftasonu boşluğunu dikkate alır.
+    """
+    current_ts = base_ts
+    for _ in range(n_steps):
+        current_ts = predict_next_candle_time(current_ts, minutes_per_step)
+    return current_ts
+
+
 def fmt_pip(delta: Optional[float]) -> str:
     if delta is None:
         return "-"
@@ -428,11 +464,11 @@ def main(argv: Optional[List[str]] = None) -> int:
     hits = alignment.hits
 
     def predicted_ts_for(v: int, use_target: bool = False) -> datetime:
-        # 120m sabit adım: start_ts + (v - first)*120m
+        # Haftasonu boşluğunu dikkate alarak prediction yap
         first = seq_values[0]
         delta_steps = max(0, v - first)
         base_ts = alignment.target_ts if use_target else start_ref_ts
-        return base_ts + timedelta(minutes=MINUTES_PER_STEP * delta_steps)
+        return predict_time_after_n_steps(base_ts, delta_steps)
 
     # Prediction branch
     if args.predict is not None or args.predict_next:
