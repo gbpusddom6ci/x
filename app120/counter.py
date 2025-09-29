@@ -466,6 +466,23 @@ def main(argv: Optional[List[str]] = None) -> int:
     def predicted_ts_for(v: int, use_target: bool = False) -> datetime:
         # Haftasonu boşluğunu dikkate alarak prediction yap
         first = seq_values[0]
+        
+        # Eğer veri dışındaysak, son bilinen değerden başla
+        if not use_target:
+            # Son gerçek veriyi bul
+            last_known_v = None
+            last_known_ts = None
+            for seq_v, hit in zip(seq_values, alignment.hits):
+                if hit.idx is not None and hit.ts is not None and 0 <= hit.idx < len(candles):
+                    last_known_v = seq_v
+                    last_known_ts = hit.ts
+            
+            # Eğer v son bilinen değerden sonraysa, ondan başla
+            if last_known_v is not None and v > last_known_v:
+                delta_steps = v - last_known_v
+                return predict_time_after_n_steps(last_known_ts, delta_steps)
+        
+        # Aksi halde dizinin başından hesapla (eski mantık)
         delta_steps = max(0, v - first)
         base_ts = alignment.target_ts if use_target else start_ref_ts
         return predict_time_after_n_steps(base_ts, delta_steps)

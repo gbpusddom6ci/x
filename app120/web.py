@@ -407,11 +407,28 @@ class App120Handler(BaseHTTPRequestHandler):
                     ts = hit.ts
                     if idx is None or ts is None or not (0 <= idx < len(candles)):
                         first = seq_values[0]
-                        delta_steps = max(0, v - first)
                         use_target = alignment.missing_steps and v <= alignment.missing_steps
-                        base_ts = alignment.target_ts if use_target else alignment.start_ref_ts
-                        base_ts = base_ts or alignment.target_ts or candles[base_idx].ts
-                        pred_ts = predict_time_after_n_steps(base_ts, delta_steps)
+                        
+                        # Son bilinen gerçek veriyi bul
+                        if not use_target:
+                            last_known_v = None
+                            last_known_ts = None
+                            for seq_v, seq_hit in zip(seq_values, alignment.hits):
+                                if seq_hit.idx is not None and seq_hit.ts is not None and 0 <= seq_hit.idx < len(candles):
+                                    last_known_v = seq_v
+                                    last_known_ts = seq_hit.ts
+                            if last_known_v is not None and v > last_known_v:
+                                delta_steps = v - last_known_v
+                                pred_ts = predict_time_after_n_steps(last_known_ts, delta_steps)
+                            else:
+                                delta_steps = max(0, v - first)
+                                base_ts = alignment.start_ref_ts or alignment.target_ts or candles[base_idx].ts
+                                pred_ts = predict_time_after_n_steps(base_ts, delta_steps)
+                        else:
+                            delta_steps = max(0, v - first)
+                            base_ts = alignment.target_ts or alignment.start_ref_ts or candles[base_idx].ts
+                            pred_ts = predict_time_after_n_steps(base_ts, delta_steps)
+                        
                         pred_label = html.escape(pred_ts.strftime('%Y-%m-%d %H:%M:%S')) + " (pred, OC -, PrevOC -)"
                         if show_dc:
                             rows_html.append(f"<tr><td>{v}</td><td>-</td><td>{pred_label}</td><td>-</td></tr>")
@@ -498,11 +515,28 @@ class App120Handler(BaseHTTPRequestHandler):
                             cells.append(f"<td>{html.escape(label)}</td>")
                         else:
                             first = seq_values[0]
-                            delta_steps = max(0, v - first)
                             use_target = alignment.missing_steps and v <= alignment.missing_steps
-                            base_ts = alignment.target_ts if use_target else alignment.start_ref_ts
-                            base_ts = base_ts or alignment.target_ts or candles[base_idx].ts
-                            ts_pred = predict_time_after_n_steps(base_ts, delta_steps)
+                            
+                            # Son bilinen gerçek veriyi bul
+                            if not use_target:
+                                last_known_v = None
+                                last_known_ts = None
+                                for seq_v, seq_hit in zip(seq_values, alignment.hits):
+                                    if seq_hit.idx is not None and seq_hit.ts is not None and 0 <= seq_hit.idx < len(candles):
+                                        last_known_v = seq_v
+                                        last_known_ts = seq_hit.ts
+                                if last_known_v is not None and v > last_known_v:
+                                    delta_steps = v - last_known_v
+                                    ts_pred = predict_time_after_n_steps(last_known_ts, delta_steps)
+                                else:
+                                    delta_steps = max(0, v - first)
+                                    base_ts = alignment.start_ref_ts or alignment.target_ts or candles[base_idx].ts
+                                    ts_pred = predict_time_after_n_steps(base_ts, delta_steps)
+                            else:
+                                delta_steps = max(0, v - first)
+                                base_ts = alignment.target_ts or alignment.start_ref_ts or candles[base_idx].ts
+                                ts_pred = predict_time_after_n_steps(base_ts, delta_steps)
+                            
                             cells.append(f"<td>{html.escape(ts_pred.strftime('%Y-%m-%d %H:%M:%S'))} (pred, OC -, PrevOC -)</td>")
                     rows.append(f"<tr>{''.join(cells)}</tr>")
 
