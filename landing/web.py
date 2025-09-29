@@ -58,7 +58,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         padding: 32px 16px;
       }}
       header {{
-        max-width: 720px;
+        max-width: 1200px;
         width: 100%;
         text-align: center;
         margin-bottom: 24px;
@@ -69,10 +69,13 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         display: grid;
         gap: 16px;
         width: 100%;
-        max-width: 720px;
+        max-width: 1200px;
       }}
       @media (min-width: 640px) {{
-        main {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }}
+        main {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
+      }}
+      @media (min-width: 1024px) {{
+        main {{ grid-template-columns: repeat(4, minmax(0, 1fr)); }}
       }}
       .card {{
         background: var(--card-bg);
@@ -111,7 +114,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
   <body>
     <header>
       <h1>Trading Araçları</h1>
-      <p>app48, app321 ve app120 arayüzlerine tek yerden erişin. Her kart ilgili modülü yeni sekmede açar.</p>
+      <p>app48, app72, app120 ve app321 arayüzlerine tek yerden erişin. Her kart ilgili modülü yeni sekmede açar.</p>
     </header>
     <main>
       {''.join(cards)}
@@ -169,6 +172,11 @@ def main(argv: list[str] | None = None) -> int:
         help="app321 web arayüzü için URL",
     )
     parser.add_argument(
+        "--app72-url",
+        default="http://127.0.0.1:2172/",
+        help="app72 web arayüzü için URL",
+    )
+    parser.add_argument(
         "--app120-url",
         default="http://127.0.0.1:2120/",
         help="app120 web arayüzü için URL",
@@ -181,15 +189,20 @@ def main(argv: list[str] | None = None) -> int:
             "url": args.app48_url,
             "description": "48 dakikalık mumlarla sayım, DC listesi ve 12→48 dönüştürücü.",
         },
-        "app321": {
-            "title": "app321",
-            "url": args.app321_url,
-            "description": "60 dakikalık sayım araçları, DC listesi ve offset matrisi.",
+        "app72": {
+            "title": "app72",
+            "url": args.app72_url,
+            "description": "72 dakikalık sayım, DC analizi ve 60→72 dönüştürücü.",
         },
         "app120": {
             "title": "app120",
             "url": args.app120_url,
             "description": "120 dakikalık sayım, DC analizi ve 60→120 dönüştürücü.",
+        },
+        "app321": {
+            "title": "app321",
+            "url": args.app321_url,
+            "description": "60 dakikalık sayım araçları, DC listesi ve offset matrisi.",
         },
     }
 
