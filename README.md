@@ -16,6 +16,12 @@ Forex trading için çoklu timeframe analiz araçları.
 - 12→72 dakika dönüştürücü (7 tane 12m = 1 tane 72m)
 - Port: `2172`
 
+### 🕐 app80 (80 dakika)
+- 80 dakikalık mumlarla sayım
+- DC analizi ve offset matrisi
+- 20→80 dakika dönüştürücü (4 tane 20m = 1 tane 80m)
+- Port: `2180`
+
 ### 🕐 app120 (120 dakika)
 - 120 dakikalık mumlarla sayım
 - DC istisnası ve offset sistemi
@@ -39,6 +45,9 @@ python3 -m landing.web
 
 # app72 web arayüzü
 python3 -m app72.web
+
+# app80 web arayüzü
+python3 -m app80.web
 
 # app120 web arayüzü
 python3 -m app120.web

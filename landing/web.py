@@ -75,7 +75,10 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         main {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
       }}
       @media (min-width: 1024px) {{
-        main {{ grid-template-columns: repeat(4, minmax(0, 1fr)); }}
+        main {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }}
+      }}
+      @media (min-width: 1280px) {{
+        main {{ grid-template-columns: repeat(5, minmax(0, 1fr)); }}
       }}
       .card {{
         background: var(--card-bg);
@@ -114,7 +117,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
   <body>
     <header>
       <h1>Trading Araçları</h1>
-      <p>app48, app72, app120 ve app321 arayüzlerine tek yerden erişin. Her kart ilgili modülü yeni sekmede açar.</p>
+      <p>app48, app72, app80, app120 ve app321 arayüzlerine tek yerden erişin. Her kart ilgili modülü yeni sekmede açar.</p>
     </header>
     <main>
       {''.join(cards)}
@@ -177,6 +180,11 @@ def main(argv: list[str] | None = None) -> int:
         help="app72 web arayüzü için URL",
     )
     parser.add_argument(
+        "--app80-url",
+        default="http://127.0.0.1:2180/",
+        help="app80 web arayüzü için URL",
+    )
+    parser.add_argument(
         "--app120-url",
         default="http://127.0.0.1:2120/",
         help="app120 web arayüzü için URL",
@@ -193,6 +201,11 @@ def main(argv: list[str] | None = None) -> int:
             "title": "app72",
             "url": args.app72_url,
             "description": "72 dakikalık sayım, DC analizi ve 12→72 dönüştürücü (7x12m).",
+        },
+        "app80": {
+            "title": "app80",
+            "url": args.app80_url,
+            "description": "80 dakikalık sayım, DC analizi ve 20→80 dönüştürücü (4x20m).",
         },
         "app120": {
             "title": "app120",
