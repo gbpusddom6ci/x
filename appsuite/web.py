@@ -189,7 +189,7 @@ def start_backend_thread(name: str, target, host: str, port: int) -> threading.T
 def run(host: str, port: int, backend_host: str, app48_port: int, app72_port: int, app120_port: int, app321_port: int) -> None:
     backends = [
         Backend(name="app48", host=backend_host, port=app48_port, prefix="/app48", description="48 dakikalık mum sayımı ve dönüştürücü"),
-        Backend(name="app72", host=backend_host, port=app72_port, prefix="/app72", description="72 dakikalık sayım ve dönüştürücü"),
+        Backend(name="app72", host=backend_host, port=app72_port, prefix="/app72", description="72 dakikalık sayım ve 12→72 dönüştürücü (7x12m)"),
         Backend(name="app120", host=backend_host, port=app120_port, prefix="/app120", description="120 dakikalık analiz ve dönüştürücü"),
         Backend(name="app321", host=backend_host, port=app321_port, prefix="/app321", description="60 dakikalık sayım araçları"),
     ]

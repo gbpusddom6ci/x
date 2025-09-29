@@ -22,7 +22,7 @@ from .main import (
     Candle as ConverterCandle,
     estimate_timeframe_minutes,
     adjust_to_output_tz,
-    convert_60m_to_72m,
+    convert_12m_to_72m,
     format_price,
 )
 from email.parser import BytesParser
@@ -116,7 +116,7 @@ def page(title: str, body: str, active_tab: str = "analyze") -> bytes:
       <a href='/' class='{ 'active' if active_tab=="analyze" else '' }'>Analiz</a>
       <a href='/dc' class='{ 'active' if active_tab=="dc" else '' }'>DC List</a>
       <a href='/matrix' class='{ 'active' if active_tab=="matrix" else '' }'>Matrix</a>
-      <a href='/converter' class='{ 'active' if active_tab=="converter" else '' }'>60→72 Converter</a>
+      <a href='/converter' class='{ 'active' if active_tab=="converter" else '' }'>12→72 Converter</a>
     </nav>
     {body}
   </body>
@@ -252,14 +252,14 @@ def render_converter_index() -> bytes:
     body = """
     <div class='card'>
       <form method='post' action='/converter' enctype='multipart/form-data'>
-        <label>CSV (60m, UTC-5)</label>
+        <label>CSV (12m, UTC-5)</label>
         <input type='file' name='csv' accept='.csv,text/csv' required />
         <div style='margin-top:12px;'>
           <button type='submit'>72m'e Dönüştür</button>
         </div>
       </form>
     </div>
-    <p>Girdi UTC-5 60 dakikalık mumlar olmalıdır. Çıktı UTC-4 72 dakikalık mumlar olarak indirilir.</p>
+    <p>Girdi UTC-5 12 dakikalık mumlar olmalıdır. Çıktı UTC-4 72 dakikalık mumlar olarak indirilir (7 tane 12m = 1 tane 72m).</p>
     """
     return page("app72 - Converter", body, active_tab="converter")
 
@@ -331,10 +331,10 @@ class App72Handler(BaseHTTPRequestHandler):
                 if not candles:
                     raise ValueError("Veri boş veya çözümlenemedi")
                 tf_est = estimate_timeframe_minutes(candles)
-                if tf_est is None or abs(tf_est - 60) > 1.0:
-                    raise ValueError("Girdi 60 dakikalık akış gibi görünmüyor")
+                if tf_est is None or abs(tf_est - 12) > 1.0:
+                    raise ValueError("Girdi 12 dakikalık akış gibi görünmüyor")
                 shifted, _ = adjust_to_output_tz(candles, "UTC-5")
-                converted = convert_60m_to_72m(shifted)
+                converted = convert_12m_to_72m(shifted)
 
                 buffer = io.StringIO()
                 writer = csv.writer(buffer)

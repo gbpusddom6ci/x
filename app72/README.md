@@ -9,7 +9,7 @@
 - ✅ Sequence bazlı sayım (S1, S2)
 - ✅ Offset sistemi (-3 ile +3 arası)
 - ✅ Matrix görünümü (tüm offsetler)
-- ✅ 60→72 dakika converter
+- ✅ 12→72 dakika converter (7 tane 12m = 1 tane 72m)
 - ✅ Timezone dönüşümü (UTC-5 → UTC-4)
 - ✅ Prediction desteği
 
@@ -26,7 +26,7 @@ Tarayıcıdan `http://localhost:2172/` adresine gidin.
 1. **Analiz** - CSV yükleyip sequence sayımı yapın
 2. **DC List** - Tüm DC mumlarını listeleyin
 3. **Matrix** - Tüm offset değerlerini tek ekranda görün
-4. **60→72 Converter** - 60 dakikalık mumları 72 dakikaya dönüştürün
+4. **12→72 Converter** - 12 dakikalık mumları 72 dakikaya dönüştürün (7 tane 12m = 1 tane 72m)
 
 ## CLI Kullanımı
 
@@ -52,17 +52,17 @@ python3 -m app72.counter --csv data.csv --predict 37
 python3 -m app72.counter --csv data.csv --predict-next
 ```
 
-### Converter (60m → 72m)
+### Converter (12m → 72m)
 
 ```bash
 # Dosyaya kaydet
-python3 -m app72.main --csv 60m_data.csv --output 72m_output.csv
+python3 -m app72.main --csv 12m_data.csv --output 72m_output.csv
 
 # Stdout'a yazdır
-python3 -m app72.main --csv 60m_data.csv
+python3 -m app72.main --csv 12m_data.csv
 
 # Timezone belirt
-python3 -m app72.main --csv 60m_data.csv --input-tz UTC-5 --output 72m_data.csv
+python3 -m app72.main --csv 12m_data.csv --input-tz UTC-5 --output 72m_data.csv
 ```
 
 ## CSV Formatı
@@ -139,9 +139,9 @@ python3 -m app72.counter \
 
 ### Converter kullanımı
 ```bash
-# 60 dakikalık veriyi 72 dakikaya çevir
+# 12 dakikalık veriyi 72 dakikaya çevir (7 tane 12m = 1 tane 72m)
 python3 -m app72.main \
-  --csv 60m_eurusd.csv \
+  --csv 12m_eurusd.csv \
   --input-tz UTC-5 \
   --output 72m_eurusd.csv
 ```

@@ -166,16 +166,17 @@ def adjust_to_output_tz(candles: List[Candle], input_tz: str) -> Tuple[List[Cand
     return shifted, label
 
 
-def _align_to_step(ts: datetime, anchor_time: dtime, minutes_per_step: int) -> datetime:
-    anchor = datetime.combine(ts.date(), anchor_time)
+def _align_to_72_minutes(ts: datetime) -> datetime:
+    # 72 dakikalık blokları her gün 18:00'e göre hizala.
+    anchor = datetime.combine(ts.date(), dtime(hour=18, minute=0))
     if ts < anchor:
         anchor -= timedelta(days=1)
     delta_minutes = int((ts - anchor).total_seconds() // 60)
-    block_index = delta_minutes // minutes_per_step
-    return anchor + timedelta(minutes=block_index * minutes_per_step)
+    block_index = delta_minutes // 72
+    return anchor + timedelta(minutes=block_index * 72)
 
 
-def convert_60m_to_72m(candles: List[Candle]) -> List[Candle]:
+def convert_12m_to_72m(candles: List[Candle]) -> List[Candle]:
     if not candles:
         raise ValueError("Veri boş")
 
@@ -195,7 +196,7 @@ def convert_60m_to_72m(candles: List[Candle]) -> List[Candle]:
     order: List[datetime] = []
 
     for candle in ordered:
-        block_ts = _align_to_step(candle.ts, dtime(hour=18, minute=0), 72)
+        block_ts = _align_to_72_minutes(candle.ts)
         if block_ts not in groups:
             groups[block_ts] = []
             order.append(block_ts)
@@ -261,9 +262,9 @@ def write_csv(path: Optional[str], candles: List[Candle]) -> None:
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="app72",
-        description="60m mumları UTC-4 72m mumlarına dönüştürür",
+        description="12m mumları UTC-4 72m mumlarına dönüştürür",
     )
-    parser.add_argument("--csv", required=True, help="60m verisi içeren CSV dosya yolu")
+    parser.add_argument("--csv", required=True, help="Girdi CSV (12m, UTC-5)")
     parser.add_argument(
         "--input-tz",
         choices=["UTC-4", "UTC-5"],
@@ -282,11 +283,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         raise SystemExit("Veri okunamadı veya boş")
 
     tf_est = estimate_timeframe_minutes(candles)
-    if tf_est is None or abs(tf_est - 60) > 1.0:
-        raise SystemExit("Girdi 60 dakikalık akış gibi görünmüyor")
+    if tf_est is None or abs(tf_est - 12) > 1.0:
+        raise ValueError("Girdi 12 dakikalık akış gibi görünmüyor")
 
     shifted, tz_label = adjust_to_output_tz(candles, args.input_tz)
-    converted = convert_60m_to_72m(shifted)
+    converted = convert_12m_to_72m(shifted)
 
     write_csv(args.output, converted)
 
