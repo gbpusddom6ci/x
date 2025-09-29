@@ -174,7 +174,7 @@ def render_analyze_index() -> bytes:
       </form>
     </div>
     <p>CSV başlıkları: <code>Time, Open, High, Low, Close (Last)</code> (eş anlamlılar desteklenir).</p>
-    <p><strong>Not:</strong> Pazar hariç, 18:00, 19:12 ve 20:24 mumları DC sayılmaz.</p>
+    <p><strong>Not:</strong> 18:00 mumu (Pazar dahil) ve Cuma 16:48 mumu ASLA DC olamaz. Pazar hariç 19:12 ve 20:24 mumları da DC olamaz.</p>
     """
     return page("app72", body, active_tab="analyze")
 
@@ -206,7 +206,7 @@ def render_dc_index() -> bytes:
       </form>
     </div>
     <p>Not: app72 sayımında DC'ler her zaman atlanır; bu sayfada tüm DC'ler listelenir.</p>
-    <p><strong>Önemli:</strong> Pazar hariç, 18:00, 19:12 ve 20:24 mumları DC olarak işaretlenmez (günlük cycle noktaları).</p>
+    <p><strong>Önemli:</strong> 18:00 mumu (Pazar dahil) ve Cuma 16:48 mumu ASLA DC olamaz. Pazar hariç 19:12 ve 20:24 mumları da DC olamaz.</p>
     """
     return page("app72 - DC List", body, active_tab="dc")
 

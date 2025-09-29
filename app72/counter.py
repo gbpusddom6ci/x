@@ -147,23 +147,30 @@ def compute_dc_flags(candles: List[Candle]) -> List[Optional[bool]]:
         within = min(prev.open, prev.close) <= cur.close <= max(prev.open, prev.close)
         cond = cur.high <= prev.high and cur.low >= prev.low and within
         
-        # Pazar hariç, 18:00, 19:12, 20:24 mumları DC olamaz (günlük cycle noktaları)
-        if cur.ts.weekday() != 6:  # Pazar değilse (6 = Sunday)
-            if (cur.ts.hour == 18 and cur.ts.minute == 0) or \
-               (cur.ts.hour == 19 and cur.ts.minute == 12) or \
+        # 18:00 mumu ASLA DC olamaz (hafta başlangıcı - Pazar dahil, 2. hafta için)
+        if cur.ts.hour == 18 and cur.ts.minute == 0:
+            cond = False
+        # Pazar hariç, 19:12 ve 20:24 mumları DC olamaz (günlük cycle noktaları)
+        elif cur.ts.weekday() != 6:  # Pazar değilse (6 = Sunday)
+            if (cur.ts.hour == 19 and cur.ts.minute == 12) or \
                (cur.ts.hour == 20 and cur.ts.minute == 24):
                 cond = False
-        else:
-            is_week_close = False
-            if cur.ts.hour == 16 and cur.ts.minute == 0:
-                if i + 1 >= len(candles):
+        
+        # Cuma 16:48 mumu ASLA DC olamaz (1. hafta bitimindeki son mum)
+        if cur.ts.weekday() == 4 and cur.ts.hour == 16 and cur.ts.minute == 48:
+            cond = False
+        
+        # Hafta kapanış mumu (16:00) DC olamaz
+        is_week_close = False
+        if cur.ts.hour == 16 and cur.ts.minute == 0:
+            if i + 1 >= len(candles):
+                is_week_close = True
+            else:
+                gap_minutes = (candles[i + 1].ts - cur.ts).total_seconds() / 60
+                if gap_minutes > MINUTES_PER_STEP:
                     is_week_close = True
-                else:
-                    gap_minutes = (candles[i + 1].ts - cur.ts).total_seconds() / 60
-                    if gap_minutes > MINUTES_PER_STEP:
-                        is_week_close = True
-            if is_week_close:
-                cond = False
+        if is_week_close:
+            cond = False
         prev_flag = bool(flags[i - 1]) if flags[i - 1] is not None else False
         if prev_flag and cond:
             cond = False
