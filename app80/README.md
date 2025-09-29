@@ -103,11 +103,9 @@ Bir mum DC olarak işaretlenir eğer:
 1. High ≤ prev.High
 2. Low ≥ prev.Low
 3. Close, prev mumun [Open, Close] aralığında
-4. **Pazar hariç, 18:00, 19:20 veya 20:40 mumu değilse** (günlük cycle noktaları)
+4. 18:00 mumu değilse (hafta başlangıcı)
 5. Hafta kapanış mumu (Cuma 16:00) değilse
 6. Önceki mum DC değilse
-
-**Önemli:** Pazartesi-Cumartesi günlerinde 18:00, 19:20 ve 20:40 mumları DC olamaz (günlük cycle başlangıç noktaları). Pazar günlerinde bu kısıtlama yoktur (hafta açılışı).
 
 DC mumlar sayımda atlanır.
 
