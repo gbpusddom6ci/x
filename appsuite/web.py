@@ -13,8 +13,9 @@ from urllib.parse import urlsplit
 
 from landing.web import build_html
 from app48.web import run as run_app48
-from app321.web import run as run_app321
+from app72.web import run as run_app72
 from app120.web import run as run_app120
+from app321.web import run as run_app321
 
 
 @dataclass(frozen=True)
@@ -185,16 +186,18 @@ def start_backend_thread(name: str, target, host: str, port: int) -> threading.T
     return thread
 
 
-def run(host: str, port: int, backend_host: str, app48_port: int, app321_port: int, app120_port: int) -> None:
+def run(host: str, port: int, backend_host: str, app48_port: int, app72_port: int, app120_port: int, app321_port: int) -> None:
     backends = [
         Backend(name="app48", host=backend_host, port=app48_port, prefix="/app48", description="48 dakikalık mum sayımı ve dönüştürücü"),
-        Backend(name="app321", host=backend_host, port=app321_port, prefix="/app321", description="60 dakikalık sayım araçları"),
+        Backend(name="app72", host=backend_host, port=app72_port, prefix="/app72", description="72 dakikalık sayım ve dönüştürücü"),
         Backend(name="app120", host=backend_host, port=app120_port, prefix="/app120", description="120 dakikalık analiz ve dönüştürücü"),
+        Backend(name="app321", host=backend_host, port=app321_port, prefix="/app321", description="60 dakikalık sayım araçları"),
     ]
 
     start_backend_thread("app48", run_app48, backend_host, app48_port)
-    start_backend_thread("app321", run_app321, backend_host, app321_port)
+    start_backend_thread("app72", run_app72, backend_host, app72_port)
     start_backend_thread("app120", run_app120, backend_host, app120_port)
+    start_backend_thread("app321", run_app321, backend_host, app321_port)
 
     app_links = {
         backend.name: {
@@ -218,11 +221,12 @@ def main(argv: List[str] | None = None) -> int:
     parser.add_argument("--port", type=int, default=2000, help="Genel port (vars: 2000)")
     parser.add_argument("--backend-host", default="127.0.0.1", help="İç servislerin dinleyeceği adres (vars: 127.0.0.1)")
     parser.add_argument("--app48-port", type=int, default=9200, help="app48 iç portu")
-    parser.add_argument("--app321-port", type=int, default=9201, help="app321 iç portu")
+    parser.add_argument("--app72-port", type=int, default=9201, help="app72 iç portu")
     parser.add_argument("--app120-port", type=int, default=9202, help="app120 iç portu")
+    parser.add_argument("--app321-port", type=int, default=9203, help="app321 iç portu")
     args = parser.parse_args(argv)
 
-    run(args.host, args.port, args.backend_host, args.app48_port, args.app321_port, args.app120_port)
+    run(args.host, args.port, args.backend_host, args.app48_port, args.app72_port, args.app120_port, args.app321_port)
     return 0
 
 
