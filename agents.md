@@ -1,6 +1,6 @@
 # Proje Rehberi
 
-Bu doküman app321, app48, app72, app80 ve app120 uygulamalarının ortak kavramlarını ve uygulamaya özel kurallarını açıklar. Tüm açıklamalar Türkçe'dir ve en güncel davranışları yansıtır.
+Bu doküman app321, app48, app72, app80, app120 ve app120_iov uygulamalarının ortak kavramlarını ve uygulamaya özel kurallarını açıklar. Tüm açıklamalar Türkçe'dir ve en güncel davranışları yansıtır.
 
 ## Temel Kavramlar
 - **Sayı dizileri:** Sayım işlemleri belirlenmiş sabit dizilere göre ilerler. Şu an desteklenen diziler:
@@ -131,6 +131,42 @@ Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın z
   3. **Matrix:** Tüm offset'ler için tek tabloda zaman/OC/PrevOC özetleri.
   4. **60→120 Converter:** 60m CSV yükleyip dönüştürülmüş 120m CSV indirme.
 
+### app120_iov
+- 🎯 **IOV (Inverse OC Value)** mum analizi için özel 120m timeframe uygulaması.
+- **Amaç:** 2 haftalık 120m veride, OC ve PrevOC değerlerinin belirli bir limit değerinin üstünde ve zıt işaretli olduğu özel mumları tespit etmek.
+- **IOV Mum Tanımı:** Aşağıdaki 3 kriteri **birden** karşılayan mumlardır:
+  1. **|OC| ≥ Limit** → Mumun open-close farkı (mutlak değer) limit değerinin üstünde
+  2. **|PrevOC| ≥ Limit** → Önceki mumun open-close farkı (mutlak değer) limit değerinin üstünde
+  3. **Zıt İşaret** → OC ve PrevOC'den birinin pozitif (+), diğerinin negatif (-) olması
+- **Filtrelenmiş Sequence Değerleri:**
+  - **S1 için:** `7, 13, 21, 31, 43, 57, 73, 91, 111, 133, 157` (1 ve 3 analiz edilmez)
+  - **S2 için:** `9, 17, 25, 37, 49, 65, 81, 101, 121, 145, 169` (1 ve 5 analiz edilmez)
+- **Etkisiz Mum:** OC veya PrevOC'den herhangi biri limit değerinin altındaysa, o mum IOV analizi için etkisiz sayılır.
+- **Analiz Kapsamı:**
+  - Tüm offsetler taranır: -3, -2, -1, 0, +1, +2, +3 (toplam 7 offset)
+  - Her offset için ayrı IOV mumları listelenir
+  - 2 haftalık veri desteği: 1. hafta Pazar 18:00 → 2. hafta Cuma 16:00
+- **CLI Kullanımı (`python3 -m app120_iov.counter`):**
+  ```bash
+  python3 -m app120_iov.counter --csv data.csv --sequence S2 --limit 0.1
+  ```
+  - `--csv`: 2 haftalık 120m CSV dosyası
+  - `--sequence`: S1 veya S2 (varsayılan: S2)
+  - `--limit`: IOV limit değeri (varsayılan: 0.1)
+- **Web Arayüzü (`python3 -m app120_iov.web`, port: 2121):**
+  - CSV dosyası yükleme (2 haftalık 120m data)
+  - Sequence seçimi (S1/S2)
+  - Limit değeri girişi
+  - Tüm offsetler için IOV mum listesi
+  - Her IOV mum için: Seq değeri, Index, Timestamp, OC, PrevOC
+- **Örnek Çıktı:**
+  ```
+  Offset: 0
+    Seq=31, Index=34, Time=2025-08-20 14:00:00
+      OC: +0.15200, PrevOC: -0.16900
+  ```
+- **DC Hesaplama:** DC (Distorted Candle) hesaplaması mevcut app120 mantığı ile aynıdır; ancak IOV analizinde sadece sequence allocation için kullanılır, IOV kriterleri sadece OC/PrevOC değerlerine bakar.
+
 ## Özet
 - Giriş CSV’si düzgün formatlanmış olmalı ve zorunlu kolonları içermelidir.
 - Varsayılan başlangıç 18:00 mumu olup offset bu zaman üzerinden uygulanır.
@@ -140,6 +176,7 @@ Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın z
   - **app72:** 18:00 (Pazar dahil) ve Cuma 16:48 ASLA DC olamaz; Pazar hariç 19:12 ve 20:24 DC olamaz
   - **app80:** Pazar hariç 18:00, 19:20, 20:40 DC olamaz
   - **app120:** DC istisnası yok, tüm DC'ler atılır
+  - **app120_iov:** DC sadece sequence allocation için kullanılır, IOV kriterleri DC'den bağımsızdır
 - 18:00 mumu genelde DC olamaz (app72'de Pazar dahil) ve ardışık iki DC bulunmaz.
 - Her gerçek adım, mumun OC ve PrevOC değerleri ile birlikte raporlanır; tahmini satırlarda değerler `-` olarak gösterilir.
 - Eksik veriler tahmini zamanlarla (`pred`) gösterilir.
@@ -149,5 +186,10 @@ Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın z
   - **app72:** 12m → 72m (7 × 12m ≈ 72m)
   - **app80:** 20m → 80m (4 × 20m = 80m)
   - **app120:** 60m → 120m (2 × 60m = 120m)
+- **IOV Analizi (app120_iov):**
+  - Filtrelenmiş sequence değerleri: S1 (1,3 hariç), S2 (1,5 hariç)
+  - IOV kriteri: |OC| ≥ limit AND |PrevOC| ≥ limit AND zıt işaret
+  - Tüm offsetler (-3..+3) taranır
+  - 2 haftalık 120m veri desteği
 
 Bu rehber, uygulamaların geliştirme ve kullanımında referans kabul edilmelidir.
