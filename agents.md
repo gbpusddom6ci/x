@@ -168,11 +168,13 @@ Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın z
   - `--sequence`: S1 veya S2 (varsayılan: **S1** - değiştirildi, önceden S2 idi)
   - `--limit`: IOV limit değeri (varsayılan: 0.1)
 - **Web Arayüzü (`python3 -m app120_iov.web`, port: 2121):**
-  - CSV dosyası yükleme (2 haftalık 120m data)
+  - **Çoklu dosya yükleme:** En fazla 25 CSV dosyası tek seferde yüklenebilir
   - Sequence seçimi (S1/S2)
   - Limit değeri girişi
-  - Tüm offsetler için IOV mum listesi
-  - Her IOV mum için: Seq değeri, Index, Timestamp, OC, PrevOC
+  - **Kompakt görünüm:** Her dosya için tek tablo, tüm offsetler tek tabloda
+  - Offset bilgisi her satırda gösterilir (Ofs kolonu)
+  - Her IOV mum için: Offset, Seq değeri, Index, Timestamp (kısa format), OC, PrevOC, Prev Index
+  - IOV bulunamayan dosyalar "IOV yok" olarak gösterilir
 - **Örnek Çıktı:**
   ```
   Offset: 0
@@ -182,6 +184,11 @@ Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın z
 - **DC Hesaplama:** DC (Distorted Candle) hesaplaması mevcut app120 mantığı ile aynıdır; ancak IOV analizinde sadece sequence allocation için kullanılır, IOV kriterleri sadece OC/PrevOC değerlerine bakar.
 - **Offset Handling:** IOV analizi, app120'nin missing_steps ve synthetic sequence mantığını kullanır. Hedef offset mumu eksikse, bir sonraki mevcut mumdan başlanır ve eksik adımlar hesaplanarak sequence allocation yapılır.
 - **Entegrasyon:** app120_iov artık app120 web arayüzüne "IOV" sekmesi olarak entegre edilmiştir. Standalone uygulama hala CLI ve web olarak kullanılabilir.
+- **Çoklu Dosya Desteği (app120 entegrasyonu):**
+  - En fazla 25 dosya tek seferde analiz edilebilir
+  - Her dosya bağımsız analiz edilir
+  - Bir dosyada hata olsa diğerleri çalışmaya devam eder
+  - Kompakt tek tablo görünümü (offset kolonu ile)
 
 ### app120_iou
 - **IOU (Inverse OC - Uniform sign)** mum analizi için özel 120m timeframe uygulaması.
@@ -208,11 +215,13 @@ Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın z
   - `--sequence`: S1 veya S2 (varsayılan: **S1**)
   - `--limit`: IOU limit değeri (varsayılan: 0.1)
 - **Web Arayüzü (`python3 -m app120_iou.web`, port: 2122):**
-  - CSV dosyası yükleme (2 haftalık 120m data)
+  - **Çoklu dosya yükleme:** En fazla 25 CSV dosyası tek seferde yüklenebilir
   - Sequence seçimi (S1/S2)
   - Limit değeri girişi
-  - Tüm offsetler için IOU mum listesi
-  - Her IOU mum için: Seq değeri, Index, Timestamp, OC, PrevOC
+  - **Kompakt görünüm:** Her dosya için tek tablo, tüm offsetler tek tabloda
+  - Offset bilgisi her satırda gösterilir (Ofs kolonu)
+  - Her IOU mum için: Offset, Seq değeri, Index, Timestamp (kısa format), OC, PrevOC, Prev Index
+  - IOU bulunamayan dosyalar "IOU yok" olarak gösterilir
 - **Örnek Çıktı:**
   ```
   Offset: -2
@@ -226,6 +235,11 @@ Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın z
 - **DC Hesaplama:** DC (Distorted Candle) hesaplaması mevcut app120 mantığı ile aynıdır; ancak IOU analizinde sadece sequence allocation için kullanılır, IOU kriterleri sadece OC/PrevOC değerlerine bakar.
 - **Offset Handling:** IOU analizi, app120'nin missing_steps ve synthetic sequence mantığını kullanır (IOV ile aynı).
 - **Entegrasyon:** app120_iou artık app120 web arayüzüne "IOU" sekmesi olarak entegre edilmiştir. Standalone uygulama hala CLI ve web olarak kullanılabilir.
+- **Çoklu Dosya Desteği (app120 entegrasyonu):**
+  - En fazla 25 dosya tek seferde analiz edilebilir
+  - Her dosya bağımsız analiz edilir
+  - Bir dosyada hata olsa diğerleri çalışmaya devam eder
+  - Kompakt tek tablo görünümü (offset kolonu ile)
 
 ## Özet
 - Giriş CSV’si düzgün formatlanmış olmalı ve zorunlu kolonları içermelidir.
@@ -255,6 +269,7 @@ Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın z
   - Tüm offsetler (-3..+3) taranır, **sadece IOV bulunan offsetler gösterilir**
   - 2 haftalık 120m veri desteği
   - app120 web arayüzüne "IOV" sekmesi olarak entegre edildi
+  - **Çoklu dosya yükleme:** 25 dosyaya kadar, kompakt tek tablo görünümü
 - **IOU Analizi (app120_iou):**
   - Filtrelenmiş sequence değerleri: S1 (1,3 hariç), S2 (1,5 hariç)
   - IOU kriteri: |OC| ≥ limit AND |PrevOC| ≥ limit AND **aynı işaret** (++ veya --)
@@ -263,6 +278,7 @@ Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın z
   - 2 haftalık 120m veri desteği
   - app120 web arayüzüne "IOU" sekmesi olarak entegre edildi
   - **IOV'nin tamamlayıcısıdır:** IOV zıt işaret, IOU aynı işaret
+  - **Çoklu dosya yükleme:** 25 dosyaya kadar, kompakt tek tablo görünümü
 
 ## Son Güncellemeler (Zaman Damgası: 2025-10-06)
 1. **app120_iou Eklendi:** IOV'nin tamamlayıcı uygulaması (aynı işaret kontrolü)
@@ -270,5 +286,9 @@ Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın z
 3. **Boş Offset Gizleme:** IOV ve IOU çıktılarında IOV/IOU mum içermeyen offsetler gösterilmiyor
 4. **Sekme Adı Değişikliği:** Tüm uygulamalarda "Analiz" → "Counter" olarak değiştirildi
 5. **app120 Entegrasyonu:** IOV ve IOU artık app120 web arayüzüne entegre edildi (IOV ve IOU sekmeleri)
+6. **Çoklu Dosya Yükleme:** IOV ve IOU için 25 dosyaya kadar çoklu dosya yükleme desteği eklendi
+7. **Kompakt Görünüm:** Her dosya için tek tablo, offset bilgisi satır başında (Ofs kolonu), kısa timestamp formatı
+8. **Sequence Validation:** Geçersiz sequence değerleri otomatik olarak S1'e dönüştürülür (KeyError önlendi)
+9. **IOV/IOU Yok Gösterimi:** Hiç IOV/IOU bulunmayan dosyalar minimal gösterimle işaretlenir
 
 Bu rehber, uygulamaların geliştirme ve kullanımında referans kabul edilmelidir.
