@@ -289,6 +289,13 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
 
 
+def run(host: str, port: int):
+    """Run function for appsuite integration"""
+    server = HTTPServer((host, port), Handler)
+    print(f"app120_iov web: http://{host}:{port}/")
+    server.serve_forever()
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="app120_iov.web")
     parser.add_argument("--port", type=int, default=2121, help="HTTP port (default: 2121)")

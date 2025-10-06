@@ -28,6 +28,13 @@ Forex trading için çoklu timeframe analiz araçları.
 - 60→120 dakika dönüştürücü
 - Port: `2120`
 
+### 🎯 app120_iov (IOV Analysis)
+- IOV (Inverse OC Value) mum analizi
+- 2 haftalık 120m veri desteği
+- Özelleştirilebilir limit sistemi
+- Tüm offsetler (-3..+3) taranır
+- Port: `2121`
+
 ### 🕐 app321 (60 dakika)
 - 60 dakikalık sayım araçları
 - DC listesi ve offset matrisi
@@ -51,6 +58,9 @@ python3 -m app80.web
 
 # app120 web arayüzü
 python3 -m app120.web
+
+# app120_iov web arayüzü (IOV analizi)
+python3 -m app120_iov.web
 
 # app48 web arayüzü
 python3 -m app48.web
