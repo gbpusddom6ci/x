@@ -23,6 +23,15 @@ SEQUENCES: Dict[str, List[int]] = {
     "S2": [1, 5, 9, 17, 25, 37, 49, 65, 81, 101, 121, 145, 169],
 }
 
+# Filtered sequences for IOU analysis (exclude early values)
+SEQUENCES_FILTERED: Dict[str, List[int]] = {
+    "S1": [7, 13, 21, 31, 43, 57, 73, 91, 111, 133, 157],  # 1,3 excluded
+    "S2": [9, 17, 25, 37, 49, 65, 81, 101, 121, 145, 169],  # 1,5 excluded
+}
+
+DEFAULT_START_TOD = dtime(hour=18, minute=0)
+MINUTES_PER_STEP = 72  # 72m timeframe
+
 
 def normalize_key(name: str) -> str:
     return name.strip().strip('"').strip("'").lower()
@@ -586,6 +595,136 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(f"{v} -> idx={idx} ts={fmt_ts(ts_display)} OC={fmt_pip(pip_val)} PrevOC={fmt_pip(prev_pip)}")
 
     return 0
+
+
+@dataclass
+class IOUResult:
+    """Result of IOU (Inverse OC - Uniform sign) analysis."""
+    seq_value: int
+    index: int
+    timestamp: datetime
+    oc: float
+    prev_oc: float
+    prev_index: int
+    prev_timestamp: datetime
+
+
+def analyze_iou(
+    candles: List[Candle],
+    sequence: str,
+    limit: float,
+) -> Dict[int, List[IOUResult]]:
+    """
+    Analyze IOU candles for all offsets (-3 to +3).
+    
+    IOU Criteria:
+        1. |OC| >= limit
+        2. |PrevOC| >= limit
+        3. OC and PrevOC have SAME signs (++ or --)
+    
+    Returns: Dict[offset] -> List[IOUResult]
+    """
+    results: Dict[int, List[IOUResult]] = {}
+    
+    base_idx, _ = find_start_index(candles, DEFAULT_START_TOD)
+    dc_flags = compute_dc_flags(candles)
+    
+    # Use FULL sequence for allocation, FILTERED for IOU check
+    seq_values_full = SEQUENCES[sequence]
+    seq_values_filtered = SEQUENCES_FILTERED[sequence]
+    
+    for offset in range(-3, 4):
+        iou_list: List[IOUResult] = []
+        
+        start_idx, target_ts, offset_status = determine_offset_start(candles, base_idx, offset, MINUTES_PER_STEP)
+        base_ts = candles[base_idx].ts.replace(second=0, microsecond=0)
+        if target_ts is None:
+            target_ts = base_ts + timedelta(minutes=MINUTES_PER_STEP * offset)
+        
+        missing_steps = 0
+        
+        # If exact target not found, find next available and calculate missing steps
+        if start_idx is None or start_idx < 0 or start_idx >= len(candles):
+            # Find first candle after target
+            after_idx: Optional[int] = None
+            for i, candle in enumerate(candles):
+                ts_norm = candle.ts.replace(second=0, microsecond=0)
+                if ts_norm >= target_ts:
+                    after_idx = i
+                    break
+            
+            if after_idx is not None and 0 <= after_idx < len(candles):
+                start_idx = after_idx
+                actual_ts = candles[start_idx].ts
+                delta_minutes = int((actual_ts - target_ts).total_seconds() // 60)
+                if delta_minutes < 0:
+                    delta_minutes = 0
+                missing_steps = max(0, delta_minutes // MINUTES_PER_STEP)
+            else:
+                # No data to work with
+                results[offset] = iou_list
+                continue
+        
+        # Build compute sequence
+        actual_start_count = missing_steps + 1
+        seq_compute: List[int] = [actual_start_count]
+        for v in seq_values_full:
+            if v > missing_steps:
+                if v != actual_start_count:
+                    seq_compute.append(v)
+        
+        # Compute allocations for synthetic sequence
+        allocations = compute_sequence_allocations(candles, dc_flags, start_idx, seq_compute)
+        
+        # Build mapping: seq_value -> allocation
+        seq_map: Dict[int, SequenceAllocation] = {}
+        for idx, val in enumerate(seq_compute):
+            seq_map[val] = allocations[idx]
+        
+        # For values <= missing_steps, mark as None
+        for v in seq_values_full:
+            if v <= missing_steps:
+                seq_map[v] = SequenceAllocation(None, None, False)
+        
+        # Analyze only filtered sequence values
+        for seq_val in seq_values_filtered:
+            alloc = seq_map.get(seq_val)
+            if alloc is None or alloc.idx is None:
+                continue
+            
+            idx = alloc.idx
+            if idx <= 0 or idx >= len(candles):
+                continue
+            
+            candle = candles[idx]
+            prev_candle = candles[idx - 1]
+            
+            oc = candle.close - candle.open
+            prev_oc = prev_candle.close - prev_candle.open
+            
+            # Check IOU criteria
+            # 1. Both |OC| and |PrevOC| must be >= limit
+            if abs(oc) < limit or abs(prev_oc) < limit:
+                continue
+            
+            # 2. OC and PrevOC must have SAME signs (opposite of IOV)
+            if not ((oc > 0 and prev_oc > 0) or (oc < 0 and prev_oc < 0)):
+                continue
+            
+            # This is an IOU candle!
+            iou_list.append(IOUResult(
+                seq_value=seq_val,
+                index=idx,
+                timestamp=candle.ts,
+                oc=oc,
+                prev_oc=prev_oc,
+                prev_index=idx - 1,
+                prev_timestamp=prev_candle.ts,
+            ))
+        
+        results[offset] = iou_list
+    
+    return results
 
 
 if __name__ == "__main__":

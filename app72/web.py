@@ -8,6 +8,7 @@ from typing import List, Optional, Dict, Any, Type
 from .counter import (
     Candle as CounterCandle,
     SEQUENCES,
+    SEQUENCES_FILTERED,
     MINUTES_PER_STEP,
     DEFAULT_START_TOD,
     normalize_key,
@@ -17,6 +18,8 @@ from .counter import (
     compute_dc_flags,
     compute_offset_alignment,
     predict_time_after_n_steps,
+    analyze_iou,
+    IOUResult,
 )
 from .main import (
     Candle as ConverterCandle,
@@ -108,20 +111,22 @@ def page(title: str, body: str, active_tab: str = "analyze") -> bytes:
       .tabs a.active{{background:#e6f2ff; color:#024ea2;}}
     </style>
   </head>
-  <body>
     <header>
       <h2>app72</h2>
     </header>
     <nav class='tabs'>
       <a href='/' class='{ 'active' if active_tab=="analyze" else '' }'>Counter</a>
+      <a href='/iou' class='{ 'active' if active_tab=="iou" else '' }'>IOU</a>
       <a href='/dc' class='{ 'active' if active_tab=="dc" else '' }'>DC List</a>
       <a href='/matrix' class='{ 'active' if active_tab=="matrix" else '' }'>Matrix</a>
-      <a href='/converter' class='{ 'active' if active_tab=="converter" else '' }'>12→72 Converter</a>
+      <a href='/convert' class='{ 'active' if active_tab=="convert" else '' }'>12→72</a>
+      <a href='/converter' class='{ 'active' if active_tab=="converter" else '' }'>Converter</a>
     </nav>
     {body}
   </body>
 </html>"""
     return html_doc.encode("utf-8")
+{{ ... }}
 
 
 def render_analyze_index() -> bytes:
