@@ -25,6 +25,11 @@ from .main import (
     convert_60m_to_120m,
     format_price,
 )
+from app120_iov.counter import (
+    analyze_iov,
+    SEQUENCES_FILTERED,
+    IOVResult,
+)
 from email.parser import BytesParser
 from email.policy import default as email_default
 from datetime import timedelta
@@ -116,6 +121,7 @@ def page(title: str, body: str, active_tab: str = "analyze") -> bytes:
       <a href='/' class='{ 'active' if active_tab=="analyze" else '' }'>Analiz</a>
       <a href='/dc' class='{ 'active' if active_tab=="dc" else '' }'>DC List</a>
       <a href='/matrix' class='{ 'active' if active_tab=="matrix" else '' }'>Matrix</a>
+      <a href='/iov' class='{ 'active' if active_tab=="iov" else '' }'>🎯 IOV</a>
       <a href='/converter' class='{ 'active' if active_tab=="converter" else '' }'>60→120 Converter</a>
     </nav>
     {body}
@@ -246,6 +252,47 @@ def render_matrix_index() -> bytes:
     return page("app120 - Matrix", body, active_tab="matrix")
 
 
+def render_iov_index() -> bytes:
+    body = """
+    <div class='card'>
+      <h3>🎯 IOV (Inverse OC Value) Analizi</h3>
+      <p>2 haftalık 120m veride, OC ve PrevOC değerlerinin limit üstünde ve zıt işaretli olduğu özel mumları tespit eder.</p>
+      <form method='post' action='/iov' enctype='multipart/form-data'>
+        <div class='row'>
+          <div>
+            <label>CSV Dosyası (2 haftalık 120m)</label>
+            <input type='file' name='csv' accept='.csv,text/csv' required />
+          </div>
+          <div>
+            <label>Sequence</label>
+            <select name='sequence'>
+              <option value='S1'>S1 (1,3 hariç)</option>
+              <option value='S2' selected>S2 (1,5 hariç)</option>
+            </select>
+          </div>
+          <div>
+            <label>Limit (mutlak değer)</label>
+            <input type='number' name='limit' step='0.001' value='0.1' min='0' required />
+          </div>
+          <div>
+            <button type='submit'>Analiz Et</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class='card'>
+      <h4>IOV Mum Kriterleri:</h4>
+      <ul>
+        <li><strong>|OC| ≥ Limit</strong> - Mumun open-close farkı limit değerinin üstünde olmalı</li>
+        <li><strong>|PrevOC| ≥ Limit</strong> - Önceki mumun open-close farkı limit değerinin üstünde olmalı</li>
+        <li><strong>Zıt İşaret</strong> - OC ve PrevOC birinin (+) birinin (-) olması gerekir</li>
+      </ul>
+      <p><strong>Not:</strong> Tüm offsetler (-3..+3) otomatik taranır.</p>
+    </div>
+    """
+    return page("app120 - IOV", body, active_tab="iov")
+
+
 def render_converter_index() -> bytes:
     body = """
     <div class='card'>
@@ -303,6 +350,8 @@ class App120Handler(BaseHTTPRequestHandler):
             body = render_dc_index()
         elif self.path == "/matrix":
             body = render_matrix_index()
+        elif self.path == "/iov":
+            body = render_iov_index()
         elif self.path == "/converter":
             body = render_converter_index()
         else:
@@ -359,6 +408,54 @@ class App120Handler(BaseHTTPRequestHandler):
                 self.send_header("Content-Disposition", f"attachment; filename=\"{download_name}\"")
                 self.end_headers()
                 self.wfile.write(data)
+                return
+
+            if self.path == "/iov":
+                candles = load_candles_from_text(text, CounterCandle)
+                if not candles:
+                    raise ValueError("Veri boş veya çözümlenemedi")
+                
+                sequence = (form.get("sequence", {}).get("value") or "S2").strip()
+                limit_str = (form.get("limit", {}).get("value") or "0.1").strip()
+                try:
+                    limit = float(limit_str)
+                except:
+                    limit = 0.1
+                
+                # Analyze IOV
+                results = analyze_iov(candles, sequence, limit)
+                total_iov = sum(len(v) for v in results.values())
+                
+                # Build HTML
+                body = f"""
+                <div class='card'>
+                  <h3>📊 IOV Analiz Sonuçları</h3>
+                  <div><strong>Veri:</strong> {len(candles)} mum ({candles[0].ts.strftime('%Y-%m-%d %H:%M:%S')} → {candles[-1].ts.strftime('%Y-%m-%d %H:%M:%S')})</div>
+                  <div><strong>Sequence:</strong> {html.escape(sequence)} (Filtered: {', '.join(map(str, SEQUENCES_FILTERED[sequence]))})</div>
+                  <div><strong>Limit:</strong> {limit}</div>
+                  <div><strong>Toplam IOV Mum:</strong> {total_iov}</div>
+                </div>
+                """
+                
+                for offset in range(-3, 4):
+                    iov_list = results[offset]
+                    body += f"<div class='card'><h4>Offset: {offset:+d} ({len(iov_list)} IOV mum)</h4>"
+                    
+                    if not iov_list:
+                        body += "<p>Bu offset'te IOV mum bulunamadı.</p>"
+                    else:
+                        body += "<table><tr><th>Seq</th><th>Index</th><th>Timestamp</th><th>OC</th><th>PrevOC</th><th>Prev Index</th></tr>"
+                        for iov in iov_list:
+                            oc_fmt = format_pip(iov.oc)
+                            prev_oc_fmt = format_pip(iov.prev_oc)
+                            body += f"<tr><td>{iov.seq_value}</td><td>{iov.index}</td><td>{iov.timestamp.strftime('%Y-%m-%d %H:%M:%S')}</td><td>{html.escape(oc_fmt)}</td><td>{html.escape(prev_oc_fmt)}</td><td>{iov.prev_index}</td></tr>"
+                        body += "</table>"
+                    body += "</div>"
+                
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(page("app120 - IOV Results", body, active_tab="iov"))
                 return
 
             candles = load_candles_from_text(text, CounterCandle)

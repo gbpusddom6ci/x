@@ -117,7 +117,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
   <body>
     <header>
       <h1>Trading Araçları</h1>
-      <p>app48, app72, app80, app120, app120_iov ve app321 arayüzlerine tek yerden erişin. Her kart ilgili modülü yeni sekmede açar.</p>
+      <p>app48, app72, app80, app120 ve app321 arayüzlerine tek yerden erişin. Her kart ilgili modülü yeni sekmede açar.</p>
     </header>
     <main>
       {''.join(cards)}
@@ -189,11 +189,6 @@ def main(argv: list[str] | None = None) -> int:
         default="http://127.0.0.1:2120/",
         help="app120 web arayüzü için URL",
     )
-    parser.add_argument(
-        "--app120-iov-url",
-        default="http://127.0.0.1:2121/",
-        help="app120_iov web arayüzü için URL",
-    )
     args = parser.parse_args(argv)
 
     app_links = {
@@ -215,12 +210,7 @@ def main(argv: list[str] | None = None) -> int:
         "app120": {
             "title": "app120",
             "url": args.app120_url,
-            "description": "120 dakikalık sayım, DC analizi ve 60→120 dönüştürücü.",
-        },
-        "app120_iov": {
-            "title": "app120_iov",
-            "url": args.app120_iov_url,
-            "description": "🎯 IOV (Inverse OC Value) mum analizi - 2 haftalık 120m veri.",
+            "description": "120 dakikalık sayım, DC analizi, 🎯 IOV analizi ve 60→120 dönüştürücü.",
         },
         "app321": {
             "title": "app321",
