@@ -303,16 +303,54 @@ def analyze_iov(
         iov_list: List[IOVResult] = []
         
         start_idx, target_ts, offset_status = determine_offset_start(candles, base_idx, offset)
+        base_ts = candles[base_idx].ts.replace(second=0, microsecond=0)
+        if target_ts is None:
+            target_ts = base_ts + timedelta(minutes=MINUTES_PER_STEP * offset)
         
+        missing_steps = 0
+        
+        # If exact target not found, find next available and calculate missing steps
         if start_idx is None or start_idx < 0 or start_idx >= len(candles):
-            results[offset] = iov_list
-            continue
+            # Find first candle after target
+            after_idx: Optional[int] = None
+            for i, candle in enumerate(candles):
+                ts_norm = candle.ts.replace(second=0, microsecond=0)
+                if ts_norm >= target_ts:
+                    after_idx = i
+                    break
+            
+            if after_idx is not None and 0 <= after_idx < len(candles):
+                start_idx = after_idx
+                actual_ts = candles[start_idx].ts
+                delta_minutes = int((actual_ts - target_ts).total_seconds() // 60)
+                if delta_minutes < 0:
+                    delta_minutes = 0
+                missing_steps = max(0, delta_minutes // MINUTES_PER_STEP)
+            else:
+                # Really no data to work with
+                results[offset] = iov_list
+                continue
         
-        # Compute allocations for full sequence
-        allocations = compute_sequence_allocations(candles, dc_flags, start_idx, seq_values_full)
+        # Build compute sequence (app120 style)
+        actual_start_count = missing_steps + 1
+        seq_compute: List[int] = [actual_start_count]
+        for v in seq_values_full:
+            if v > missing_steps:
+                if v != actual_start_count:
+                    seq_compute.append(v)
         
-        # Build mapping: seq_value -> allocation
-        seq_map = {seq_values_full[i]: allocations[i] for i in range(len(seq_values_full))}
+        # Compute allocations for synthetic sequence
+        allocations = compute_sequence_allocations(candles, dc_flags, start_idx, seq_compute)
+        
+        # Build mapping: original seq_value -> allocation
+        seq_map: Dict[int, SequenceAllocation] = {}
+        for idx, val in enumerate(seq_compute):
+            seq_map[val] = allocations[idx]
+        
+        # For values <= missing_steps, mark as None
+        for v in seq_values_full:
+            if v <= missing_steps:
+                seq_map[v] = SequenceAllocation(None, None, False)
         
         # Analyze only filtered sequence values
         for seq_val in seq_values_filtered:
