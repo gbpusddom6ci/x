@@ -266,8 +266,8 @@ def render_iov_index() -> bytes:
           <div>
             <label>Sequence</label>
             <select name='sequence'>
-              <option value='S1'>S1 (1,3 hariç)</option>
-              <option value='S2' selected>S2 (1,5 hariç)</option>
+              <option value='S1' selected>S1 (1,3 hariç)</option>
+              <option value='S2'>S2 (1,5 hariç)</option>
             </select>
           </div>
           <div>
@@ -415,7 +415,7 @@ class App120Handler(BaseHTTPRequestHandler):
                 if not candles:
                     raise ValueError("Veri boş veya çözümlenemedi")
                 
-                sequence = (form.get("sequence", {}).get("value") or "S2").strip()
+                sequence = (form.get("sequence", {}).get("value") or "S1").strip()
                 limit_str = (form.get("limit", {}).get("value") or "0.1").strip()
                 try:
                     limit = float(limit_str)

@@ -114,24 +114,23 @@ def page(title: str, body: str) -> bytes:
 def render_index() -> bytes:
     body = """
     <div class='card'>
-      <h2>📊 IOV Analizi</h2>
+      <h2>IOV Analizi</h2>
       <form method='post' action='/' enctype='multipart/form-data'>
         <label>CSV Dosyası (2 haftalık 120m data):</label>
         <input type='file' name='csv' accept='.csv' required />
-        
-        <label>Sequence:</label>
-        <select name='sequence'>
-          <option value='S1'>S1 (7, 13, 21, 31, 43, 57, 73, 91, 111, 133, 157)</option>
-          <option value='S2' selected>S2 (9, 17, 25, 37, 49, 65, 81, 101, 121, 145, 169)</option>
-        </select>
-        
+        <div>
+          <label>Sequence:</label>
+          <select name='sequence'>
+            <option value='S1' selected>S1 (Filtered: 7, 13, 21...)</option>
+            <option value='S2'>S2 (Filtered: 9, 17, 25...)</option>
+          </select>
+        </div>
         <label>Limit (mutlak değer):</label>
         <input type='number' name='limit' step='0.001' value='0.1' min='0' required />
         
         <button type='submit'>Analiz Et</button>
       </form>
     </div>
-    
     <div class='card'>
       <h3>ℹ️ IOV Mum Nedir?</h3>
       <p><strong>IOV (Inverse OC Value)</strong> mumu, aşağıdaki kriterleri karşılayan özel mumlardır:</p>

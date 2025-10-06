@@ -406,20 +406,28 @@ def fmt_pip(delta: float) -> str:
 
 def main(argv: Optional[List[str]] = None) -> int:
     p = argparse.ArgumentParser(
-        prog="app120_iov.counter",
+        prog="app120_iov counter",
         description="120m IOV (Inverse OC Value) Analysis",
     )
-    p.add_argument("--csv", required=True, help="CSV dosya yolu (2 haftalık 120m data)")
-    p.add_argument("--sequence", choices=["S1", "S2"], default="S2", help="Kullanılacak dizi: S1 veya S2")
-    p.add_argument("--limit", type=float, default=0.1, help="IOV limit değeri (örn: 0.1)")
-
+    p.add_argument("--csv", required=True, help="CSV dosyası (120m mumlar)")
+    p.add_argument(
+        "--sequence",
+        choices=["S1", "S2"],
+        default="S1",
+        help="Sequence seçimi (varsayılan: S1)",
+    )
+    p.add_argument(
+        "--limit",
+        type=float,
+        default=0.1,
+        help="IOV limit değeri (varsayılan: 0.1)",
+    )
     args = p.parse_args(argv)
 
     candles = load_candles(args.csv)
     if not candles:
         print("Uyarı: veri yüklenemedi ya da boş")
         return 1
-
     print(f"Data: {len(candles)} candles")
     print(f"Range: {fmt_ts(candles[0].ts)} -> {fmt_ts(candles[-1].ts)}")
     print(f"Sequence: {args.sequence} (Filtered: {SEQUENCES_FILTERED[args.sequence]})")
