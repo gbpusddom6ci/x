@@ -126,7 +126,6 @@ def page(title: str, body: str, active_tab: str = "analyze") -> bytes:
   </body>
 </html>"""
     return html_doc.encode("utf-8")
-{{ ... }}
 
 
 def render_analyze_index() -> bytes:
