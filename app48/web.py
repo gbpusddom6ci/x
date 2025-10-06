@@ -459,6 +459,12 @@ class AppHandler(BaseHTTPRequestHandler):
                             body += f"<div class='card' style='padding:10px;'><strong>❌ {html.escape(filename)}</strong> - Veri boş</div>"
                             continue
                         
+                        # Insert synthetic 48m candles (18:00 and 18:48) - critical for app48
+                        start_tod = parse_tod("18:00")
+                        base_idx, _ = find_start_index(candles, start_tod)
+                        start_day = candles[base_idx].ts.date() if 0 <= base_idx < len(candles) else None
+                        candles, _ = insert_synthetic_48m(candles, start_day)
+                        
                         # Analyze IOU
                         results = analyze_iou(candles, sequence, limit)
                         total_iou = sum(len(v) for v in results.values())
