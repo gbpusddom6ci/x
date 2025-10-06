@@ -113,7 +113,7 @@ def page(title: str, body: str, active_tab: str = "analyze") -> bytes:
       <h2>app72</h2>
     </header>
     <nav class='tabs'>
-      <a href='/' class='{ 'active' if active_tab=="analyze" else '' }'>Analiz</a>
+      <a href='/' class='{ 'active' if active_tab=="analyze" else '' }'>Counter</a>
       <a href='/dc' class='{ 'active' if active_tab=="dc" else '' }'>DC List</a>
       <a href='/matrix' class='{ 'active' if active_tab=="matrix" else '' }'>Matrix</a>
       <a href='/converter' class='{ 'active' if active_tab=="converter" else '' }'>12→72 Converter</a>
