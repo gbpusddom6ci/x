@@ -210,7 +210,7 @@ def main(argv: list[str] | None = None) -> int:
         "app120": {
             "title": "app120",
             "url": args.app120_url,
-            "description": "120 dakikalık sayım, DC analizi, 🎯 IOV analizi ve 60→120 dönüştürücü.",
+            "description": "120 dakikalık sayım, DC analizi, IOV/IOU analizi ve 60→120 dönüştürücü.",
         },
         "app321": {
             "title": "app321",

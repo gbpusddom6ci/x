@@ -139,13 +139,13 @@ Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın z
   1. **Counter:** 120m sayım, OC/PrevOC, DC bilgileri (önceden "Analiz" idi, "Counter" olarak değiştirildi).
   2. **DC List:** Tüm DC mumlarının listesi (UTC dönüşümü kullanılarak).
   3. **Matrix:** Tüm offset'ler için tek tabloda zaman/OC/PrevOC özetleri.
-  4. **🎯 IOV:** IOV (Inverse OC Value) mum analizi - zıt işaretli mumlar (app120_iov entegrasyonu).
-  5. **🔵 IOU:** IOU (Inverse OC - Uniform sign) mum analizi - aynı işaretli mumlar (app120_iou entegrasyonu).
+  4. **IOV:** IOV (Inverse OC Value) mum analizi - zıt işaretli mumlar (app120_iov entegrasyonu).
+  5. **IOU:** IOU (Inverse OC - Uniform sign) mum analizi - aynı işaretli mumlar (app120_iou entegrasyonu).
   6. **60→120 Converter:** 60m CSV yükleyip dönüştürülmüş 120m CSV indirme.
 - **Not:** IOV ve IOU sekmeleri artık app120 içinde entegre edilmiştir. Standalone app120_iov ve app120_iou uygulamaları hala CLI ve web olarak ayrıca kullanılabilir.
 
 ### app120_iov
-- 🎯 **IOV (Inverse OC Value)** mum analizi için özel 120m timeframe uygulaması.
+- **IOV (Inverse OC Value)** mum analizi için özel 120m timeframe uygulaması.
 - **Amaç:** 2 haftalık 120m veride, OC ve PrevOC değerlerinin belirli bir limit değerinin üstünde ve zıt işaretli olduğu özel mumları tespit etmek.
 - **IOV Mum Tanımı:** Aşağıdaki 3 kriteri **birden** karşılayan mumlardır:
   1. **|OC| ≥ Limit** → Mumun open-close farkı (mutlak değer) limit değerinin üstünde
@@ -181,10 +181,10 @@ Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın z
   ```
 - **DC Hesaplama:** DC (Distorted Candle) hesaplaması mevcut app120 mantığı ile aynıdır; ancak IOV analizinde sadece sequence allocation için kullanılır, IOV kriterleri sadece OC/PrevOC değerlerine bakar.
 - **Offset Handling:** IOV analizi, app120'nin missing_steps ve synthetic sequence mantığını kullanır. Hedef offset mumu eksikse, bir sonraki mevcut mumdan başlanır ve eksik adımlar hesaplanarak sequence allocation yapılır.
-- **Entegrasyon:** app120_iov artık app120 web arayüzüne "🎯 IOV" sekmesi olarak entegre edilmiştir. Standalone uygulama hala CLI ve web olarak kullanılabilir.
+- **Entegrasyon:** app120_iov artık app120 web arayüzüne "IOV" sekmesi olarak entegre edilmiştir. Standalone uygulama hala CLI ve web olarak kullanılabilir.
 
 ### app120_iou
-- 🔵 **IOU (Inverse OC - Uniform sign)** mum analizi için özel 120m timeframe uygulaması.
+- **IOU (Inverse OC - Uniform sign)** mum analizi için özel 120m timeframe uygulaması.
 - **Amaç:** 2 haftalık 120m veride, OC ve PrevOC değerlerinin belirli bir limit değerinin üstünde ve **aynı işaretli** olduğu özel mumları tespit etmek.
 - **IOU Mum Tanımı:** Aşağıdaki 3 kriteri **birden** karşılayan mumlardır:
   1. **|OC| ≥ Limit** → Mumun open-close farkı (mutlak değer) limit değerinin üstünde
@@ -225,7 +225,7 @@ Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın z
   ```
 - **DC Hesaplama:** DC (Distorted Candle) hesaplaması mevcut app120 mantığı ile aynıdır; ancak IOU analizinde sadece sequence allocation için kullanılır, IOU kriterleri sadece OC/PrevOC değerlerine bakar.
 - **Offset Handling:** IOU analizi, app120'nin missing_steps ve synthetic sequence mantığını kullanır (IOV ile aynı).
-- **Entegrasyon:** app120_iou artık app120 web arayüzüne "🔵 IOU" sekmesi olarak entegre edilmiştir. Standalone uygulama hala CLI ve web olarak kullanılabilir.
+- **Entegrasyon:** app120_iou artık app120 web arayüzüne "IOU" sekmesi olarak entegre edilmiştir. Standalone uygulama hala CLI ve web olarak kullanılabilir.
 
 ## Özet
 - Giriş CSV’si düzgün formatlanmış olmalı ve zorunlu kolonları içermelidir.
@@ -254,14 +254,14 @@ Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın z
   - Varsayılan sequence: **S1** (değiştirildi, önceden S2 idi)
   - Tüm offsetler (-3..+3) taranır, **sadece IOV bulunan offsetler gösterilir**
   - 2 haftalık 120m veri desteği
-  - app120 web arayüzüne "🎯 IOV" sekmesi olarak entegre edildi
+  - app120 web arayüzüne "IOV" sekmesi olarak entegre edildi
 - **IOU Analizi (app120_iou):**
   - Filtrelenmiş sequence değerleri: S1 (1,3 hariç), S2 (1,5 hariç)
   - IOU kriteri: |OC| ≥ limit AND |PrevOC| ≥ limit AND **aynı işaret** (++ veya --)
   - Varsayılan sequence: **S1**
   - Tüm offsetler (-3..+3) taranır, **sadece IOU bulunan offsetler gösterilir**
   - 2 haftalık 120m veri desteği
-  - app120 web arayüzüne "🔵 IOU" sekmesi olarak entegre edildi
+  - app120 web arayüzüne "IOU" sekmesi olarak entegre edildi
   - **IOV'nin tamamlayıcısıdır:** IOV zıt işaret, IOU aynı işaret
 
 ## Son Güncellemeler (Zaman Damgası: 2025-10-06)
@@ -269,6 +269,6 @@ Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın z
 2. **Varsayılan Sequence Değişikliği:** IOV ve IOU için varsayılan sequence S2'den S1'e değiştirildi
 3. **Boş Offset Gizleme:** IOV ve IOU çıktılarında IOV/IOU mum içermeyen offsetler gösterilmiyor
 4. **Sekme Adı Değişikliği:** Tüm uygulamalarda "Analiz" → "Counter" olarak değiştirildi
-5. **app120 Entegrasyonu:** IOV ve IOU artık app120 web arayüzüne entegre edildi (🎯 IOV ve 🔵 IOU sekmeleri)
+5. **app120 Entegrasyonu:** IOV ve IOU artık app120 web arayüzüne entegre edildi (IOV ve IOU sekmeleri)
 
 Bu rehber, uygulamaların geliştirme ve kullanımında referans kabul edilmelidir.

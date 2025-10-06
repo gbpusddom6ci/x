@@ -192,7 +192,7 @@ def run(host: str, port: int, backend_host: str, app48_port: int, app72_port: in
         Backend(name="app48", host=backend_host, port=app48_port, prefix="/app48", description="48 dakikalık mum sayımı ve dönüştürücü"),
         Backend(name="app72", host=backend_host, port=app72_port, prefix="/app72", description="72 dakikalık sayım ve 12→72 dönüştürücü (7x12m)"),
         Backend(name="app80", host=backend_host, port=app80_port, prefix="/app80", description="80 dakikalık sayım ve 20→80 dönüştürücü (4x20m)"),
-        Backend(name="app120", host=backend_host, port=app120_port, prefix="/app120", description="120 dakikalık analiz, 🎯 IOV analizi ve dönüştürücü"),
+        Backend(name="app120", host=backend_host, port=app120_port, prefix="/app120", description="120 dakikalık analiz, IOV/IOU analizi ve dönüştürücü"),
         Backend(name="app321", host=backend_host, port=app321_port, prefix="/app321", description="60 dakikalık sayım araçları"),
     ]
 

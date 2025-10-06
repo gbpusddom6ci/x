@@ -2,7 +2,7 @@
 
 **IOV (Inverse OC Value)** mum analizi için özel 120m timeframe uygulaması.
 
-## 🎯 IOV Mum Nedir?
+## IOV Mum Nedir?
 
 IOV mumu, aşağıdaki **3 kriteri birden** karşılayan özel mumlardır:
 

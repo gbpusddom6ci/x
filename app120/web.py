@@ -125,8 +125,8 @@ def page(title: str, body: str, active_tab: str = "analyze") -> bytes:
       <a href='/' class='{ 'active' if active_tab=="analyze" else '' }'>Counter</a>
       <a href='/dc' class='{ 'active' if active_tab=="dc" else '' }'>DC List</a>
       <a href='/matrix' class='{ 'active' if active_tab=="matrix" else '' }'>Matrix</a>
-      <a href='/iov' class='{ 'active' if active_tab=="iov" else '' }'>🎯 IOV</a>
-      <a href='/iou' class='{ 'active' if active_tab=="iou" else '' }'>🔵 IOU</a>
+      <a href='/iov' class='{ 'active' if active_tab=="iov" else '' }'>IOV</a>
+      <a href='/iou' class='{ 'active' if active_tab=="iou" else '' }'>IOU</a>
       <a href='/converter' class='{ 'active' if active_tab=="converter" else '' }'>60→120 Converter</a>
     </nav>
     {body}
@@ -260,7 +260,7 @@ def render_matrix_index() -> bytes:
 def render_iov_index() -> bytes:
     body = """
     <div class='card'>
-      <h3>🎯 IOV (Inverse OC Value) Analizi</h3>
+      <h3>IOV (Inverse OC Value) Analizi</h3>
       <p>2 haftalık 120m veride, OC ve PrevOC değerlerinin limit üstünde ve zıt işaretli olduğu özel mumları tespit eder.</p>
       <form method='post' action='/iov' enctype='multipart/form-data'>
         <div class='row'>
@@ -301,7 +301,7 @@ def render_iov_index() -> bytes:
 def render_iou_index() -> bytes:
     body = """
     <div class='card'>
-      <h3>🔵 IOU (Inverse OC - Uniform sign) Analizi</h3>
+      <h3>IOU (Inverse OC - Uniform sign) Analizi</h3>
       <p>2 haftalık 120m veride, OC ve PrevOC değerlerinin limit üstünde ve AYNI işaretli olduğu özel mumları tespit eder.</p>
       <form method='post' action='/iou' enctype='multipart/form-data'>
         <div class='row'>
