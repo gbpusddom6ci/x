@@ -265,8 +265,8 @@ def render_iov_index() -> bytes:
       <form method='post' action='/iov' enctype='multipart/form-data'>
         <div class='row'>
           <div>
-            <label>CSV Dosyası (2 haftalık 120m)</label>
-            <input type='file' name='csv' accept='.csv,text/csv' required />
+            <label>CSV Dosyaları (2 haftalık 120m) - En fazla 25 dosya</label>
+            <input type='file' name='csv' accept='.csv,text/csv' multiple required />
           </div>
           <div>
             <label>Sequence</label>
@@ -306,8 +306,8 @@ def render_iou_index() -> bytes:
       <form method='post' action='/iou' enctype='multipart/form-data'>
         <div class='row'>
           <div>
-            <label>CSV Dosyası (2 haftalık 120m)</label>
-            <input type='file' name='csv' accept='.csv,text/csv' required />
+            <label>CSV Dosyaları (2 haftalık 120m) - En fazla 25 dosya</label>
+            <input type='file' name='csv' accept='.csv,text/csv' multiple required />
           </div>
           <div>
             <label>Sequence</label>
@@ -388,6 +388,47 @@ def parse_multipart(handler: BaseHTTPRequestHandler) -> Dict[str, Dict[str, Any]
     return out
 
 
+def parse_multipart_with_multiple_files(handler: BaseHTTPRequestHandler) -> Dict[str, Any]:
+    """Parse multipart form data with support for multiple files with same name."""
+    ctype = handler.headers.get("Content-Type")
+    if not ctype or "multipart/form-data" not in ctype:
+        raise ValueError("multipart/form-data bekleniyor")
+    length = int(handler.headers.get("Content-Length", "0") or "0")
+    form = BytesParser(policy=email_default).parsebytes(
+        b"Content-Type: " + ctype.encode("utf-8") + b"\n\n" + handler.rfile.read(length)
+    )
+    
+    files: List[Dict[str, Any]] = []
+    params: Dict[str, str] = {}
+    
+    for part in form.iter_parts():
+        if part.get_content_disposition() != "form-data":
+            continue
+        name = part.get_param("name", header="content-disposition")
+        if not name:
+            continue
+        filename = part.get_filename()
+        payload = part.get_payload(decode=True)
+        
+        if filename:
+            # It's a file
+            data = payload
+            if data is None:
+                content = part.get_content()
+                data = content.encode("utf-8", errors="replace") if isinstance(content, str) else content
+            files.append({"filename": filename, "data": data or b""})
+        else:
+            # It's a regular form field
+            if payload is not None:
+                value = payload.decode("utf-8", errors="replace")
+            else:
+                content = part.get_content()
+                value = content if isinstance(content, str) else content.decode("utf-8", errors="replace")
+            params[name] = value
+    
+    return {"files": files, "params": params}
+
+
 class App120Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/":
@@ -459,47 +500,75 @@ class App120Handler(BaseHTTPRequestHandler):
                 return
 
             if self.path == "/iov":
-                candles = load_candles_from_text(text, CounterCandle)
-                if not candles:
-                    raise ValueError("Veri boş veya çözümlenemedi")
+                # Use multiple file parser
+                form_data = parse_multipart_with_multiple_files(self)
+                files = form_data["files"]
+                params = form_data["params"]
                 
-                sequence = (form.get("sequence", {}).get("value") or "S1").strip()
+                if not files:
+                    raise ValueError("En az bir CSV dosyası yükleyin")
+                if len(files) > 25:
+                    raise ValueError("En fazla 25 dosya yükleyebilirsiniz")
+                
+                sequence = (params.get("sequence") or "S1").strip()
                 if sequence not in SEQUENCES_FILTERED:
                     sequence = "S1"
-                limit_str = (form.get("limit", {}).get("value") or "0.1").strip()
+                limit_str = (params.get("limit") or "0.1").strip()
                 try:
                     limit = float(limit_str)
                 except:
                     limit = 0.1
                 
-                # Analyze IOV
-                results = analyze_iov(candles, sequence, limit)
-                total_iov = sum(len(v) for v in results.values())
-                
-                # Build HTML
+                # Build HTML header
                 body = f"""
                 <div class='card'>
                   <h3>📊 IOV Analiz Sonuçları</h3>
-                  <div><strong>Veri:</strong> {len(candles)} mum ({candles[0].ts.strftime('%Y-%m-%d %H:%M:%S')} → {candles[-1].ts.strftime('%Y-%m-%d %H:%M:%S')})</div>
+                  <div><strong>Dosya Sayısı:</strong> {len(files)}</div>
                   <div><strong>Sequence:</strong> {html.escape(sequence)} (Filtered: {', '.join(map(str, SEQUENCES_FILTERED[sequence]))})</div>
                   <div><strong>Limit:</strong> {limit}</div>
-                  <div><strong>Toplam IOV Mum:</strong> {total_iov}</div>
                 </div>
                 """
                 
-                # Only show offsets with IOV candles
-                for offset in range(-3, 4):
-                    iov_list = results[offset]
+                # Process each file
+                for file_idx, file_obj in enumerate(files, 1):
+                    filename = file_obj.get("filename", f"Dosya {file_idx}")
+                    raw = file_obj["data"]
+                    text = raw.decode("utf-8", errors="replace") if isinstance(raw, (bytes, bytearray)) else str(raw)
                     
-                    if iov_list:  # Only display if there are IOV candles
-                        body += f"<div class='card'><h4>Offset: {offset:+d} ({len(iov_list)} IOV mum)</h4>"
-                        body += "<table><tr><th>Seq</th><th>Index</th><th>Timestamp</th><th>OC</th><th>PrevOC</th><th>Prev Index</th></tr>"
-                        for iov in iov_list:
-                            oc_fmt = format_pip(iov.oc)
-                            prev_oc_fmt = format_pip(iov.prev_oc)
-                            body += f"<tr><td>{iov.seq_value}</td><td>{iov.index}</td><td>{iov.timestamp.strftime('%Y-%m-%d %H:%M:%S')}</td><td>{html.escape(oc_fmt)}</td><td>{html.escape(prev_oc_fmt)}</td><td>{iov.prev_index}</td></tr>"
-                        body += "</table>"
-                        body += "</div>"
+                    try:
+                        candles = load_candles_from_text(text, CounterCandle)
+                        if not candles:
+                            body += f"<div class='card'><h3>❌ {html.escape(filename)}</h3><p style='color:red;'>Veri boş veya çözümlenemedi</p></div>"
+                            continue
+                        
+                        # Analyze IOV
+                        results = analyze_iov(candles, sequence, limit)
+                        total_iov = sum(len(v) for v in results.values())
+                        
+                        # File header
+                        body += f"""
+                        <div class='card'>
+                          <h3>📄 {html.escape(filename)}</h3>
+                          <div><strong>Veri:</strong> {len(candles)} mum ({candles[0].ts.strftime('%Y-%m-%d %H:%M:%S')} → {candles[-1].ts.strftime('%Y-%m-%d %H:%M:%S')})</div>
+                          <div><strong>Toplam IOV Mum:</strong> {total_iov}</div>
+                        </div>
+                        """
+                        
+                        # Only show offsets with IOV candles
+                        for offset in range(-3, 4):
+                            iov_list = results[offset]
+                            
+                            if iov_list:
+                                body += f"<div class='card'><h4>Offset: {offset:+d} ({len(iov_list)} IOV mum)</h4>"
+                                body += "<table><tr><th>Seq</th><th>Index</th><th>Timestamp</th><th>OC</th><th>PrevOC</th><th>Prev Index</th></tr>"
+                                for iov in iov_list:
+                                    oc_fmt = format_pip(iov.oc)
+                                    prev_oc_fmt = format_pip(iov.prev_oc)
+                                    body += f"<tr><td>{iov.seq_value}</td><td>{iov.index}</td><td>{iov.timestamp.strftime('%Y-%m-%d %H:%M:%S')}</td><td>{html.escape(oc_fmt)}</td><td>{html.escape(prev_oc_fmt)}</td><td>{iov.prev_index}</td></tr>"
+                                body += "</table></div>"
+                        
+                    except Exception as e:
+                        body += f"<div class='card'><h3>❌ {html.escape(filename)}</h3><p style='color:red;'>Hata: {html.escape(str(e))}</p></div>"
                 
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
@@ -508,47 +577,75 @@ class App120Handler(BaseHTTPRequestHandler):
                 return
 
             if self.path == "/iou":
-                candles = load_candles_from_text(text, CounterCandle)
-                if not candles:
-                    raise ValueError("Veri boş veya çözümlenemedi")
+                # Use multiple file parser
+                form_data = parse_multipart_with_multiple_files(self)
+                files = form_data["files"]
+                params = form_data["params"]
                 
-                sequence = (form.get("sequence", {}).get("value") or "S1").strip()
+                if not files:
+                    raise ValueError("En az bir CSV dosyası yükleyin")
+                if len(files) > 25:
+                    raise ValueError("En fazla 25 dosya yükleyebilirsiniz")
+                
+                sequence = (params.get("sequence") or "S1").strip()
                 if sequence not in SEQUENCES_FILTERED:
                     sequence = "S1"
-                limit_str = (form.get("limit", {}).get("value") or "0.1").strip()
+                limit_str = (params.get("limit") or "0.1").strip()
                 try:
                     limit = float(limit_str)
                 except:
                     limit = 0.1
                 
-                # Analyze IOU
-                results = analyze_iou(candles, sequence, limit)
-                total_iou = sum(len(v) for v in results.values())
-                
-                # Build HTML
+                # Build HTML header
                 body = f"""
                 <div class='card'>
                   <h3>📊 IOU Analiz Sonuçları</h3>
-                  <div><strong>Veri:</strong> {len(candles)} mum ({candles[0].ts.strftime('%Y-%m-%d %H:%M:%S')} → {candles[-1].ts.strftime('%Y-%m-%d %H:%M:%S')})</div>
+                  <div><strong>Dosya Sayısı:</strong> {len(files)}</div>
                   <div><strong>Sequence:</strong> {html.escape(sequence)} (Filtered: {', '.join(map(str, SEQUENCES_FILTERED[sequence]))})</div>
                   <div><strong>Limit:</strong> {limit}</div>
-                  <div><strong>Toplam IOU Mum:</strong> {total_iou}</div>
                 </div>
                 """
                 
-                # Only show offsets with IOU candles
-                for offset in range(-3, 4):
-                    iou_list = results[offset]
+                # Process each file
+                for file_idx, file_obj in enumerate(files, 1):
+                    filename = file_obj.get("filename", f"Dosya {file_idx}")
+                    raw = file_obj["data"]
+                    text = raw.decode("utf-8", errors="replace") if isinstance(raw, (bytes, bytearray)) else str(raw)
                     
-                    if iou_list:  # Only display if there are IOU candles
-                        body += f"<div class='card'><h4>Offset: {offset:+d} ({len(iou_list)} IOU mum)</h4>"
-                        body += "<table><tr><th>Seq</th><th>Index</th><th>Timestamp</th><th>OC</th><th>PrevOC</th><th>Prev Index</th></tr>"
-                        for iou in iou_list:
-                            oc_fmt = format_pip(iou.oc)
-                            prev_oc_fmt = format_pip(iou.prev_oc)
-                            body += f"<tr><td>{iou.seq_value}</td><td>{iou.index}</td><td>{iou.timestamp.strftime('%Y-%m-%d %H:%M:%S')}</td><td>{html.escape(oc_fmt)}</td><td>{html.escape(prev_oc_fmt)}</td><td>{iou.prev_index}</td></tr>"
-                        body += "</table>"
-                        body += "</div>"
+                    try:
+                        candles = load_candles_from_text(text, CounterCandle)
+                        if not candles:
+                            body += f"<div class='card'><h3>❌ {html.escape(filename)}</h3><p style='color:red;'>Veri boş veya çözümlenemedi</p></div>"
+                            continue
+                        
+                        # Analyze IOU
+                        results = analyze_iou(candles, sequence, limit)
+                        total_iou = sum(len(v) for v in results.values())
+                        
+                        # File header
+                        body += f"""
+                        <div class='card'>
+                          <h3>📄 {html.escape(filename)}</h3>
+                          <div><strong>Veri:</strong> {len(candles)} mum ({candles[0].ts.strftime('%Y-%m-%d %H:%M:%S')} → {candles[-1].ts.strftime('%Y-%m-%d %H:%M:%S')})</div>
+                          <div><strong>Toplam IOU Mum:</strong> {total_iou}</div>
+                        </div>
+                        """
+                        
+                        # Only show offsets with IOU candles
+                        for offset in range(-3, 4):
+                            iou_list = results[offset]
+                            
+                            if iou_list:
+                                body += f"<div class='card'><h4>Offset: {offset:+d} ({len(iou_list)} IOU mum)</h4>"
+                                body += "<table><tr><th>Seq</th><th>Index</th><th>Timestamp</th><th>OC</th><th>PrevOC</th><th>Prev Index</th></tr>"
+                                for iou in iou_list:
+                                    oc_fmt = format_pip(iou.oc)
+                                    prev_oc_fmt = format_pip(iou.prev_oc)
+                                    body += f"<tr><td>{iou.seq_value}</td><td>{iou.index}</td><td>{iou.timestamp.strftime('%Y-%m-%d %H:%M:%S')}</td><td>{html.escape(oc_fmt)}</td><td>{html.escape(prev_oc_fmt)}</td><td>{iou.prev_index}</td></tr>"
+                                body += "</table></div>"
+                        
+                    except Exception as e:
+                        body += f"<div class='card'><h3>❌ {html.escape(filename)}</h3><p style='color:red;'>Hata: {html.escape(str(e))}</p></div>"
                 
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
