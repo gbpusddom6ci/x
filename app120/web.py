@@ -464,6 +464,8 @@ class App120Handler(BaseHTTPRequestHandler):
                     raise ValueError("Veri boş veya çözümlenemedi")
                 
                 sequence = (form.get("sequence", {}).get("value") or "S1").strip()
+                if sequence not in SEQUENCES_FILTERED:
+                    sequence = "S1"
                 limit_str = (form.get("limit", {}).get("value") or "0.1").strip()
                 try:
                     limit = float(limit_str)
@@ -511,6 +513,8 @@ class App120Handler(BaseHTTPRequestHandler):
                     raise ValueError("Veri boş veya çözümlenemedi")
                 
                 sequence = (form.get("sequence", {}).get("value") or "S1").strip()
+                if sequence not in SEQUENCES_FILTERED:
+                    sequence = "S1"
                 limit_str = (form.get("limit", {}).get("value") or "0.1").strip()
                 try:
                     limit = float(limit_str)
