@@ -165,17 +165,16 @@ def render_results(
     </div>
     """
     
+    # Only show offsets with IOV candles
     for offset in range(-3, 4):
         iov_list = results[offset]
         
-        body += f"""
-        <div class='iov-section'>
-          <h3>Offset: {offset:+d} ({len(iov_list)} IOV mum)</h3>
-        """
-        
-        if not iov_list:
-            body += "<p class='no-iov'>Bu offset'te IOV mum bulunamadı.</p>"
-        else:
+        if iov_list:  # Only display if there are IOV candles
+            body += f"""
+            <div class='iov-section'>
+              <h3>Offset: {offset:+d} ({len(iov_list)} IOV mum)</h3>
+            """
+            
             for iov in iov_list:
                 oc_class = "oc-positive" if iov.oc > 0 else "oc-negative"
                 prev_oc_class = "oc-positive" if iov.prev_oc > 0 else "oc-negative"
@@ -191,8 +190,8 @@ def render_results(
                   </div>
                 </div>
                 """
-        
-        body += "</div>"
+            
+            body += "</div>"
     
     body += """
     <div class='card'>

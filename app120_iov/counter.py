@@ -440,16 +440,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     print(f"Total IOV candles found: {total_iov}")
     print()
     
+    # Only show offsets with IOV candles
     for offset in range(-3, 4):
         iov_list = results[offset]
-        print(f"Offset: {offset:+d}")
-        if not iov_list:
-            print("  No IOV candles found")
-        else:
+        if iov_list:  # Only print if there are IOV candles
+            print(f"Offset: {offset:+d}")
             for iov in iov_list:
                 print(f"  Seq={iov.seq_value}, Index={iov.index}, Time={fmt_ts(iov.timestamp)}")
                 print(f"    OC: {fmt_pip(iov.oc)}, PrevOC: {fmt_pip(iov.prev_oc)}")
-        print()
+            print()
     
     return 0
 

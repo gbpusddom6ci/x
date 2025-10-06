@@ -437,20 +437,19 @@ class App120Handler(BaseHTTPRequestHandler):
                 </div>
                 """
                 
+                # Only show offsets with IOV candles
                 for offset in range(-3, 4):
                     iov_list = results[offset]
-                    body += f"<div class='card'><h4>Offset: {offset:+d} ({len(iov_list)} IOV mum)</h4>"
                     
-                    if not iov_list:
-                        body += "<p>Bu offset'te IOV mum bulunamadı.</p>"
-                    else:
+                    if iov_list:  # Only display if there are IOV candles
+                        body += f"<div class='card'><h4>Offset: {offset:+d} ({len(iov_list)} IOV mum)</h4>"
                         body += "<table><tr><th>Seq</th><th>Index</th><th>Timestamp</th><th>OC</th><th>PrevOC</th><th>Prev Index</th></tr>"
                         for iov in iov_list:
                             oc_fmt = format_pip(iov.oc)
                             prev_oc_fmt = format_pip(iov.prev_oc)
                             body += f"<tr><td>{iov.seq_value}</td><td>{iov.index}</td><td>{iov.timestamp.strftime('%Y-%m-%d %H:%M:%S')}</td><td>{html.escape(oc_fmt)}</td><td>{html.escape(prev_oc_fmt)}</td><td>{iov.prev_index}</td></tr>"
                         body += "</table>"
-                    body += "</div>"
+                        body += "</div>"
                 
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
