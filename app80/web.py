@@ -216,6 +216,39 @@ def render_dc_index() -> bytes:
     return page("app80 - DC List", body, active_tab="dc")
 
 
+def render_iou_index() -> bytes:
+    body = """
+    <div class='card'>
+      <h3>IOU (Inverse OC - Uniform sign) Analizi</h3>
+      <form method='post' action='/iou' enctype='multipart/form-data'>
+        <div class='row'>
+          <div>
+            <label>CSV Dosyaları (2 haftalık 80m) - En fazla 25 dosya</label>
+            <input type='file' name='csv' accept='.csv,text/csv' multiple required />
+          </div>
+          <div>
+            <label>Sequence</label>
+            <select name='sequence'>
+              <option value='S1' selected>S1</option>
+              <option value='S2'>S2</option>
+            </select>
+          </div>
+          <div>
+            <label>Limit</label>
+            <input type='number' name='limit' value='0.1' step='0.01' min='0' style='width:80px' />
+          </div>
+        </div>
+        <div style='margin-top:12px;'>
+          <button type='submit'>Analiz Et</button>
+        </div>
+      </form>
+    </div>
+    <p><strong>IOU Kriterleri:</strong> |OC| ≥ limit VE |PrevOC| ≥ limit VE aynı işaret (++ veya --)</p>
+    <p><strong>2 haftalık 80m veri</strong> kullanılır.</p>
+    """
+    return page("app80 - IOU", body, active_tab="iou")
+
+
 def render_matrix_index() -> bytes:
     body = """
     <div class='card'>
@@ -303,9 +336,54 @@ def parse_multipart(handler: BaseHTTPRequestHandler) -> Dict[str, Dict[str, Any]
 
 
 class App80Handler(BaseHTTPRequestHandler):
+    def _parse_multipart_multiple_files(self) -> Dict[str, Any]:
+        """Parse multipart with multiple file support."""
+        ct = self.headers.get("Content-Type", "")
+        try:
+            length = int(self.headers.get("Content-Length", "0") or 0)
+        except Exception:
+            length = 0
+        body = self.rfile.read(length)
+        if not ct.lower().startswith("multipart/form-data"):
+            raise ValueError("Yalnızca multipart/form-data desteklenir")
+        header_bytes = b"Content-Type: " + ct.encode("utf-8") + b"\r\nMIME-Version: 1.0\r\n\r\n"
+        msg = BytesParser(policy=email_default).parsebytes(header_bytes + body)
+        
+        files: List[Dict[str, Any]] = []
+        params: Dict[str, str] = {}
+        
+        for part in msg.iter_parts():
+            cd = part.get("Content-Disposition", "")
+            if not cd:
+                continue
+            param_dict: Dict[str, str] = {}
+            for item in cd.split(";"):
+                item = item.strip()
+                if "=" in item:
+                    k, v = item.split("=", 1)
+                    param_dict[k.strip().lower()] = v.strip().strip('"')
+            name = param_dict.get("name")
+            filename = param_dict.get("filename")
+            payload = part.get_payload(decode=True) or b""
+            if not name:
+                continue
+            if filename is not None:
+                files.append({"filename": filename, "data": payload})
+            else:
+                charset = part.get_content_charset() or "utf-8"
+                try:
+                    value = payload.decode(charset, errors="replace")
+                except Exception:
+                    value = payload.decode("utf-8", errors="replace")
+                params[name] = value
+        
+        return {"files": files, "params": params}
+
     def do_GET(self):
         if self.path == "/":
             body = render_analyze_index()
+        elif self.path == "/iou":
+            body = render_iou_index()
         elif self.path == "/dc":
             body = render_dc_index()
         elif self.path == "/matrix":
@@ -323,6 +401,91 @@ class App80Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_POST(self):
+        # IOU uses multiple file upload
+        if self.path == "/iou":
+            try:
+                form_data = self._parse_multipart_multiple_files()
+                files = form_data["files"]
+                params = form_data["params"]
+                
+                if not files:
+                    raise ValueError("En az bir CSV dosyası yükleyin")
+                if len(files) > 25:
+                    raise ValueError("En fazla 25 dosya yükleyebilirsiniz")
+                
+                sequence = (params.get("sequence") or "S1").strip()
+                if sequence not in SEQUENCES_FILTERED:
+                    sequence = "S1"
+                
+                limit_str = (params.get("limit") or "0.1").strip()
+                try:
+                    limit = float(limit_str)
+                except:
+                    limit = 0.1
+                
+                # Build HTML header
+                body = f"""
+                <div class='card'>
+                  <h3>📊 IOU Analiz Sonuçları</h3>
+                  <div><strong>Dosya Sayısı:</strong> {len(files)}</div>
+                  <div><strong>Sequence:</strong> {html.escape(sequence)} (Filtered: {', '.join(map(str, SEQUENCES_FILTERED[sequence]))})</div>
+                  <div><strong>Limit:</strong> {limit}</div>
+                </div>
+                """
+                
+                # Process each file
+                for file_idx, file_obj in enumerate(files, 1):
+                    filename = file_obj.get("filename", f"Dosya {file_idx}")
+                    raw = file_obj["data"]
+                    text = raw.decode("utf-8", errors="replace") if isinstance(raw, (bytes, bytearray)) else str(raw)
+                    
+                    try:
+                        candles = load_candles_from_text(text, CounterCandle)
+                        if not candles:
+                            body += f"<div class='card' style='padding:10px;'><strong>❌ {html.escape(filename)}</strong> - Veri boş</div>"
+                            continue
+                        
+                        # Analyze IOU
+                        results = analyze_iou(candles, sequence, limit)
+                        total_iou = sum(len(v) for v in results.values())
+                        
+                        if total_iou == 0:
+                            body += f"<div class='card' style='padding:10px;'><strong>📄 {html.escape(filename)}</strong> - <span style='color:#888;'>IOU yok</span></div>"
+                            continue
+                        
+                        # Compact table with all offsets
+                        body += f"""
+                        <div class='card' style='padding:10px;'>
+                          <strong>📄 {html.escape(filename)}</strong> - {len(candles)} mum, <strong>{total_iou} IOU</strong>
+                          <table style='margin-top:8px;'>
+                            <tr><th>Ofs</th><th>Seq</th><th>Idx</th><th>Timestamp</th><th>OC</th><th>PrevOC</th><th>PIdx</th></tr>
+                        """
+                        
+                        for offset in range(-3, 4):
+                            for iou in results[offset]:
+                                oc_fmt = format_pip(iou.oc)
+                                prev_oc_fmt = format_pip(iou.prev_oc)
+                                body += f"<tr><td>{offset:+d}</td><td>{iou.seq_value}</td><td>{iou.index}</td><td>{iou.timestamp.strftime('%m-%d %H:%M')}</td><td>{html.escape(oc_fmt)}</td><td>{html.escape(prev_oc_fmt)}</td><td>{iou.prev_index}</td></tr>"
+                        
+                        body += "</table></div>"
+                        
+                    except Exception as e:
+                        body += f"<div class='card' style='padding:10px;'><strong>❌ {html.escape(filename)}</strong> - <span style='color:red;'>Hata: {html.escape(str(e))}</span></div>"
+                
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(page("app80 - IOU Results", body, active_tab="iou"))
+                return
+                
+            except Exception as e:
+                err_msg = f"<div class='card'><h3>Hata</h3><p style='color:red;'>{html.escape(str(e))}</p></div>"
+                self.send_response(400)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(page("app80 - Hata", err_msg, active_tab="iou"))
+                return
+        
         try:
             form = parse_multipart(self)
             file_obj = form.get("csv")
