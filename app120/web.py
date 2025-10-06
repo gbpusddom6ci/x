@@ -551,27 +551,28 @@ class App120Handler(BaseHTTPRequestHandler):
                         results = analyze_iov(candles, sequence, limit)
                         total_iov = sum(len(v) for v in results.values())
                         
-                        # File header
+                        # Skip if no IOV found
+                        if total_iov == 0:
+                            body += f"<div class='card' style='padding:10px;'><strong>📄 {html.escape(filename)}</strong> - <span style='color:#888;'>IOV yok</span></div>"
+                            continue
+                        
+                        # Compact header and single table with all offsets
                         body += f"""
-                        <div class='card'>
-                          <h3>📄 {html.escape(filename)}</h3>
-                          <div><strong>Veri:</strong> {len(candles)} mum ({candles[0].ts.strftime('%Y-%m-%d %H:%M:%S')} → {candles[-1].ts.strftime('%Y-%m-%d %H:%M:%S')})</div>
-                          <div><strong>Toplam IOV Mum:</strong> {total_iov}</div>
-                        </div>
+                        <div class='card' style='padding:10px;'>
+                          <strong>📄 {html.escape(filename)}</strong> - {len(candles)} mum, <strong>{total_iov} IOV</strong>
+                          <table style='margin-top:8px;'>
+                            <tr><th>Ofs</th><th>Seq</th><th>Idx</th><th>Timestamp</th><th>OC</th><th>PrevOC</th><th>PIdx</th></tr>
                         """
                         
-                        # Only show offsets with IOV candles
+                        # Add all IOV candles from all offsets to single table
                         for offset in range(-3, 4):
                             iov_list = results[offset]
-                            
-                            if iov_list:
-                                body += f"<div class='card'><h4>Offset: {offset:+d} ({len(iov_list)} IOV mum)</h4>"
-                                body += "<table><tr><th>Seq</th><th>Index</th><th>Timestamp</th><th>OC</th><th>PrevOC</th><th>Prev Index</th></tr>"
-                                for iov in iov_list:
-                                    oc_fmt = format_pip(iov.oc)
-                                    prev_oc_fmt = format_pip(iov.prev_oc)
-                                    body += f"<tr><td>{iov.seq_value}</td><td>{iov.index}</td><td>{iov.timestamp.strftime('%Y-%m-%d %H:%M:%S')}</td><td>{html.escape(oc_fmt)}</td><td>{html.escape(prev_oc_fmt)}</td><td>{iov.prev_index}</td></tr>"
-                                body += "</table></div>"
+                            for iov in iov_list:
+                                oc_fmt = format_pip(iov.oc)
+                                prev_oc_fmt = format_pip(iov.prev_oc)
+                                body += f"<tr><td>{offset:+d}</td><td>{iov.seq_value}</td><td>{iov.index}</td><td>{iov.timestamp.strftime('%m-%d %H:%M')}</td><td>{html.escape(oc_fmt)}</td><td>{html.escape(prev_oc_fmt)}</td><td>{iov.prev_index}</td></tr>"
+                        
+                        body += "</table></div>"
                         
                     except Exception as e:
                         body += f"<div class='card'><h3>❌ {html.escape(filename)}</h3><p style='color:red;'>Hata: {html.escape(str(e))}</p></div>"
@@ -628,27 +629,28 @@ class App120Handler(BaseHTTPRequestHandler):
                         results = analyze_iou(candles, sequence, limit)
                         total_iou = sum(len(v) for v in results.values())
                         
-                        # File header
+                        # Skip if no IOU found
+                        if total_iou == 0:
+                            body += f"<div class='card' style='padding:10px;'><strong>📄 {html.escape(filename)}</strong> - <span style='color:#888;'>IOU yok</span></div>"
+                            continue
+                        
+                        # Compact header and single table with all offsets
                         body += f"""
-                        <div class='card'>
-                          <h3>📄 {html.escape(filename)}</h3>
-                          <div><strong>Veri:</strong> {len(candles)} mum ({candles[0].ts.strftime('%Y-%m-%d %H:%M:%S')} → {candles[-1].ts.strftime('%Y-%m-%d %H:%M:%S')})</div>
-                          <div><strong>Toplam IOU Mum:</strong> {total_iou}</div>
-                        </div>
+                        <div class='card' style='padding:10px;'>
+                          <strong>📄 {html.escape(filename)}</strong> - {len(candles)} mum, <strong>{total_iou} IOU</strong>
+                          <table style='margin-top:8px;'>
+                            <tr><th>Ofs</th><th>Seq</th><th>Idx</th><th>Timestamp</th><th>OC</th><th>PrevOC</th><th>PIdx</th></tr>
                         """
                         
-                        # Only show offsets with IOU candles
+                        # Add all IOU candles from all offsets to single table
                         for offset in range(-3, 4):
                             iou_list = results[offset]
-                            
-                            if iou_list:
-                                body += f"<div class='card'><h4>Offset: {offset:+d} ({len(iou_list)} IOU mum)</h4>"
-                                body += "<table><tr><th>Seq</th><th>Index</th><th>Timestamp</th><th>OC</th><th>PrevOC</th><th>Prev Index</th></tr>"
-                                for iou in iou_list:
-                                    oc_fmt = format_pip(iou.oc)
-                                    prev_oc_fmt = format_pip(iou.prev_oc)
-                                    body += f"<tr><td>{iou.seq_value}</td><td>{iou.index}</td><td>{iou.timestamp.strftime('%Y-%m-%d %H:%M:%S')}</td><td>{html.escape(oc_fmt)}</td><td>{html.escape(prev_oc_fmt)}</td><td>{iou.prev_index}</td></tr>"
-                                body += "</table></div>"
+                            for iou in iou_list:
+                                oc_fmt = format_pip(iou.oc)
+                                prev_oc_fmt = format_pip(iou.prev_oc)
+                                body += f"<tr><td>{offset:+d}</td><td>{iou.seq_value}</td><td>{iou.index}</td><td>{iou.timestamp.strftime('%m-%d %H:%M')}</td><td>{html.escape(oc_fmt)}</td><td>{html.escape(prev_oc_fmt)}</td><td>{iou.prev_index}</td></tr>"
+                        
+                        body += "</table></div>"
                         
                     except Exception as e:
                         body += f"<div class='card'><h3>❌ {html.escape(filename)}</h3><p style='color:red;'>Hata: {html.escape(str(e))}</p></div>"
