@@ -1,6 +1,274 @@
-# Proje Rehberi
+# 📘 Proje Teknik Dokümantasyonu (AI Context-Ready)
 
-Bu doküman app321, app48, app72, app80, app120, app120_iov ve app120_iou uygulamalarının ortak kavramlarını ve uygulamaya özel kurallarını açıklar. Tüm açıklamalar Türkçe'dir ve en güncel davranışları yansıtır.
+**Son Güncelleme:** 2025-10-06  
+**Amaç:** Bu dokümantasyon bir AI agent'ın projeyi tamamen anlaması için hazırlanmıştır.
+
+Bu doküman app321, app48, app72, app80, app120, app120_iov ve app120_iou uygulamalarının **tüm implementation detaylarını**, kod yapısını, fonksiyon isimlerini, dosya organizasyonunu ve özelliklerini en ince detayına kadar açıklar. Tüm açıklamalar Türkçe'dir ve en güncel davranışları yansıtır.
+
+## 🎯 Proje Özeti
+
+Python-based forex/kripto mum analiz uygulaması. **7 ana uygulama**, her biri HTTP server, CSV işleme ve web arayüzü içerir.
+
+**Port Mapping:**
+- app321 → 2160 (60m)
+- app48 → 2148 (48m)  
+- app72 → 2172 (72m)
+- app80 → 2180 (80m)
+- app120 → 2120 (120m, merkezi)
+- app120_iov → 2121 (IOV analizi)
+- app120_iou → 2122 (IOU analizi)
+
+**Teknoloji Stack:**
+- Python 3.x
+- BaseHTTPRequestHandler (http.server)
+- CSV işleme (csv module)
+- Email parser (multipart form-data için)
+- Dataclasses
+- No external dependencies (pure Python)
+
+## 📂 Dosya Yapısı ve Kod Organizasyonu
+
+```
+x/
+├── app120/                    # Merkezi 120m uygulama
+│   ├── __init__.py
+│   ├── counter.py            # Sayım mantığı, DC hesaplama, sequence allocation
+│   │                         # Classes: Candle, SequenceAllocation
+│   │                         # Functions: find_start_index(), compute_dc_flags(), 
+│   │                         #            compute_sequence_allocations(), analyze_count()
+│   ├── web.py                # Web server (6 sekme: Counter, DC, Matrix, IOV, IOU, Converter)
+│   │                         # Classes: App120Handler(BaseHTTPRequestHandler)
+│   │                         # Functions: parse_multipart(), parse_multipart_with_multiple_files(),
+│   │                         #            load_candles_from_text(), page(), render_*_index()
+│   └── main.py               # 60→120 converter CLI
+│
+├── app120_iov/               # IOV analiz uygulaması
+│   ├── __init__.py
+│   ├── counter.py            # IOV analiz mantığı
+│   │                         # Classes: Candle, IOVResult
+│   │                         # Constants: SEQUENCES_FULL, SEQUENCES_FILTERED
+│   │                         # Functions: analyze_iov(), find_start_index(),
+│   │                         #            determine_offset_start(), compute_sequence_allocations()
+│   ├── web.py                # IOV web arayüzü (standalone, port 2121)
+│   └── README.md
+│
+├── app120_iou/               # IOU analiz uygulaması
+│   ├── __init__.py
+│   ├── counter.py            # IOU analiz mantığı (IOV'den farklı: aynı işaret)
+│   │                         # Classes: Candle, IOUResult
+│   │                         # Functions: analyze_iou(), ...
+│   └── web.py                # IOU web arayüzü (standalone, port 2122)
+│
+├── app321/                   # 60m uygulama
+│   ├── counter.py            # 60m sayım mantığı
+│   └── web.py                # Web server (3 sekme: Counter, DC, Matrix)
+│
+├── app48/                    # 48m uygulama
+│   ├── counter.py
+│   ├── web.py                # Web server (4 sekme: Counter, 12-48, DC, Matrix)
+│   └── main.py               # 12→48 converter CLI
+│
+├── app72/                    # 72m uygulama
+│   ├── counter.py
+│   ├── web.py                # Web server (4 sekme: Counter, DC, Matrix, 12→72)
+│   └── main.py               # 12→72 converter CLI
+│
+├── app80/                    # 80m uygulama
+│   ├── counter.py
+│   ├── web.py                # Web server (4 sekme: Counter, DC, Matrix, 20→80)
+│   └── main.py               # 20→80 converter CLI
+│
+├── landing/                  # Ana giriş sayfası
+│   └── web.py                # Landing page, tüm uygulamalara linkler
+│
+├── appsuite/                 # Tüm appları tek sayfada toplayan reverse proxy
+│   └── web.py                # Proxy server, backend'leri başlatır
+│
+├── agents.md                 # Bu dokümantasyon
+├── x222.csv                  # Örnek 120m test verisi (2 haftalık)
+└── README.md
+```
+
+## 🔑 Kritik Fonksiyonlar ve Kod Parçaları
+
+### `parse_multipart_with_multiple_files()` - Çoklu Dosya Parser
+**Dosya:** `app120/web.py` (satır 391-429)
+
+```python
+from email.parser import BytesParser
+from email.policy import default as email_default
+
+def parse_multipart_with_multiple_files(handler: BaseHTTPRequestHandler) -> Dict[str, Any]:
+    """
+    Multipart form-data'yı parse eder, çoklu dosya desteği ile.
+    
+    Args:
+        handler: HTTP request handler instance
+        
+    Returns:
+        {
+            "files": List[Dict{"filename": str, "data": bytes}],
+            "params": Dict[str, str] (sequence, limit, vb.)
+        }
+    """
+    ctype = handler.headers.get("Content-Type")
+    length = int(handler.headers.get("Content-Length", "0") or "0")
+    
+    # BytesParser ile multipart parse
+    form = BytesParser(policy=email_default).parsebytes(
+        b"Content-Type: " + ctype.encode("utf-8") + b"\n\n" + handler.rfile.read(length)
+    )
+    
+    files: List[Dict[str, Any]] = []
+    params: Dict[str, str] = {}
+    
+    for part in form.iter_parts():
+        if part.get_content_disposition() != "form-data":
+            continue
+        
+        name = part.get_param("name", header="content-disposition")
+        filename = part.get_filename()
+        
+        if filename:
+            # File part
+            data = part.get_payload(decode=True) or part.get_content().encode("utf-8")
+            files.append({"filename": filename, "data": data or b""})
+        else:
+            # Form field part
+            value = part.get_payload(decode=True).decode("utf-8")
+            params[name] = value
+    
+    return {"files": files, "params": params}
+```
+
+### `analyze_iov()` - IOV Analiz Mantığı
+**Dosya:** `app120_iov/counter.py` (satır 282-391)
+
+```python
+def analyze_iov(
+    candles: List[Candle],
+    sequence: str,
+    limit: float,
+) -> Dict[int, List[IOVResult]]:
+    """
+    Tüm offsetler için IOV mumlarını tespit eder.
+    
+    Args:
+        candles: List[Candle] - 120m mum listesi (2 haftalık, ~120 mum)
+        sequence: "S1" veya "S2"
+        limit: IOV limit değeri (örn: 0.1)
+        
+    Returns:
+        Dict[offset, List[IOVResult]]
+        offset: -3 to +3 (7 tane)
+        
+    IOV Kriterleri:
+        1. |OC| ≥ limit
+        2. |PrevOC| ≥ limit  
+        3. OC ve PrevOC zıt işaretli (+ ve - veya - ve +)
+    """
+    results: Dict[int, List[IOVResult]] = {}
+    
+    # Base mumunu bul (18:00)
+    start_tod = DEFAULT_START_TOD  # time(hour=18, minute=0)
+    base_idx, _ = find_start_index(candles, start_tod)
+    
+    # DC flags hesapla
+    dc_flags = compute_dc_flags(candles)
+    
+    # Sequence değerleri
+    seq_values_full = SEQUENCES_FULL[sequence]      # Allocation için
+    seq_values_filtered = SEQUENCES_FILTERED[sequence]  # IOV check için
+    
+    # Her offset için analiz
+    for offset in range(-3, 4):
+        iov_list: List[IOVResult] = []
+        
+        # Offset başlangıç noktasını bul
+        start_idx, target_ts, _ = determine_offset_start(candles, base_idx, offset)
+        
+        # Missing steps hesapla (offset mumu yoksa)
+        missing_steps = 0
+        if start_idx is None:
+            # Hedef mumdan sonraki ilk mumu bul
+            for i, candle in enumerate(candles):
+                if candle.ts >= target_ts:
+                    start_idx = i
+                    delta_minutes = int((candle.ts - target_ts).total_seconds() // 60)
+                    missing_steps = max(0, delta_minutes // MINUTES_PER_STEP)
+                    break
+        
+        # Synthetic sequence oluştur
+        actual_start_count = missing_steps + 1
+        seq_compute = [actual_start_count]
+        for v in seq_values_full:
+            if v > missing_steps and v != actual_start_count:
+                seq_compute.append(v)
+        
+        # Sequence allocation
+        allocations = compute_sequence_allocations(candles, dc_flags, start_idx, seq_compute)
+        
+        # Mapping: seq_value → allocation
+        seq_map = {}
+        for idx, val in enumerate(seq_compute):
+            seq_map[val] = allocations[idx]
+        
+        # Filtered sequence üzerinde IOV kontrolü
+        for seq_val in seq_values_filtered:
+            alloc = seq_map.get(seq_val)
+            if not alloc or alloc.idx is None:
+                continue
+            
+            idx = alloc.idx
+            if idx <= 0 or idx >= len(candles):
+                continue
+            
+            candle = candles[idx]
+            prev_candle = candles[idx - 1]
+            
+            # OC hesapla
+            oc = candle.close - candle.open
+            prev_oc = prev_candle.close - prev_candle.open
+            
+            # IOV kriterleri
+            if abs(oc) < limit or abs(prev_oc) < limit:
+                continue
+            
+            # Zıt işaret kontrolü
+            if (oc > 0 and prev_oc > 0) or (oc < 0 and prev_oc < 0):
+                continue  # Aynı işaret → IOV değil
+            
+            # IOV bulundu!
+            iov_list.append(IOVResult(
+                seq_value=seq_val,
+                offset=offset,
+                index=idx,
+                timestamp=candle.ts,
+                oc=oc,
+                prev_oc=prev_oc,
+                prev_index=idx - 1,
+                prev_timestamp=prev_candle.ts
+            ))
+        
+        results[offset] = iov_list
+    
+    return results
+```
+
+### IOV vs IOU: Tek Fark
+**IOV:** `app120_iov/counter.py` (satır 376-378)
+```python
+# Zıt işaret kontrolü
+if (oc > 0 and prev_oc > 0) or (oc < 0 and prev_oc < 0):
+    continue  # Aynı işaretse skip (IOV DEĞİL)
+```
+
+**IOU:** `app120_iou/counter.py` (satır ~370)
+```python
+# Aynı işaret kontrolü
+if not ((oc > 0 and prev_oc > 0) or (oc < 0 and prev_oc < 0)):
+    continue  # Zıt işaretse skip (IOU DEĞİL)
+```
 
 ## Temel Kavramlar
 - **Sayı dizileri:** Sayım işlemleri belirlenmiş sabit dizilere göre ilerler. Şu an desteklenen diziler:
@@ -280,15 +548,96 @@ Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın z
   - **IOV'nin tamamlayıcısıdır:** IOV zıt işaret, IOU aynı işaret
   - **Çoklu dosya yükleme:** 25 dosyaya kadar, kompakt tek tablo görünümü
 
-## Son Güncellemeler (Zaman Damgası: 2025-10-06)
-1. **app120_iou Eklendi:** IOV'nin tamamlayıcı uygulaması (aynı işaret kontrolü)
-2. **Varsayılan Sequence Değişikliği:** IOV ve IOU için varsayılan sequence S2'den S1'e değiştirildi
-3. **Boş Offset Gizleme:** IOV ve IOU çıktılarında IOV/IOU mum içermeyen offsetler gösterilmiyor
-4. **Sekme Adı Değişikliği:** Tüm uygulamalarda "Analiz" → "Counter" olarak değiştirildi
-5. **app120 Entegrasyonu:** IOV ve IOU artık app120 web arayüzüne entegre edildi (IOV ve IOU sekmeleri)
-6. **Çoklu Dosya Yükleme:** IOV ve IOU için 25 dosyaya kadar çoklu dosya yükleme desteği eklendi
-7. **Kompakt Görünüm:** Her dosya için tek tablo, offset bilgisi satır başında (Ofs kolonu), kısa timestamp formatı
-8. **Sequence Validation:** Geçersiz sequence değerleri otomatik olarak S1'e dönüştürülür (KeyError önlendi)
-9. **IOV/IOU Yok Gösterimi:** Hiç IOV/IOU bulunmayan dosyalar minimal gösterimle işaretlenir
+## 🆕 Son Güncellemeler (Zaman Damgası: 2025-10-06)
+
+### 1. ⭐ Çoklu Dosya Yükleme (Multiple File Upload)
+**Dosyalar:** `app120/web.py` (satır 391-429, 502-577, 579-654)  
+**Özellik:** IOV ve IOU için **25 dosyaya kadar** çoklu dosya yükleme desteği
+
+**Implementation:**
+- Yeni fonksiyon: `parse_multipart_with_multiple_files()`
+- HTML `<input type='file' multiple>` attribute
+- Her dosya bağımsız analiz, bir dosya hata verse diğerleri çalışır
+- File-level error handling (try/except per file)
+
+**Kritik Kod:**
+```python
+def parse_multipart_with_multiple_files(handler) -> Dict[str, Any]:
+    # Returns: {files: List[Dict], params: Dict}
+    # BytesParser ile multipart form parse
+    # Filename olan parts → files
+    # Filename olmayan parts → params
+```
+
+**Path-based Handler:**
+```python
+if self.path in ["/iov", "/iou"]:
+    form_data = parse_multipart_with_multiple_files(self)
+else:
+    form = parse_multipart(self)  # Single file (eski parser)
+```
+
+### 2. ⭐ Kompakt Görünüm (Compact View)
+**Dosyalar:** `app120/web.py` (satır 559-575, 637-653)
+
+**Sorun:** 25 dosya × 7 offset = 175 ayrı kart (çok uzun!)  
+**Çözüm:** Her dosya için **tek tablo**, tüm offsetler tek tabloda
+
+**Değişiklikler:**
+- Offset her satırın başında (Ofs kolonu)
+- Timestamp kısa format: `%m-%d %H:%M` (08-20 14:00)
+- Kolon isimleri kısaltıldı: Index→Idx, Prev Index→PIdx
+- IOV/IOU yoksa minimal gösterim: `📄 file.csv - IOV yok`
+
+**HTML Yapısı:**
+```html
+<div class='card'>
+  <strong>📄 file.csv</strong> - 120 mum, 5 IOV
+  <table>
+    <tr><th>Ofs</th><th>Seq</th><th>Idx</th><th>Timestamp</th>...</tr>
+    <tr><td>-1</td><td>31</td><td>34</td><td>08-20 14:00</td>...</tr>
+    <tr><td>+2</td><td>73</td><td>80</td><td>08-23 06:00</td>...</tr>
+  </table>
+</div>
+```
+
+### 3. ⭐ Sequence Validation
+**Dosyalar:** `app120/web.py` (satır 467-468, 516-517)
+
+**Sorun:** Form manipülasyonu ile `S3` gönderilebilir → `KeyError` → crash  
+**Çözüm:** Validation + fallback to S1
+
+```python
+sequence = (params.get("sequence") or "S1").strip()
+if sequence not in SEQUENCES_FILTERED:
+    sequence = "S1"
+```
+
+**Import:**
+```python
+from app120_iov.counter import SEQUENCES_FILTERED
+# {"S1": [7, 13, ...], "S2": [9, 17, ...]}
+```
+
+### 4. Emoji Kaldırma
+**Dosyalar:** `app120/web.py`, `agents.md`, `app120_iov/README.md`, `landing/web.py`, `appsuite/web.py`
+
+- `🎯 IOV` → `IOV`
+- `🔵 IOU` → `IOU`
+
+### 5. app120_iou Eklendi
+IOV'nin tamamlayıcı uygulaması (aynı işaret kontrolü, ++ veya --)
+
+### 6. Varsayılan Sequence Değişikliği
+IOV ve IOU için S2 → **S1** (daha çok kullanılıyor)
+
+### 7. Boş Offset Gizleme
+IOV/IOU içermeyen offsetler gösterilmiyor (kalabalık önlenir)
+
+### 8. Sekme Adı Değişikliği
+Tüm uygulamalarda "Analiz" → **"Counter"** (counting işlevini yansıtır)
+
+### 9. app120 Entegrasyonu
+IOV ve IOU artık app120 web arayüzünde (sekme 4 ve 5)
 
 Bu rehber, uygulamaların geliştirme ve kullanımında referans kabul edilmelidir.
