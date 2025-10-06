@@ -455,12 +455,18 @@ class App120Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         try:
-            form = parse_multipart(self)
-            file_obj = form.get("csv")
-            if not file_obj or "data" not in file_obj:
-                raise ValueError("CSV dosyası bulunamadı")
-            raw = file_obj["data"]
-            text = raw.decode("utf-8", errors="replace") if isinstance(raw, (bytes, bytearray)) else str(raw)
+            # IOV and IOU use multiple file upload, others use single file
+            if self.path in ["/iov", "/iou"]:
+                # Handle multiple files for IOV/IOU
+                pass  # Will be handled in specific path blocks below
+            else:
+                # Single file upload for other paths
+                form = parse_multipart(self)
+                file_obj = form.get("csv")
+                if not file_obj or "data" not in file_obj:
+                    raise ValueError("CSV dosyası bulunamadı")
+                raw = file_obj["data"]
+                text = raw.decode("utf-8", errors="replace") if isinstance(raw, (bytes, bytearray)) else str(raw)
 
             if self.path == "/converter":
                 candles = load_candles_from_text(text, ConverterCandle)
