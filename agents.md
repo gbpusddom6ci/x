@@ -146,7 +146,7 @@ Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın z
 - Tüm uygulamalar UTC-4/UTC-5 girişlerine uygun şekilde çıktı üretir.
 - **Converter Özeti:**
   - **app48:** 12m → 48m (4 × 12m = 48m)
-  - **app72:** 12m → 72m (7 × 12m ≈ 72m, offset mantığıyla)
+  - **app72:** 12m → 72m (7 × 12m ≈ 72m)
   - **app80:** 20m → 80m (4 × 20m = 80m)
   - **app120:** 60m → 120m (2 × 60m = 120m)
 
