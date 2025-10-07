@@ -310,27 +310,60 @@ def determine_offset_start(
     base_idx: int,
     offset: int,
     minutes_per_step: int = 48,
+    dc_flags: Optional[List[Optional[bool]]] = None,
 ) -> Tuple[Optional[int], Optional[datetime], str]:
+    """
+    NEW LOGIC (2025-10-07): Offset = Non-DC candle count
+    
+    Determines the offset start index by counting non-DC candles from base.
+    DC candles are skipped in counting.
+    """
     if not candles or base_idx < 0 or base_idx >= len(candles):
         return None, None, "no-data"
-    base_ts = candles[base_idx].ts.replace(second=0, microsecond=0)
-    target_ts = base_ts + timedelta(minutes=minutes_per_step * offset)
-    target_norm = target_ts.replace(second=0, microsecond=0)
-    start_idx: Optional[int] = None
-    for i, c in enumerate(candles):
-        if c.ts.replace(second=0, microsecond=0) == target_norm:
-            start_idx = i
-            break
-    if start_idx is not None:
-        status = "aligned"
+    
+    if dc_flags is None:
+        dc_flags = [False] * len(candles)
+    
+    # Offset 0: return base itself
+    if offset == 0:
+        base_ts = candles[base_idx].ts.replace(second=0, microsecond=0)
+        return base_idx, base_ts, "aligned"
+    
+    # Count non-DC candles from base
+    current_idx = base_idx
+    non_dc_count = 0
+    target_count = abs(offset)
+    direction = 1 if offset > 0 else -1
+    
+    while 0 <= current_idx < len(candles):
+        current_idx += direction
+        
+        # Out of bounds check
+        if current_idx < 0:
+            return None, None, "before-data"
+        if current_idx >= len(candles):
+            return None, None, "after-data"
+        
+        # Check if DC
+        is_dc = dc_flags[current_idx] if current_idx < len(dc_flags) else False
+        
+        # Skip DC candles
+        if is_dc:
+            continue
+        
+        # Count this non-DC candle
+        non_dc_count += 1
+        
+        # Reached target?
+        if non_dc_count == target_count:
+            target_ts = candles[current_idx].ts.replace(second=0, microsecond=0)
+            return current_idx, target_ts, "aligned"
+    
+    # Ran out of data
+    if offset > 0:
+        return None, None, "after-data"
     else:
-        if target_ts < candles[0].ts:
-            status = "before-data"
-        elif target_ts > candles[-1].ts:
-            status = "after-data"
-        else:
-            status = "target-missing"
-    return start_idx, target_norm, status
+        return None, None, "before-data"
 
 
 def compute_offset_alignment(
@@ -341,7 +374,7 @@ def compute_offset_alignment(
     offset: int,
     minutes_per_step: int = 48,
 ) -> OffsetComputation:
-    start_idx, target_ts, offset_status = determine_offset_start(candles, base_idx, offset, minutes_per_step=minutes_per_step)
+    start_idx, target_ts, offset_status = determine_offset_start(candles, base_idx, offset, minutes_per_step, dc_flags)
     base_ts = candles[base_idx].ts.replace(second=0, microsecond=0)
     if target_ts is None:
         target_ts = base_ts + timedelta(minutes=minutes_per_step * offset)
