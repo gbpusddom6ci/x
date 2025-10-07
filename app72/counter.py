@@ -5,10 +5,6 @@ from datetime import datetime, time as dtime, timedelta
 from typing import List, Optional, Tuple, Dict
 
 
-MINUTES_PER_STEP = 72
-DEFAULT_START_TOD = dtime(hour=18, minute=0)
-
-
 @dataclass
 class Candle:
     ts: datetime
