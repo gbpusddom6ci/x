@@ -315,61 +315,15 @@ def compute_offset_alignment(
         actual_ts = candles[start_idx].ts
         start_ref_ts = actual_ts.replace(second=0, microsecond=0)
         
-        # If start_idx is a DC candle, treat it as missing and start from next non-DC
-        is_start_dc = dc_flags[start_idx] if start_idx < len(dc_flags) else False
+        # NEW RULE: If start_idx is DC, it loses DC property for THIS offset only
+        # Rationale: Seq 1 must always exist (it's the counting origin)
+        # DC candles should only be skipped in intermediate positions, not at the start
+        dc_flags_adjusted = list(dc_flags)  # Copy to avoid modifying original
+        if start_idx < len(dc_flags_adjusted) and dc_flags_adjusted[start_idx]:
+            dc_flags_adjusted[start_idx] = False  # Remove DC flag for this offset's start candle
         
-        if is_start_dc:
-            # Find next non-DC candle
-            next_non_dc_idx = None
-            for i in range(start_idx + 1, len(candles)):
-                is_dc = dc_flags[i] if i < len(dc_flags) else False
-                if not is_dc:
-                    next_non_dc_idx = i
-                    break
-            
-            if next_non_dc_idx is not None:
-                # DC at start means first seq value is missing
-                # Compute remaining sequence values starting from next non-DC
-                missing_steps = 1
-                
-                # Build sequence starting from second value onwards
-                seq_compute: List[int] = []
-                remaining_values = [v for v in seq_values if v > missing_steps]
-                
-                if remaining_values:
-                    # Map remaining values to positions starting from 1
-                    # E.g., if seq_values=[1,5,9] and missing_steps=1, then:
-                    # seq_compute should map 5→1, 9→5 (relative positions)
-                    first_remaining = remaining_values[0]
-                    seq_compute.append(1)  # First non-missing value starts at position 1
-                    
-                    for v in remaining_values[1:]:
-                        # Calculate relative position from first_remaining
-                        relative_pos = v - first_remaining + 1
-                        seq_compute.append(relative_pos)
-                    
-                    allocations_compute = compute_sequence_allocations(candles, dc_flags, next_non_dc_idx, seq_compute)
-                    
-                    # Map back to original sequence values
-                    hits = []
-                    remaining_idx = 0
-                    for v in seq_values:
-                        if v <= missing_steps:
-                            hits.append(SequenceAllocation(None, None, False))
-                        else:
-                            if remaining_idx < len(allocations_compute):
-                                hits.append(allocations_compute[remaining_idx])
-                                remaining_idx += 1
-                            else:
-                                hits.append(SequenceAllocation(None, None, False))
-                else:
-                    hits = [SequenceAllocation(None, None, False) for _ in seq_values]
-            else:
-                # No non-DC after this, return empty
-                hits = [SequenceAllocation(None, None, False) for _ in seq_values]
-        else:
-            # Normal case: start_idx is not DC
-            hits = compute_sequence_allocations(candles, dc_flags, start_idx, seq_values)
+        # Normal sequence allocation with adjusted flags
+        hits = compute_sequence_allocations(candles, dc_flags_adjusted, start_idx, seq_values)
         
         return OffsetComputation(
             target_ts=target_ts,
