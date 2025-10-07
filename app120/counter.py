@@ -312,18 +312,28 @@ def compute_offset_alignment(
     missing_steps = 0
 
     if start_idx is not None and 0 <= start_idx < len(candles):
+        # Skip DC candles at start - DC candles should ALWAYS be skipped, even at start
+        # This ensures different offsets produce different results consistently
+        while start_idx < len(candles) and start_idx < len(dc_flags) and dc_flags[start_idx]:
+            start_idx += 1
+        
+        # If we've exhausted all candles (all DC from here), fall through to no-data case
+        if start_idx >= len(candles):
+            return OffsetComputation(
+                target_ts=target_ts,
+                offset_status="no-non-dc-after-target",
+                start_idx=None,
+                actual_ts=None,
+                start_ref_ts=start_ref_ts,
+                missing_steps=0,
+                hits=hits,
+            )
+        
         actual_ts = candles[start_idx].ts
         start_ref_ts = actual_ts.replace(second=0, microsecond=0)
         
-        # NEW RULE: If start_idx is DC, it loses DC property for THIS offset only
-        # Rationale: Seq 1 must always exist (it's the counting origin)
-        # DC candles should only be skipped in intermediate positions, not at the start
-        dc_flags_adjusted = list(dc_flags)  # Copy to avoid modifying original
-        if start_idx < len(dc_flags_adjusted) and dc_flags_adjusted[start_idx]:
-            dc_flags_adjusted[start_idx] = False  # Remove DC flag for this offset's start candle
-        
-        # Normal sequence allocation with adjusted flags
-        hits = compute_sequence_allocations(candles, dc_flags_adjusted, start_idx, seq_values)
+        # Normal sequence allocation - start_idx is guaranteed to be non-DC
+        hits = compute_sequence_allocations(candles, dc_flags, start_idx, seq_values)
         
         return OffsetComputation(
             target_ts=target_ts,
@@ -344,6 +354,23 @@ def compute_offset_alignment(
 
     if after_idx is not None and 0 <= after_idx < len(candles):
         start_idx = after_idx
+        
+        # Skip DC candles at start - same rule as aligned case
+        while start_idx < len(candles) and start_idx < len(dc_flags) and dc_flags[start_idx]:
+            start_idx += 1
+        
+        # If we've exhausted all candles
+        if start_idx >= len(candles):
+            return OffsetComputation(
+                target_ts=target_ts,
+                offset_status="no-non-dc-after-target",
+                start_idx=None,
+                actual_ts=None,
+                start_ref_ts=start_ref_ts,
+                missing_steps=0,
+                hits=hits,
+            )
+        
         actual_ts = candles[start_idx].ts
         start_ref_ts = actual_ts.replace(second=0, microsecond=0)
         delta_minutes = int((actual_ts - target_ts).total_seconds() // 60)
