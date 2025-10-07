@@ -237,8 +237,11 @@ def compute_sequence_allocations(
         flag = dc_flags[idx] if 0 <= idx < len(dc_flags) else None
         if not flag:
             return False
-        tod = candles[idx].ts.time()
-        return not (dtime(13, 12) <= tod <= dtime(19, 36))
+        ts = candles[idx].ts
+        # Exception: Sunday excluded from 13:12-19:36 rule
+        if ts.weekday() != 6 and dtime(13, 12) <= ts.time() <= dtime(19, 36):
+            return False  # Not DC (exception time)
+        return True  # Real DC
 
     first_candle = candles[start_idx]
     allocations[0] = SequenceAllocation(
