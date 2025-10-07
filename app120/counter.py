@@ -265,34 +265,66 @@ def determine_offset_start(
     minutes_per_step: int = MINUTES_PER_STEP,
 ) -> Tuple[Optional[int], Optional[datetime], str]:
     """
-    Determine offset start index based on target timestamp.
+    NEW LOGIC (2025-10-07): Offset = Non-DC candle count
     
-    Returns the candle at target timestamp, even if it's a DC candle.
-    DC handling is done later in compute_offset_alignment via missing_steps.
+    Determines the offset start index by counting non-DC candles from base.
+    - Offset +1: 1st non-DC candle after base
+    - Offset +2: 2nd non-DC candle after base
+    - Offset -1: 1st non-DC candle before base
+    - DC candles are skipped in counting
+    
+    Returns:
+        (start_idx, target_ts, status)
+        - start_idx: Index of the non-DC candle at offset position
+        - target_ts: Timestamp of that candle (for reference)
+        - status: "aligned" if found, "before-data"/"after-data" if out of bounds
     """
     if not candles or base_idx < 0 or base_idx >= len(candles):
         return None, None, "no-data"
-    base_ts = candles[base_idx].ts.replace(second=0, microsecond=0)
-    target_ts = base_ts + timedelta(minutes=minutes_per_step * offset)
-    target_norm = target_ts.replace(second=0, microsecond=0)
-    start_idx: Optional[int] = None
     
-    # Find exact match
-    for i, c in enumerate(candles):
-        if c.ts.replace(second=0, microsecond=0) == target_norm:
-            start_idx = i
-            break
+    if dc_flags is None:
+        dc_flags = [False] * len(candles)
     
-    if start_idx is not None:
-        status = "aligned"
+    # Offset 0: return base itself
+    if offset == 0:
+        base_ts = candles[base_idx].ts.replace(second=0, microsecond=0)
+        return base_idx, base_ts, "aligned"
+    
+    # Count non-DC candles from base
+    current_idx = base_idx
+    non_dc_count = 0
+    target_count = abs(offset)
+    direction = 1 if offset > 0 else -1
+    
+    while 0 <= current_idx < len(candles):
+        current_idx += direction
+        
+        # Out of bounds check
+        if current_idx < 0:
+            return None, None, "before-data"
+        if current_idx >= len(candles):
+            return None, None, "after-data"
+        
+        # Check if DC
+        is_dc = dc_flags[current_idx] if current_idx < len(dc_flags) else False
+        
+        # Skip DC candles
+        if is_dc:
+            continue
+        
+        # Count this non-DC candle
+        non_dc_count += 1
+        
+        # Reached target?
+        if non_dc_count == target_count:
+            target_ts = candles[current_idx].ts.replace(second=0, microsecond=0)
+            return current_idx, target_ts, "aligned"
+    
+    # Ran out of data
+    if offset > 0:
+        return None, None, "after-data"
     else:
-        if target_ts < candles[0].ts:
-            status = "before-data"
-        elif target_ts > candles[-1].ts:
-            status = "after-data"
-        else:
-            status = "target-missing"
-    return start_idx, target_norm, status
+        return None, None, "before-data"
 
 
 def compute_offset_alignment(
@@ -315,15 +347,9 @@ def compute_offset_alignment(
         actual_ts = candles[start_idx].ts
         start_ref_ts = actual_ts.replace(second=0, microsecond=0)
         
-        # DC ADJUSTMENT RULE: Start candle can NEVER be DC for its own offset
-        # Each offset has its own perspective - the start candle is always counted for that offset
-        # This ensures each offset produces unique results based on its starting point
-        dc_flags_adjusted = list(dc_flags)  # Copy to avoid modifying original
-        if start_idx < len(dc_flags_adjusted) and dc_flags_adjusted[start_idx]:
-            dc_flags_adjusted[start_idx] = False  # Remove DC flag for this offset's start candle
-        
-        # Sequence allocation with adjusted flags for this offset
-        hits = compute_sequence_allocations(candles, dc_flags_adjusted, start_idx, seq_values)
+        # NEW LOGIC: No DC adjustment needed - determine_offset_start already returns non-DC candle
+        # Offset counting skips DC candles, so start_idx is guaranteed to be non-DC
+        hits = compute_sequence_allocations(candles, dc_flags, start_idx, seq_values)
         
         return OffsetComputation(
             target_ts=target_ts,
@@ -351,11 +377,8 @@ def compute_offset_alignment(
             delta_minutes = 0
         missing_steps = max(0, delta_minutes // MINUTES_PER_STEP)
         
-        # DC ADJUSTMENT RULE: Same rule applies - start candle is never DC for this offset
-        dc_flags_adjusted = list(dc_flags)  # Copy to avoid modifying original
-        if start_idx < len(dc_flags_adjusted) and dc_flags_adjusted[start_idx]:
-            dc_flags_adjusted[start_idx] = False  # Remove DC flag for this offset's start candle
-        
+        # NEW LOGIC: No DC adjustment - use original dc_flags
+        # This branch is rarely hit with new offset logic (only for time-based edge cases)
         actual_start_count = missing_steps + 1
         seq_compute: List[int] = [actual_start_count]
         value_to_pos = {actual_start_count: 0}
@@ -367,7 +390,7 @@ def compute_offset_alignment(
                     value_to_pos[v] = len(seq_compute)
                     seq_compute.append(v)
 
-        allocations_compute = compute_sequence_allocations(candles, dc_flags_adjusted, start_idx, seq_compute)
+        allocations_compute = compute_sequence_allocations(candles, dc_flags, start_idx, seq_compute)
         value_to_alloc = {val: allocations_compute[idx] for idx, val in enumerate(seq_compute)}
         hits = []
         for v in seq_values:

@@ -1,6 +1,6 @@
 # 📘 Proje Teknik Dokümantasyonu (AI Context-Ready)
 
-**Son Güncelleme:** 2025-10-06  
+**Son Güncelleme:** 2025-10-07  
 **Amaç:** Bu dokümantasyon bir AI agent'ın projeyi tamamen anlaması için hazırlanmıştır.
 
 Bu doküman app321, app48, app72, app80, app120, app120_iov ve app120_iou uygulamalarının **tüm implementation detaylarını**, kod yapısını, fonksiyon isimlerini, dosya organizasyonunu ve özelliklerini en ince detayına kadar açıklar. Tüm açıklamalar Türkçe'dir ve en güncel davranışları yansıtır.
@@ -302,13 +302,152 @@ DC mumları normal sayımda atlanır. Ek olarak global kurallar:
 ### İstisnai Kapsayıcı Kural
 Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın zamanı ilgili DC mumunun saati olarak kaydedilir. Bu eşleme yalnızca DC kuralı nedeniyle atlanması gereken mum tam olarak ilgili dizin adımını tamamlayacağı anda yapılır.
 
-## Offset Mantığı
-- Offset, varsayılan 18:00 başlangıç mumuna göre -3 ile +3 arasında seçilebilir (`-3, -2, -1, 0, +1, +2, +3`).
-- Offset uygulanırken hedef zaman, **tabanda yakalanan 18:00 mumunun gerçek zamanından** dakikalık adımlar eklenerek hesaplanır. Bu yaklaşım, dizinin gün içinde kaymasını engeller.
-- Hedef zaman aralık dışındaysa veya mumu eksikse:
-  - Veri içinde hedefi karşılayan gerçek bir mum bulunursa sayım o mumdan başlatılır ve eksik adımların saatleri tahmini olarak `pred` etiketiyle gösterilir.
-  - Veride hedef saatten önce mum yoksa, tüm değerler tahmini zamanlarla (`pred`) listelenir.
-- Tahminler, ofset hedef zamanını temel alır; gerçek mum bulunduysa gerçek mumun normalleştirilmiş saati kullanılır.
+## Offset Mantığı (2025-10-07 Güncellemesi)
+
+### 🔑 Temel Kural: Offset = Non-DC Mum Sayısı
+
+**Offset hesaplama, DC'leri atlayarak yapılır.** Her offset, base mumundan (18:00) itibaren kaç non-DC mum sayılacağını belirtir.
+
+### Offset Değerleri
+- Offset aralığı: **-3 ile +3** (`-3, -2, -1, 0, +1, +2, +3`)
+- Her offset benzersiz bir non-DC muma denk gelir
+- **İki farklı offset asla aynı muma denk gelemez**
+
+### Offset Hesaplama Algoritması
+
+1. **Base Mumu Belirle:** Verideki ilk 18:00 mumu (base_idx=0)
+
+2. **Non-DC Index Oluştur:**
+   - Base mumundan başlayarak non-DC mumları say
+   - DC mumlar atlanır, sayıma dahil edilmez
+   - Her non-DC muma bir index ata (0, 1, 2, 3, ...)
+
+3. **Offset → Non-DC Index Mapping:**
+   ```
+   Offset -3 → Non-DC Index -3 (base'den 3 mum geriye)
+   Offset -2 → Non-DC Index -2 (base'den 2 mum geriye)
+   Offset -1 → Non-DC Index -1 (base'den 1 mum geriye)
+   Offset  0 → Non-DC Index  0 (base mumu, 18:00)
+   Offset +1 → Non-DC Index +1 (base'den 1 non-DC mum ileriye)
+   Offset +2 → Non-DC Index +2 (base'den 2 non-DC mum ileriye)
+   Offset +3 → Non-DC Index +3 (base'den 3 non-DC mum ileriye)
+   ```
+
+4. **Hedef Mumun Belirlenmesi:**
+   - Hedef non-DC index'e karşılık gelen gerçek mum bulunur
+   - Bu mum, o offset için sequence sayımının **başlangıç noktası**dır
+
+### 📚 Detaylı Örnekler
+
+#### Örnek 1: Sadece 22:00 DC
+
+**Veri:**
+```
+18:00 (DC değil) - base mumu
+20:00 (DC değil)
+22:00 (DC ✓)     - Distorted Candle
+00:00 (DC değil)
+02:00 (DC değil)
+04:00 (DC değil)
+```
+
+**Non-DC Index Sayımı:**
+```
+Non-DC Index 0 → 18:00 (Offset 0)
+Non-DC Index 1 → 20:00 (Offset +1)
+Non-DC Index 2 → 22:00 DC ATLA → 00:00 (Offset +2)
+Non-DC Index 3 → 02:00 (Offset +3)
+```
+
+**Sonuç:**
+- **Offset 0:** 18:00'dan başlar
+- **Offset +1:** 20:00'dan başlar
+- **Offset +2:** 00:00'dan başlar (22:00 hedeflendi ama DC, atlandı)
+- **Offset +3:** 02:00'dan başlar
+
+#### Örnek 2: 20:00 ve 00:00 DC
+
+**Veri:**
+```
+18:00 (DC değil)
+20:00 (DC ✓)
+22:00 (DC değil)
+00:00 (DC ✓)
+02:00 (DC değil)
+04:00 (DC değil)
+```
+
+**Non-DC Index Sayımı:**
+```
+Non-DC Index 0 → 18:00 (Offset 0)
+Non-DC Index 1 → 20:00 DC ATLA → 22:00 (Offset +1)
+Non-DC Index 2 → 00:00 DC ATLA → 02:00 (Offset +2)
+Non-DC Index 3 → 04:00 (Offset +3)
+```
+
+**Sonuç:**
+- **Offset 0:** 18:00
+- **Offset +1:** 22:00 (20:00 hedeflendi ama DC)
+- **Offset +2:** 02:00 (00:00 hedeflendi ama DC)
+- **Offset +3:** 04:00
+
+#### Örnek 3: 22:00 ve 04:00 DC (jun01.csv gerçek verisi)
+
+**Veri:**
+```
+18:00 (DC değil)
+20:00 (DC değil)
+22:00 (DC ✓)
+00:00 (DC değil)
+02:00 (DC değil)
+04:00 (DC ✓)
+06:00 (DC değil)
+```
+
+**Non-DC Index Sayımı:**
+```
+Non-DC Index 0 → 18:00 (Offset 0)
+Non-DC Index 1 → 20:00 (Offset +1)
+Non-DC Index 2 → 22:00 DC ATLA → 00:00 (Offset +2)
+Non-DC Index 3 → 02:00 (Offset +3)
+Non-DC Index 4 → 04:00 DC ATLA → 06:00 (Offset +4)
+```
+
+**Sonuç:**
+- **Offset 0:** 18:00
+- **Offset +1:** 20:00
+- **Offset +2:** 00:00 (22:00 DC olduğu için atlandı)
+- **Offset +3:** 02:00
+
+### ⚠️ Kritik Notlar
+
+1. **DC Atlanır, Zaman Kayar:** Hedef zaman DC ise, offset bir sonraki non-DC muma otomatik olarak kayar
+   
+2. **Benzersizlik Garantisi:** Her offset farklı bir non-DC muma denk gelir, iki offset asla aynı mumu işaret edemez
+
+3. **Sayım Başlangıcı:** Offset sadece sequence sayımının **başlangıç noktasını** belirler. Sequence sayımı o noktadan itibaren DC kuralları uygulanarak devam eder
+
+4. **Base Mumu (18:00):** Base mumu (Offset 0) ASLA DC olamaz (tüm uygulamalar için geçerli)
+
+5. **Negatif Offsetler:** Negatif offsetler (-1, -2, -3) base mumundan **geriye doğru** non-DC mum sayar
+
+### Eksik Veri Durumu (Missing Steps)
+- Hedef offset mumu veride yoksa (veri eksikliği):
+  - Hedef zamandan sonraki ilk mevcut mum bulunur
+  - Missing steps hesaplanır (kaç mum eksik)
+  - Eksik mumlar `pred` (predicted) olarak gösterilir
+  - Sequence sayımı mevcut mumdan başlar
+
+### Önceki Davranıştan Fark
+
+**ESKI (Yanlış) Mantık:**
+- Offset hedefi DC ise, o DC mumu "başlangıç mumu için sayılabilir" oluyordu
+- Bu durum bazı offsetlerin aynı sequence değerlerinde aynı mumları göstermesine neden oluyordu
+
+**YENİ (Doğru) Mantık:**
+- Offset hedefi DC ise, **hiçbir koşulda sayılmaz**, bir sonraki non-DC muma kayar
+- Her offset benzersiz bir başlangıç noktasına sahiptir
+- DC kuralı evrenseldir: hangi offset olursa olsun DC mumlar atlanır
 
 ## Zaman Dilimleri
 - Kullanıcı girişinde iki seçenek vardır: `UTC-5` ve `UTC-4`.
@@ -548,7 +687,36 @@ Sayım sırasında diziye ait bir adım bir DC mumuna denk gelirse, o adımın z
   - **IOV'nin tamamlayıcısıdır:** IOV zıt işaret, IOU aynı işaret
   - **Çoklu dosya yükleme:** 25 dosyaya kadar, kompakt tek tablo görünümü
 
-## 🆕 Son Güncellemeler (Zaman Damgası: 2025-10-06)
+## 🆕 Son Güncellemeler
+
+### 2025-10-07: ⭐ Offset Mantığı Değişikliği (MAJOR UPDATE)
+**Dosyalar:** `agents.md` (satır 305-450)  
+**Etkilenen Uygulamalar:** Tüm applar (app321, app48, app72, app80, app120, app120_iov, app120_iou)
+
+**Değişiklik:** Offset hesaplama mantığı tamamen değiştirildi.
+
+**ESKI Mantık (Yanlış):**
+- Offset hedefi DC ise, o mum "başlangıç için sayılabilir" oluyordu
+- Bazı offsetler aynı sequence değerlerinde aynı mumları gösteriyordu
+- Tutarsızlıklar oluşuyordu
+
+**YENİ Mantık (Doğru):**
+- **Offset = Non-DC mum sayısı**
+- Base mumundan (18:00) itibaren non-DC mumlar sayılır
+- Hedef mum DC ise, bir sonraki non-DC muma otomatik olarak kayar
+- Her offset benzersiz bir başlangıç noktasına sahip
+- İki offset asla aynı muma denk gelemez
+
+**Örnek (22:00 DC):**
+```
+Offset +1 → 20:00 (non-DC index 1)
+Offset +2 → 00:00 (22:00 hedeflendi ama DC, atlandı)
+Offset +3 → 02:00 (non-DC index 3)
+```
+
+**Kritik:** Bu değişiklik tüm uygulamaların offset davranışını etkiler. Kod implementasyonu yapılacak.
+
+### 2025-10-06: Çoklu Dosya & Kompakt Görünüm
 
 ### 1. ⭐ Çoklu Dosya Yükleme (Multiple File Upload)
 **Dosyalar:** `app120/web.py` (satır 391-429, 502-577, 579-654)  
