@@ -261,18 +261,39 @@ def determine_offset_start(
     candles: List[Candle],
     base_idx: int,
     offset: int,
+    dc_flags: Optional[List[Optional[bool]]] = None,
     minutes_per_step: int = MINUTES_PER_STEP,
 ) -> Tuple[Optional[int], Optional[datetime], str]:
+    """
+    Determine offset start index, avoiding DC candles when possible.
+    
+    If the target timestamp lands on a DC candle, we look forward for the next non-DC candle.
+    This prevents DC candles from being used as sequence start points, which would cause
+    misaligned allocations since DC candles are skipped in counting.
+    """
     if not candles or base_idx < 0 or base_idx >= len(candles):
         return None, None, "no-data"
     base_ts = candles[base_idx].ts.replace(second=0, microsecond=0)
     target_ts = base_ts + timedelta(minutes=minutes_per_step * offset)
     target_norm = target_ts.replace(second=0, microsecond=0)
     start_idx: Optional[int] = None
+    
+    # Find exact match
     for i, c in enumerate(candles):
         if c.ts.replace(second=0, microsecond=0) == target_norm:
             start_idx = i
             break
+    
+    # If found but it's a DC candle, find next non-DC
+    if start_idx is not None and dc_flags is not None:
+        if 0 <= start_idx < len(dc_flags) and dc_flags[start_idx]:
+            # Target is DC, find next non-DC candle
+            for i in range(start_idx + 1, len(candles)):
+                is_dc = dc_flags[i] if i < len(dc_flags) else False
+                if not is_dc:
+                    start_idx = i
+                    break
+    
     if start_idx is not None:
         status = "aligned"
     else:
@@ -292,7 +313,7 @@ def compute_offset_alignment(
     seq_values: List[int],
     offset: int,
 ) -> OffsetComputation:
-    start_idx, target_ts, offset_status = determine_offset_start(candles, base_idx, offset)
+    start_idx, target_ts, offset_status = determine_offset_start(candles, base_idx, offset, dc_flags)
     base_ts = candles[base_idx].ts.replace(second=0, microsecond=0)
     if target_ts is None:
         target_ts = base_ts + timedelta(minutes=MINUTES_PER_STEP * offset)
