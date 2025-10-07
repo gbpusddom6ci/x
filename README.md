@@ -40,6 +40,15 @@ Forex trading için çoklu timeframe analiz araçları.
 - DC listesi ve offset matrisi
 - Port: `2019`
 
+### 📰 app72_iou (IOU News Checker)
+- IOU offset analizi için ForexFactory entegrasyonu
+- **Selenium ile otomatik veri çekme (40 hafta tek komutla!)**
+- Mid/High impact haber kontrolü
+- 72 dakikalık mum aralığı taraması
+- Otomatik News kolonu ekleme
+- Cache sistemi (tekrar indirme yok)
+- Port: `2172`
+
 ### 🏠 landing (Ana Sayfa)
 - Tüm uygulamalara tek yerden erişim
 - Port: `2000`
@@ -67,6 +76,15 @@ python3 -m app48.web
 
 # app321 web arayüzü
 python3 -m app321.web
+
+# app72_iou news checker (IOU CSV + ForexFactory)
+# İlk önce 40 haftalık veriyi çek (bir kere yapılır):
+python3 -m forexfactory.cli --weeks 40
+
+# Sonra IOU analizlerini çalıştır:
+python3 -m app72_iou.web
+# veya CLI:
+python3 -m app72_iou.cli ornek.csv output.csv
 ```
 
 ## Özellikler
@@ -79,3 +97,5 @@ python3 -m app321.web
 - ✅ Matrix görünümü (tüm offsetler tek ekranda)
 - ✅ Timeframe dönüştürücüler
 - ✅ Tahmin (prediction) desteği
+- ✅ ForexFactory news integration (app72_iou)
+- ✅ Economic calendar overlay
