@@ -455,8 +455,8 @@ Non-DC Index 4 → 04:00 DC ATLA → 06:00 (Offset +4)
 - **Giriş UTC-4 ise** herhangi bir zaman kaydırması yapılmaz.
 
 ## DC İstisna Saatleri
-- **app321 (60m):** 13:00–20:00 aralığındaki DC mumları normal mum gibi sayılır.
-- **app48 (48m):** 13:12–19:36 aralığındaki DC mumları normal mum gibi sayılır.
+- **app321 (60m):** **Pazar hariç** 13:00 ≤ t < 20:00 aralığındaki DC mumları normal mum gibi sayılır (20:00 dahil değil).
+- **app48 (48m):** **Pazar hariç** 13:12 ≤ t < 19:36 aralığındaki DC mumları normal mum gibi sayılır (19:36 dahil değil).
 - **app72 (72m):** 
   - **18:00 mumu ASLA DC olamaz** (Pazar günü dahil - 2 haftalık veri için 2. hafta başlangıcı)
   - **Cuma 16:48 mumu ASLA DC olamaz** (2 haftalık veri için 1. hafta bitimindeki son mum)
@@ -688,6 +688,24 @@ Non-DC Index 4 → 04:00 DC ATLA → 06:00 (Offset +4)
   - **Çoklu dosya yükleme:** 25 dosyaya kadar, kompakt tek tablo görünümü
 
 ## 🆕 Son Güncellemeler
+
+### 2025-10-07: 🔧 DC İstisna Kuralları Düzeltmeleri
+**Dosyalar:** `app321/main.py`, `app48/main.py`  
+**Commit:** `8ac7950` (range fix), `05be987` (Sunday exclusion)
+
+**Değişiklik 1: Pazar Günü İstisnası**
+- app321 ve app48'deki DC istisna kuralları Pazar günü için geçerli değildi
+- Pazar günü tüm mumlar artık normal DC kurallarına tabi
+- `weekday() != 6` kontrolü eklendi
+
+**Değişiklik 2: Aralık Sonu Düzeltmesi**
+- app321: `13:00 <= t <= 20:00` → `13:00 <= t < 20:00` (20:00 hariç)
+- app48: `13:12 <= t <= 19:36` → `13:12 <= t < 19:36` (19:36 hariç)
+- Aralık sonu mumları artık normal DC kurallarına tabi
+
+**Etki:**
+- Pazar 18:48, 19:00, 19:36, 20:00 gibi mumlar artık DC olabilir
+- DC istisna kuralları sadece Pazartesi-Cumartesi için geçerli
 
 ### 2025-10-07: ⭐ Offset Mantığı Değişikliği (MAJOR UPDATE)
 **Dosyalar:** `agents.md` (satır 305-450)  
