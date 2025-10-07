@@ -192,8 +192,8 @@ def compute_sequence_allocations(
         if not flag:
             return False
         ts = candles[idx].ts
-        # Exception: Sunday excluded from 13:00-20:00 rule
-        if ts.weekday() != 6 and dtime(13, 0) <= ts.time() <= dtime(20, 0):
+        # Exception: Sunday excluded from 13:00-20:00 rule (20:00 not included)
+        if ts.weekday() != 6 and dtime(13, 0) <= ts.time() < dtime(20, 0):
             return False  # Not DC (exception time)
         return True  # Real DC
 
