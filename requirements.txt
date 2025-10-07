@@ -4,17 +4,9 @@
 # Web sunucusu için Gunicorn (production kullanımı için önerilir)
 gunicorn>=21.2.0
 
-# CSV ve veri işleme
-pandas>=2.0.0
-numpy>=1.24.0
+# Eğer pandas kullanıyorsanız (CSV dosyaları için)
+# pandas>=2.0.0
+# numpy>=1.24.0
 
-# ForexFactory scraping
-requests>=2.31.0
-beautifulsoup4>=4.12.0
-lxml>=4.9.0
-
-# Timezone handling
-pytz>=2023.3
-
-# Selenium for ForexFactory scraping (anti-bot bypass)
-selenium>=4.15.0
+# Standart kütüphane dışında bir bağımlılık göremedim
+# Gerekirse diğer paketleri ekleyin
