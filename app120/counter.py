@@ -265,11 +265,10 @@ def determine_offset_start(
     minutes_per_step: int = MINUTES_PER_STEP,
 ) -> Tuple[Optional[int], Optional[datetime], str]:
     """
-    Determine offset start index, avoiding DC candles when possible.
+    Determine offset start index based on target timestamp.
     
-    If the target timestamp lands on a DC candle, we look forward for the next non-DC candle.
-    This prevents DC candles from being used as sequence start points, which would cause
-    misaligned allocations since DC candles are skipped in counting.
+    Returns the candle at target timestamp, even if it's a DC candle.
+    DC handling is done later in compute_offset_alignment via missing_steps.
     """
     if not candles or base_idx < 0 or base_idx >= len(candles):
         return None, None, "no-data"
@@ -283,16 +282,6 @@ def determine_offset_start(
         if c.ts.replace(second=0, microsecond=0) == target_norm:
             start_idx = i
             break
-    
-    # If found but it's a DC candle, find next non-DC
-    if start_idx is not None and dc_flags is not None:
-        if 0 <= start_idx < len(dc_flags) and dc_flags[start_idx]:
-            # Target is DC, find next non-DC candle
-            for i in range(start_idx + 1, len(candles)):
-                is_dc = dc_flags[i] if i < len(dc_flags) else False
-                if not is_dc:
-                    start_idx = i
-                    break
     
     if start_idx is not None:
         status = "aligned"
@@ -325,7 +314,63 @@ def compute_offset_alignment(
     if start_idx is not None and 0 <= start_idx < len(candles):
         actual_ts = candles[start_idx].ts
         start_ref_ts = actual_ts.replace(second=0, microsecond=0)
-        hits = compute_sequence_allocations(candles, dc_flags, start_idx, seq_values)
+        
+        # If start_idx is a DC candle, treat it as missing and start from next non-DC
+        is_start_dc = dc_flags[start_idx] if start_idx < len(dc_flags) else False
+        
+        if is_start_dc:
+            # Find next non-DC candle
+            next_non_dc_idx = None
+            for i in range(start_idx + 1, len(candles)):
+                is_dc = dc_flags[i] if i < len(dc_flags) else False
+                if not is_dc:
+                    next_non_dc_idx = i
+                    break
+            
+            if next_non_dc_idx is not None:
+                # DC at start means first seq value is missing
+                # Compute remaining sequence values starting from next non-DC
+                missing_steps = 1
+                
+                # Build sequence starting from second value onwards
+                seq_compute: List[int] = []
+                remaining_values = [v for v in seq_values if v > missing_steps]
+                
+                if remaining_values:
+                    # Map remaining values to positions starting from 1
+                    # E.g., if seq_values=[1,5,9] and missing_steps=1, then:
+                    # seq_compute should map 5→1, 9→5 (relative positions)
+                    first_remaining = remaining_values[0]
+                    seq_compute.append(1)  # First non-missing value starts at position 1
+                    
+                    for v in remaining_values[1:]:
+                        # Calculate relative position from first_remaining
+                        relative_pos = v - first_remaining + 1
+                        seq_compute.append(relative_pos)
+                    
+                    allocations_compute = compute_sequence_allocations(candles, dc_flags, next_non_dc_idx, seq_compute)
+                    
+                    # Map back to original sequence values
+                    hits = []
+                    remaining_idx = 0
+                    for v in seq_values:
+                        if v <= missing_steps:
+                            hits.append(SequenceAllocation(None, None, False))
+                        else:
+                            if remaining_idx < len(allocations_compute):
+                                hits.append(allocations_compute[remaining_idx])
+                                remaining_idx += 1
+                            else:
+                                hits.append(SequenceAllocation(None, None, False))
+                else:
+                    hits = [SequenceAllocation(None, None, False) for _ in seq_values]
+            else:
+                # No non-DC after this, return empty
+                hits = [SequenceAllocation(None, None, False) for _ in seq_values]
+        else:
+            # Normal case: start_idx is not DC
+            hits = compute_sequence_allocations(candles, dc_flags, start_idx, seq_values)
+        
         return OffsetComputation(
             target_ts=target_ts,
             offset_status=offset_status,
