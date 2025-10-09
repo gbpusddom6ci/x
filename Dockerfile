@@ -23,8 +23,5 @@ RUN pip install -r requirements.txt
 # Uygulama kodunu kopyala
 COPY . .
 
-# Port açıklama (Railway/Fly.io bu portu kullanacak)
-EXPOSE $PORT
-
 # Uygulamayı başlat - Railway'in PORT değişkenini kullan
-CMD python -m appsuite.web --host 0.0.0.0 --port $PORT
+CMD sh -c "python -m appsuite.web --host 0.0.0.0 --port ${PORT:-8080}"
