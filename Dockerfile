@@ -1,4 +1,4 @@
-# Fly.io için optimize edilmiş Dockerfile
+# Railway/Fly.io için optimize edilmiş Dockerfile
 FROM python:3.11-slim
 
 # Çalışma dizini
@@ -8,7 +8,8 @@ WORKDIR /app
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PORT=8080
 
 # Sistem bağımlılıkları (gerekirse)
 RUN apt-get update && \
@@ -22,8 +23,8 @@ RUN pip install -r requirements.txt
 # Uygulama kodunu kopyala
 COPY . .
 
-# Port açıklama (Fly.io bu portu kullanacak)
-EXPOSE 8080
+# Port açıklama (Railway/Fly.io bu portu kullanacak)
+EXPOSE $PORT
 
-# Uygulamayı başlat
-CMD ["python", "-m", "appsuite.web", "--host", "0.0.0.0", "--port", "8080"]
+# Uygulamayı başlat - Railway'in PORT değişkenini kullan
+CMD python -m appsuite.web --host 0.0.0.0 --port $PORT
