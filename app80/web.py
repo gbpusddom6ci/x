@@ -136,15 +136,21 @@ def find_news_in_timerange(
 ) -> List[Dict[str, Any]]:
     """
     Find news events that fall within [start_ts, start_ts + duration_minutes).
+    For null-valued events (speeches, statements), check 1 hour before candle start.
     News data is in UTC-4 (same as candle data).
     """
     end_ts = start_ts + timedelta(minutes=duration_minutes)
     matching = []
     
+    # For null events, extend search to 1 hour before candle start
+    extended_start_ts = start_ts - timedelta(hours=1)
+    
     # Check both start and end date (in case range spans midnight)
     dates_to_check = {start_ts.strftime('%Y-%m-%d')}
     if end_ts.date() != start_ts.date():
         dates_to_check.add(end_ts.strftime('%Y-%m-%d'))
+    if extended_start_ts.date() != start_ts.date():
+        dates_to_check.add(extended_start_ts.strftime('%Y-%m-%d'))
     
     for date_str in dates_to_check:
         events = events_by_date.get(date_str, [])
@@ -162,9 +168,22 @@ def find_news_in_timerange(
                 year, month, day = map(int, date_str.split('-'))
                 event_ts = datetime(year, month, day, hour, minute)
                 
-                # Check if event falls within range
-                if start_ts <= event_ts < end_ts:
-                    matching.append(event)
+                # Check if event has null values (speeches, statements)
+                values = event.get('values', {})
+                is_null_event = (
+                    values.get('actual') is None and 
+                    values.get('forecast') is None and 
+                    values.get('previous') is None
+                )
+                
+                # For null events: check 1 hour before candle to candle end
+                # For regular events: check candle start to candle end
+                if is_null_event:
+                    if extended_start_ts <= event_ts < end_ts:
+                        matching.append(event)
+                else:
+                    if start_ts <= event_ts < end_ts:
+                        matching.append(event)
             except Exception:
                 continue
     
