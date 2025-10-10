@@ -1,4 +1,4 @@
-# app120_iov - IOV Candle Analysis
+# app120.iov - IOV Candle Analysis
 
 **IOV (Inverse OC Value)** mum analizi için özel 120m timeframe uygulaması.
 
@@ -25,7 +25,7 @@ IOV mumu, aşağıdaki **3 kriteri birden** karşılayan özel mumlardır:
 ### CLI (Command Line):
 
 ```bash
-python3 -m app120_iov.counter --csv data.csv --sequence S2 --limit 0.1
+python3 -m app120.iov.counter --csv data.csv --sequence S2 --limit 0.1
 ```
 
 **Parametreler:**
@@ -36,7 +36,7 @@ python3 -m app120_iov.counter --csv data.csv --sequence S2 --limit 0.1
 ### Web Arayüzü:
 
 ```bash
-python3 -m app120_iov.web --port 2121
+python3 -m app120.iov.web --port 2121
 ```
 
 Tarayıcıda açın: http://localhost:2121
@@ -94,7 +94,7 @@ Time,Open,High,Low,Close (Last)
 ## 🏗️ Proje Yapısı
 
 ```
-app120_iov/
+app120/iov/
 ├── __init__.py       # Package init
 ├── counter.py        # IOV analiz mantığı (CLI)
 ├── web.py            # Web arayüzü

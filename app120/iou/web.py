@@ -5,7 +5,7 @@ import csv
 from typing import List, Optional, Dict
 from datetime import datetime
 
-from app120_iou.counter import (
+from .counter import (
     analyze_iou, load_candles, fmt_ts, fmt_pip,
     SEQUENCES_FILTERED, IOUResult, Candle
 )
@@ -282,12 +282,12 @@ class Handler(BaseHTTPRequestHandler):
 def run(host: str, port: int):
     """Run function for appsuite integration"""
     server = HTTPServer((host, port), Handler)
-    print(f"app120_iov web: http://{host}:{port}/")
+    print(f"app120.iou web: http://{host}:{port}/")
     server.serve_forever()
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(prog="app120_iov.web")
+    parser = argparse.ArgumentParser(prog="app120.iou.web")
     parser.add_argument("--port", type=int, default=2121, help="HTTP port (default: 2121)")
     parser.add_argument("--host", default="0.0.0.0", help="Host to bind (default: 0.0.0.0)")
     args = parser.parse_args(argv)

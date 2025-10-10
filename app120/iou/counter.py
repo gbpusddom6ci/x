@@ -438,7 +438,7 @@ def fmt_pip(delta: float) -> str:
 
 def main(argv: Optional[List[str]] = None) -> int:
     p = argparse.ArgumentParser(
-        prog="app120_iou counter",
+        prog="app120.iou.counter",
         description="120m IOU (Inverse OC - Uniform sign) Analysis",
     )
     p.add_argument("--csv", required=True, help="CSV dosyası (120m mumlar)")

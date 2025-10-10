@@ -25,12 +25,12 @@ from .main import (
     convert_60m_to_120m,
     format_price,
 )
-from app120_iov.counter import (
+from .iov.counter import (
     analyze_iov,
     SEQUENCES_FILTERED,
     IOVResult,
 )
-from app120_iou.counter import (
+from .iou.counter import (
     analyze_iou,
     IOUResult,
 )
