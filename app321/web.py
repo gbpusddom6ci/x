@@ -131,29 +131,34 @@ def find_news_in_timerange(
     News data is in UTC-4 (same as candle data).
     """
     end_ts = start_ts + timedelta(minutes=duration_minutes)
-    date_str = start_ts.strftime('%Y-%m-%d')
-    
-    events = events_by_date.get(date_str, [])
     matching = []
     
-    for event in events:
-        time_24h = event.get('time_24h')
-        if not time_24h:  # Skip "All Day" events
-            continue
+    # Check both start and end date (in case range spans midnight)
+    dates_to_check = {start_ts.strftime('%Y-%m-%d')}
+    if end_ts.date() != start_ts.date():
+        dates_to_check.add(end_ts.strftime('%Y-%m-%d'))
+    
+    for date_str in dates_to_check:
+        events = events_by_date.get(date_str, [])
         
-        try:
-            # Parse time_24h (e.g., "04:48")
-            hour, minute = map(int, time_24h.split(':'))
-            event_ts = datetime(
-                start_ts.year, start_ts.month, start_ts.day,
-                hour, minute
-            )
+        for event in events:
+            time_24h = event.get('time_24h')
+            if not time_24h:  # Skip "All Day" events
+                continue
             
-            # Check if event falls within range
-            if start_ts <= event_ts < end_ts:
-                matching.append(event)
-        except Exception:
-            continue
+            try:
+                # Parse time_24h (e.g., "04:48")
+                hour, minute = map(int, time_24h.split(':'))
+                
+                # Parse the date from date_str to handle multi-day ranges
+                year, month, day = map(int, date_str.split('-'))
+                event_ts = datetime(year, month, day, hour, minute)
+                
+                # Check if event falls within range
+                if start_ts <= event_ts < end_ts:
+                    matching.append(event)
+            except Exception:
+                continue
     
     return matching
 
