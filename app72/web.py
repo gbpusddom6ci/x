@@ -89,25 +89,40 @@ def format_pip(delta: Optional[float]) -> str:
     return f"{delta:+.5f}"
 
 
-def load_news_data(json_path: str) -> Dict[str, List[Dict[str, Any]]]:
+def load_news_data_from_directory(directory_path: str) -> Dict[str, List[Dict[str, Any]]]:
     """
-    Load ForexFactory news data from JSON file.
+    Load all ForexFactory news data from JSON files in a directory.
     Returns a dict: date_string -> list of events for that date.
+    Automatically merges all JSON files in the directory.
     """
-    if not os.path.exists(json_path):
+    if not os.path.exists(directory_path) or not os.path.isdir(directory_path):
         return {}
     
+    events_by_date: Dict[str, List[Dict[str, Any]]] = {}
+    
     try:
-        with open(json_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+        # Find all JSON files in directory
+        json_files = [f for f in os.listdir(directory_path) if f.endswith('.json')]
         
-        # Index events by date
-        events_by_date: Dict[str, List[Dict[str, Any]]] = {}
-        for day in data.get('days', []):
-            date_str = day.get('date')  # e.g., "2025-03-17"
-            events = day.get('events', [])
-            if date_str:
-                events_by_date[date_str] = events
+        for json_file in json_files:
+            json_path = os.path.join(directory_path, json_file)
+            try:
+                with open(json_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                
+                # Index events by date
+                for day in data.get('days', []):
+                    date_str = day.get('date')  # e.g., "2025-03-17"
+                    events = day.get('events', [])
+                    if date_str:
+                        # Merge events if date already exists
+                        if date_str in events_by_date:
+                            events_by_date[date_str].extend(events)
+                        else:
+                            events_by_date[date_str] = events
+            except Exception:
+                # Skip invalid JSON files
+                continue
         
         return events_by_date
     except Exception:
@@ -549,9 +564,15 @@ class App72Handler(BaseHTTPRequestHandler):
                 except:
                     limit = 0.1
                 
-                # Load news data (for March 2025, using hardcoded path for now)
-                news_data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '2marto30mar.json')
-                events_by_date = load_news_data(news_data_path)
+                # Load news data from directory (auto-detects all JSON files)
+                news_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'news_data')
+                events_by_date = load_news_data_from_directory(news_dir)
+                
+                # Count loaded files
+                json_files_count = 0
+                if os.path.exists(news_dir) and os.path.isdir(news_dir):
+                    json_files_count = len([f for f in os.listdir(news_dir) if f.endswith('.json')])
+                
                 news_loaded = bool(events_by_date)
                 
                 # Build HTML header
@@ -561,7 +582,7 @@ class App72Handler(BaseHTTPRequestHandler):
                   <div><strong>Dosya Sayısı:</strong> {len(files)}</div>
                   <div><strong>Sequence:</strong> {html.escape(sequence)} (Filtered: {', '.join(map(str, SEQUENCES_FILTERED[sequence]))})</div>
                   <div><strong>Limit:</strong> {limit}</div>
-                  <div><strong>Haber Verisi:</strong> {'✅ Yüklendi (Mart 2025)' if news_loaded else '❌ Bulunamadı'}</div>
+                  <div><strong>Haber Verisi:</strong> {f'✅ {json_files_count} JSON dosyası yüklendi ({len(events_by_date)} gün)' if news_loaded else '❌ news_data/ klasöründe JSON bulunamadı'}</div>
                 </div>
                 """
                 

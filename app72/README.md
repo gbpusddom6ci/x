@@ -23,10 +23,12 @@ Tarayıcıdan `http://localhost:2172/` adresine gidin.
 
 ### Sayfalar
 
-1. **Analiz** - CSV yükleyip sequence sayımı yapın
-2. **DC List** - Tüm DC mumlarını listeleyin
-3. **Matrix** - Tüm offset değerlerini tek ekranda görün
-4. **12→72 Converter** - 12 dakikalık mumları 72 dakikaya dönüştürün (7 tane 12m = 1 tane 72m)
+1. **Counter** - CSV yükleyip sequence sayımı yapın
+2. **IOU** - Inverse OC - Uniform sign analizi (haber verileri ile)
+3. **DC List** - Tüm DC mumlarını listeleyin
+4. **Matrix** - Tüm offset değerlerini tek ekranda görün
+5. **12→72 Converter** - 12 dakikalık mumları 72 dakikaya dönüştürün (7 tane 12m = 1 tane 72m)
+6. **Converter** - Alternatif converter arayüzü
 
 ## CLI Kullanımı
 
@@ -149,4 +151,76 @@ python3 -m app72.main \
   --csv 12m_eurusd.csv \
   --input-tz UTC-5 \
   --output 72m_eurusd.csv
+```
+
+## IOU Analizi ve Haber Verileri
+
+### IOU (Inverse OC - Uniform sign) Nedir?
+
+IOU analizi, aynı yönlü hareket eden ardışık mumları tespit eder:
+- **Kriterler:**
+  1. |OC| ≥ limit (varsayılan 0.1)
+  2. |PrevOC| ≥ limit
+  3. OC ve PrevOC **aynı işarete sahip** (++ veya --)
+
+### Haber Verileri (Economic Calendar)
+
+IOU tablosu, ForexFactory economic calendar verilerini otomatik olarak yükler ve her mumun 72 dakikalık aralığındaki haberleri gösterir.
+
+#### Haber Verisi Ekleme
+
+1. **Klasör:** `news_data/` (workspace root'ta)
+2. **Format:** JSON (ForexFactory formatı)
+3. **Otomatik yükleme:** Klasöre JSON dosyası eklediğinizde otomatik algılanır
+
+**Örnek:**
+```bash
+# Yeni haber verisi ekle
+cp nisan2025.json news_data/
+cp mayis2025.json news_data/
+
+# Sistem otomatik olarak tüm JSON dosyalarını yükler ve birleştirir
+```
+
+#### JSON Format Örneği
+```json
+{
+  "meta": {
+    "source": "forex_factory",
+    "year": 2025
+  },
+  "days": [
+    {
+      "date": "2025-03-17",
+      "weekday": "Mon",
+      "events": [
+        {
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "Core Retail Sales m/m",
+          "values": {
+            "actual": "0.3%",
+            "forecast": "0.3%",
+            "previous": "-0.6%"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Not:** Saatler **UTC-4** formatında olmalıdır (mum verisi ile uyumlu).
+
+#### IOU Tablosunda Haber Gösterimi
+
+- Mumun **başlangıç zamanından** itibaren **72 dakika** içindeki tüm haberler gösterilir
+- Format: `var: CURRENCY Title (actual:X, forecast:Y, prev:Z); ...`
+- Birden fazla haber `;` ile ayrılır
+- Haber yoksa: `-` gösterilir
+
+**Örnek:**
+```
+Timestamp: 03-17 04:48
+Haber: var: USD ISM Manufacturing PMI (actual:50.3, forecast:50.6, prev:50.9); EUR CPI Flash Estimate (actual:2.4%, forecast:2.3%, prev:2.5%)
 ```
