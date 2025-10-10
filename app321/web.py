@@ -364,6 +364,31 @@ class AppHandler(BaseHTTPRequestHandler):
         return {"files": files, "params": params}
 
     def do_GET(self):
+        # Serve favicon files
+        if self.path.startswith("/favicon/"):
+            import os
+            filename = self.path.split("/")[-1].split("?")[0]  # Remove query params
+            favicon_path = os.path.join(os.path.dirname(__file__), "..", "favicon", filename)
+            try:
+                with open(favicon_path, "rb") as f:
+                    content = f.read()
+                if filename.endswith(".ico"):
+                    content_type = "image/x-icon"
+                elif filename.endswith(".png"):
+                    content_type = "image/png"
+                else:
+                    content_type = "application/octet-stream"
+                self.send_response(200)
+                self.send_header("Content-Type", content_type)
+                self.send_header("Content-Length", str(len(content)))
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self.end_headers()
+                self.wfile.write(content)
+                return
+            except FileNotFoundError:
+                self.send_error(404, "Favicon not found")
+                return
+        
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.end_headers()
