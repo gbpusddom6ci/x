@@ -116,12 +116,37 @@ def make_handler(backends: List[Backend], landing_bytes: bytes):
             self.end_headers()
             self.wfile.write(payload)
 
+        def _serve_favicon(self, filename: str) -> None:
+            import os
+            favicon_path = os.path.join(os.path.dirname(__file__), "..", "favicon", filename)
+            try:
+                with open(favicon_path, "rb") as f:
+                    content = f.read()
+                if filename.endswith(".ico"):
+                    content_type = "image/x-icon"
+                elif filename.endswith(".png"):
+                    content_type = "image/png"
+                else:
+                    content_type = "application/octet-stream"
+                self.send_response(200)
+                self.send_header("Content-Type", content_type)
+                self.send_header("Content-Length", str(len(content)))
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self.end_headers()
+                self.wfile.write(content)
+            except FileNotFoundError:
+                self.send_error(404, "Favicon not found")
+
         def do_GET(self) -> None:  # noqa: N802
             if self.path in {"/", "/index", "/index.html"}:
                 self._serve_landing()
                 return
             if self.path == "/health":
                 self._serve_health()
+                return
+            if self.path.startswith("/favicon/"):
+                filename = self.path.split("/")[-1]
+                self._serve_favicon(filename)
                 return
             for backend in backends:
                 matched, sub_path = backend.match(self.path)

@@ -28,7 +28,9 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <title>Trading Araçları | Landing Page</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+    <link rel="shortcut icon" href="/favicon/favicon.ico">
     <style>
       :root {{
         color-scheme: light dark;
@@ -144,6 +146,27 @@ def make_handler(html_bytes: bytes):
                 self.send_header("Content-Type", "text/plain; charset=utf-8")
                 self.end_headers()
                 self.wfile.write(b"ok")
+            elif self.path.startswith("/favicon/"):
+                import os
+                filename = self.path.split("/")[-1]
+                favicon_path = os.path.join(os.path.dirname(__file__), "..", "favicon", filename)
+                try:
+                    with open(favicon_path, "rb") as f:
+                        content = f.read()
+                    if filename.endswith(".ico"):
+                        content_type = "image/x-icon"
+                    elif filename.endswith(".png"):
+                        content_type = "image/png"
+                    else:
+                        content_type = "application/octet-stream"
+                    self.send_response(200)
+                    self.send_header("Content-Type", content_type)
+                    self.send_header("Content-Length", str(len(content)))
+                    self.send_header("Cache-Control", "public, max-age=86400")
+                    self.end_headers()
+                    self.wfile.write(content)
+                except FileNotFoundError:
+                    self.send_error(404, "Favicon not found")
             else:
                 self.send_error(404, "Not Found")
 
