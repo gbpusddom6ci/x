@@ -3,6 +3,8 @@ import argparse
 import html
 import io
 import csv
+import json
+import os
 from typing import List, Optional, Dict, Any, Type
 
 from .counter import (
@@ -36,7 +38,7 @@ from .iou.counter import (
 )
 from email.parser import BytesParser
 from email.policy import default as email_default
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 
 def load_candles_from_text(text: str, candle_cls: Type) -> List:
@@ -91,6 +93,118 @@ def format_pip(delta: Optional[float]) -> str:
     if delta is None:
         return "-"
     return f"{delta:+.5f}"
+
+
+def load_news_data_from_directory(directory_path: str) -> Dict[str, List[Dict[str, Any]]]:
+    """
+    Load all ForexFactory news data from JSON files in a directory.
+    Returns a dict: date_string -> list of events for that date.
+    Automatically merges all JSON files in the directory.
+    """
+    if not os.path.exists(directory_path) or not os.path.isdir(directory_path):
+        return {}
+    
+    events_by_date: Dict[str, List[Dict[str, Any]]] = {}
+    
+    try:
+        # Find all JSON files in directory
+        json_files = [f for f in os.listdir(directory_path) if f.endswith('.json')]
+        
+        for json_file in json_files:
+            json_path = os.path.join(directory_path, json_file)
+            try:
+                with open(json_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                
+                # Index events by date
+                for day in data.get('days', []):
+                    date_str = day.get('date')  # e.g., "2025-03-17"
+                    events = day.get('events', [])
+                    if date_str:
+                        # Merge events if date already exists
+                        if date_str in events_by_date:
+                            events_by_date[date_str].extend(events)
+                        else:
+                            events_by_date[date_str] = events
+            except Exception:
+                # Skip invalid JSON files
+                continue
+        
+        return events_by_date
+    except Exception:
+        return {}
+
+
+def find_news_in_timerange(
+    events_by_date: Dict[str, List[Dict[str, Any]]],
+    start_ts: datetime,
+    duration_minutes: int = 120
+) -> List[Dict[str, Any]]:
+    """
+    Find news events that fall within [start_ts, start_ts + duration_minutes).
+    News data is in UTC-4 (same as candle data).
+    """
+    end_ts = start_ts + timedelta(minutes=duration_minutes)
+    date_str = start_ts.strftime('%Y-%m-%d')
+    
+    events = events_by_date.get(date_str, [])
+    matching = []
+    
+    for event in events:
+        time_24h = event.get('time_24h')
+        if not time_24h:  # Skip "All Day" events
+            continue
+        
+        try:
+            # Parse time_24h (e.g., "04:48")
+            hour, minute = map(int, time_24h.split(':'))
+            event_ts = datetime(
+                start_ts.year, start_ts.month, start_ts.day,
+                hour, minute
+            )
+            
+            # Check if event falls within range
+            if start_ts <= event_ts < end_ts:
+                matching.append(event)
+        except Exception:
+            continue
+    
+    return matching
+
+
+def format_news_events(events: List[Dict[str, Any]]) -> str:
+    """
+    Format news events for display in IOU table.
+    Format: var: CURRENCY Title (actual:X, forecast:Y, prev:Z); ...
+    """
+    if not events:
+        return "-"
+    
+    parts = []
+    for event in events:
+        currency = event.get('currency', '?')
+        title = event.get('title', 'Unknown')
+        values = event.get('values', {})
+        
+        actual = values.get('actual')
+        forecast = values.get('forecast')
+        previous = values.get('previous')
+        
+        # Format values
+        if actual is None and forecast is None and previous is None:
+            # Event without values (e.g., speeches)
+            parts.append(f"{currency} {title}")
+        else:
+            val_strs = []
+            if actual is not None:
+                val_strs.append(f"actual:{actual}")
+            if forecast is not None:
+                val_strs.append(f"forecast:{forecast}")
+            if previous is not None:
+                val_strs.append(f"prev:{previous}")
+            parts.append(f"{currency} {title} ({', '.join(val_strs)})")
+    
+    return "var: " + "; ".join(parts)
 
 
 def page(title: str, body: str, active_tab: str = "analyze") -> bytes:
@@ -631,6 +745,17 @@ class App120Handler(BaseHTTPRequestHandler):
                 except:
                     limit = 0.1
                 
+                # Load news data from directory (auto-detects all JSON files)
+                news_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'news_data')
+                events_by_date = load_news_data_from_directory(news_dir)
+                
+                # Count loaded files
+                json_files_count = 0
+                if os.path.exists(news_dir) and os.path.isdir(news_dir):
+                    json_files_count = len([f for f in os.listdir(news_dir) if f.endswith('.json')])
+                
+                news_loaded = bool(events_by_date)
+                
                 # Build HTML header
                 body = f"""
                 <div class='card'>
@@ -638,6 +763,7 @@ class App120Handler(BaseHTTPRequestHandler):
                   <div><strong>Dosya Sayısı:</strong> {len(files)}</div>
                   <div><strong>Sequence:</strong> {html.escape(sequence)} (Filtered: {', '.join(map(str, SEQUENCES_FILTERED[sequence]))})</div>
                   <div><strong>Limit:</strong> {limit}</div>
+                  <div><strong>Haber Verisi:</strong> {f'✅ {json_files_count} JSON dosyası yüklendi ({len(events_by_date)} gün)' if news_loaded else '❌ news_data/ klasöründe JSON bulunamadı'}</div>
                 </div>
                 """
                 
@@ -667,7 +793,7 @@ class App120Handler(BaseHTTPRequestHandler):
                         <div class='card' style='padding:10px;'>
                           <strong>📄 {html.escape(filename)}</strong> - {len(candles)} mum, <strong>{total_iou} IOU</strong>
                           <table style='margin-top:8px;'>
-                            <tr><th>Ofs</th><th>Seq</th><th>Idx</th><th>Timestamp</th><th>OC</th><th>PrevOC</th><th>PIdx</th></tr>
+                            <tr><th>Ofs</th><th>Seq</th><th>Idx</th><th>Timestamp</th><th>OC</th><th>PrevOC</th><th>PIdx</th><th>Haber</th></tr>
                         """
                         
                         # Add all IOU candles from all offsets to single table
@@ -676,7 +802,12 @@ class App120Handler(BaseHTTPRequestHandler):
                             for iou in iou_list:
                                 oc_fmt = format_pip(iou.oc)
                                 prev_oc_fmt = format_pip(iou.prev_oc)
-                                body += f"<tr><td>{offset:+d}</td><td>{iou.seq_value}</td><td>{iou.index}</td><td>{iou.timestamp.strftime('%m-%d %H:%M')}</td><td>{html.escape(oc_fmt)}</td><td>{html.escape(prev_oc_fmt)}</td><td>{iou.prev_index}</td></tr>"
+                                
+                                # Find news for this candle's timerange (120 minutes)
+                                news_events = find_news_in_timerange(events_by_date, iou.timestamp, 120) if news_loaded else []
+                                news_text = format_news_events(news_events)
+                                
+                                body += f"<tr><td>{offset:+d}</td><td>{iou.seq_value}</td><td>{iou.index}</td><td>{iou.timestamp.strftime('%m-%d %H:%M')}</td><td>{html.escape(oc_fmt)}</td><td>{html.escape(prev_oc_fmt)}</td><td>{iou.prev_index}</td><td style='font-size:11px;max-width:400px;'>{html.escape(news_text)}</td></tr>"
                         
                         body += "</table></div>"
                         
