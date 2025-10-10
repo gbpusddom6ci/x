@@ -28,9 +28,9 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <title>Trading Araçları | Landing Page</title>
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
-    <link rel="shortcut icon" href="/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png?v=2">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png?v=2">
+    <link rel="shortcut icon" href="/favicon/favicon.ico?v=2">
     <style>
       :root {{
         color-scheme: light dark;

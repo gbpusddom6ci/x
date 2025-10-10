@@ -94,9 +94,9 @@ def page(title: str, body: str, active_tab: str = "analyze") -> bytes:
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1'/>
     <title>{html.escape(title)}</title>
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
-    <link rel="shortcut icon" href="/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png?v=2">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png?v=2">
+    <link rel="shortcut icon" href="/favicon/favicon.ico?v=2">
     <style>
       body{{font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin:20px;}}
       header{{margin-bottom:16px;}}
