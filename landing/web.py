@@ -148,7 +148,7 @@ def make_handler(html_bytes: bytes):
                 self.wfile.write(b"ok")
             elif self.path.startswith("/favicon/"):
                 import os
-                filename = self.path.split("/")[-1]
+                filename = self.path.split("/")[-1].split("?")[0]  # Remove query params
                 favicon_path = os.path.join(os.path.dirname(__file__), "..", "favicon", filename)
                 try:
                     with open(favicon_path, "rb") as f:

@@ -145,7 +145,7 @@ def make_handler(backends: List[Backend], landing_bytes: bytes):
                 self._serve_health()
                 return
             if self.path.startswith("/favicon/"):
-                filename = self.path.split("/")[-1]
+                filename = self.path.split("/")[-1].split("?")[0]  # Remove query params
                 self._serve_favicon(filename)
                 return
             for backend in backends:
