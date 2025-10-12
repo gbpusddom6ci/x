@@ -1,0 +1,5 @@
+# Ignore all JSON files (user data)
+*.json
+
+# Keep the README
+!README.md
