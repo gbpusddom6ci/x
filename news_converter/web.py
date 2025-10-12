@@ -246,6 +246,7 @@ Markdown formatınızı buraya yapıştırın veya yukarıdan .md dosyası yükl
 
     <script>
       let currentJSON = null;
+      let currentFileName = 'news_data.json';
 
       function loadFile() {
         const fileInput = document.getElementById('fileInput');
@@ -259,6 +260,8 @@ Markdown formatınızı buraya yapıştırın veya yukarıdan .md dosyası yükl
         reader.onload = function(e) {
           document.getElementById('mdInput').value = e.target.result;
           fileNameDisplay.textContent = '✓ ' + file.name;
+          // .md uzantısını .json ile değiştir
+          currentFileName = file.name.replace(/\\.(md|txt)$/i, '.json');
           showInfo(inputInfo, `📁 ${file.name} yüklendi (${(file.size/1024).toFixed(1)} KB)`, 'success');
           setTimeout(() => inputInfo.classList.add('hidden'), 3000);
         };
@@ -317,7 +320,7 @@ Markdown formatınızı buraya yapıştırın veya yukarıdan .md dosyası yükl
         if (!currentJSON) return;
         
         const meta = currentJSON.meta || {};
-        const filename = prompt('Dosya adı (örn: 30marto3may.json):', 'news_data.json');
+        const filename = prompt('Dosya adı (örn: 30marto3may.json):', currentFileName);
         if (!filename) return;
         
         const blob = new Blob([JSON.stringify(currentJSON, null, 2)], {type: 'application/json'});
@@ -332,7 +335,7 @@ Markdown formatınızı buraya yapıştırın veya yukarıdan .md dosyası yükl
       function saveToNewsData() {
         if (!currentJSON) return;
         
-        const filename = prompt('news_data/ klasörüne kaydetmek için dosya adı:', 'new_data.json');
+        const filename = prompt('news_data/ klasörüne kaydetmek için dosya adı:', currentFileName);
         if (!filename) return;
         
         const outputInfo = document.getElementById('outputInfo');
@@ -374,6 +377,7 @@ Markdown formatınızı buraya yapıştırın veya yukarıdan .md dosyası yükl
         document.getElementById('inputInfo').classList.add('hidden');
         document.getElementById('outputInfo').classList.add('hidden');
         currentJSON = null;
+        currentFileName = 'news_data.json';
         updateButtons(false);
       }
 
