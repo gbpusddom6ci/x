@@ -213,6 +213,11 @@ def main(argv: list[str] | None = None) -> int:
         default="http://127.0.0.1:2120/",
         help="app120 web arayüzü için URL",
     )
+    parser.add_argument(
+        "--news-converter-url",
+        default="http://127.0.0.1:2199/",
+        help="news_converter web arayüzü için URL",
+    )
     args = parser.parse_args(argv)
 
     app_links = {
@@ -240,6 +245,11 @@ def main(argv: list[str] | None = None) -> int:
             "title": "app321",
             "url": args.app321_url,
             "description": "60 dakikalık sayım araçları, DC listesi ve offset matrisi.",
+        },
+        "news_converter": {
+            "title": "News Converter",
+            "url": args.news_converter_url,
+            "description": "📰 ForexFactory MD formatını JSON'a dönüştürür (çoklu dosya, direkt indirme).",
         },
     }
 

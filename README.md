@@ -40,6 +40,13 @@ Forex trading için çoklu timeframe analiz araçları.
 - DC listesi ve offset matrisi
 - Port: `2019`
 
+### 📰 news_converter (Haber Dönüştürücü)
+- ForexFactory MD formatını JSON'a dönüştürür
+- Çoklu dosya desteği (1-10 dosya)
+- Direkt indirme (tek dosya: .json, çoklu: .zip)
+- Otomatik yıl tespiti (geçmiş/gelecek)
+- Port: `2199`
+
 ### 🏠 landing (Ana Sayfa)
 - Tüm uygulamalara tek yerden erişim
 - Port: `2000`
@@ -67,6 +74,9 @@ python3 -m app48.web
 
 # app321 web arayüzü
 python3 -m app321.web
+
+# news_converter web arayüzü
+python3 -m news_converter.web
 ```
 
 ## Özellikler
