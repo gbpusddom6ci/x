@@ -78,6 +78,11 @@ def parse_values(line: str) -> Dict[str, Optional[str]]:
     """
     Parse values line like '50.5\t50.4\t50.2' or '0.3%\t0.3%\t0.4%'.
     Returns dict with actual, forecast, previous.
+    
+    Handles future dates (Tentative):
+    - 3 values: actual, forecast, previous (normal)
+    - 2 values: forecast, previous (actual=null for future)
+    - 1 value: forecast (actual=null, previous=null for future)
     """
     parts = [p.strip() for p in re.split(r'\t+', line.strip()) if p.strip()]
     
@@ -87,12 +92,19 @@ def parse_values(line: str) -> Dict[str, Optional[str]]:
         'previous': None
     }
     
-    if len(parts) >= 1:
-        result['actual'] = parts[0] if parts[0] else None
-    if len(parts) >= 2:
-        result['forecast'] = parts[1] if parts[1] else None
-    if len(parts) >= 3:
-        result['previous'] = parts[2] if parts[2] else None
+    if len(parts) == 1:
+        # Could be actual (past) or forecast (future)
+        # Assume forecast for now
+        result['forecast'] = parts[0]
+    elif len(parts) == 2:
+        # Future dates: forecast, previous (actual not yet happened)
+        result['forecast'] = parts[0]
+        result['previous'] = parts[1]
+    elif len(parts) >= 3:
+        # Normal: actual, forecast, previous
+        result['actual'] = parts[0]
+        result['forecast'] = parts[1]
+        result['previous'] = parts[2]
     
     return result
 
@@ -168,29 +180,38 @@ def parse_markdown_to_json(md_content: str, year: int = 2025) -> Dict[str, Any]:
             current_title = line
             i += 1
             
-            # Next line should be values
+            # Next line should be values (or might be missing for future dates)
+            values = None
             if i < len(lines):
                 values_line = lines[i].strip()
                 if re.search(r'\t', values_line) or re.match(r'^[\d\.%MKB\s]+$', values_line):
                     values = parse_values(values_line)
-                    
-                    # Create event
-                    if current_date:
-                        event = {
-                            'date': current_date,
-                            'weekday': current_weekday,
-                            'time_label': None,  # We don't have this
-                            'time_24h': current_time,
-                            'currency': current_currency,
-                            'title': current_title,
-                            'values': values
-                        }
-                        days_dict[current_date]['events'].append(event)
-                    
                     i += 1
-                    current_title = None
-                    current_currency = None
-                    continue
+            
+            # If no values found, create event with TBD (for future dates)
+            if values is None:
+                values = {
+                    'actual': 'TBD',
+                    'forecast': None,
+                    'previous': None
+                }
+            
+            # Create event
+            if current_date:
+                event = {
+                    'date': current_date,
+                    'weekday': current_weekday,
+                    'time_label': None,  # We don't have this
+                    'time_24h': current_time,
+                    'currency': current_currency,
+                    'title': current_title,
+                    'values': values
+                }
+                days_dict[current_date]['events'].append(event)
+            
+            current_title = None
+            current_currency = None
+            continue
         
         i += 1
     
