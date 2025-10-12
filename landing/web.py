@@ -81,7 +81,10 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         main {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }}
       }}
       @media (min-width: 1280px) {{
-        main {{ grid-template-columns: repeat(5, minmax(0, 1fr)); }}
+        main {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }}
+      }}
+      @media (min-width: 1600px) {{
+        main {{ grid-template-columns: repeat(6, minmax(0, 1fr)); }}
       }}
       .card {{
         background: var(--card-bg);
