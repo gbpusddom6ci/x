@@ -120,7 +120,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
   <body>
     <header>
       <h1>Trading Araçları</h1>
-      <p>app48, app72, app80, app120 ve app321 arayüzlerine tek yerden erişin. Her kart ilgili modülü yeni sekmede açar.</p>
+      <p>app48, app72, app80, app120, app321 ve News Converter arayüzlerine tek yerden erişin. Her kart ilgili modülü yeni sekmede açar.</p>
     </header>
     <main>
       {''.join(cards)}
