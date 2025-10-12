@@ -210,10 +210,11 @@ def build_html() -> bytes:
             <input type='number' id='year' value='2025' min='2020' max='2030'>
           </div>
           <div class='file-input-wrapper'>
-            <label for='fileInput' class='file-upload-btn'>📁 .md Dosyası Yükle</label>
-            <input type='file' id='fileInput' accept='.md,.txt' onchange='loadFile()'>
+            <label for='fileInput' class='file-upload-btn'>📁 .md Dosya(ları) Yükle</label>
+            <input type='file' id='fileInput' accept='.md,.txt' multiple onchange='loadFiles()'>
             <span id='fileName' class='file-name'></span>
           </div>
+          <div id='fileQueue' style='font-size: 0.85rem; color: var(--fg); margin-bottom: 8px;'></div>
           <textarea id='mdInput' placeholder='Sun
 Mar 30
 9:30pm
@@ -225,6 +226,7 @@ Manufacturing PMI
 Markdown formatınızı buraya yapıştırın veya yukarıdan .md dosyası yükleyin...'></textarea>
           <div class='buttons'>
             <button class='btn-primary' onclick='convert()'>🔄 Convert to JSON</button>
+            <button class='btn-success' id='convertAllBtn' onclick='convertAll()' style='display:none'>⚡ Convert All</button>
             <button class='btn-secondary' onclick='clearInput()'>🗑️ Clear</button>
           </div>
           <div id='inputInfo' class='info hidden'></div>
@@ -247,21 +249,43 @@ Markdown formatınızı buraya yapıştırın veya yukarıdan .md dosyası yükl
     <script>
       let currentJSON = null;
       let currentFileName = 'news_data.json';
+      let fileQueue = [];
+      let currentFileIndex = 0;
 
-      function loadFile() {
+      function loadFiles() {
         const fileInput = document.getElementById('fileInput');
-        const file = fileInput.files[0];
+        const files = Array.from(fileInput.files);
         const inputInfo = document.getElementById('inputInfo');
         const fileNameDisplay = document.getElementById('fileName');
+        const queueDisplay = document.getElementById('fileQueue');
         
-        if (!file) return;
+        if (files.length === 0) return;
+        
+        fileQueue = files;
+        currentFileIndex = 0;
+        
+        if (files.length === 1) {
+          // Tek dosya - eski davranış
+          loadSingleFile(files[0]);
+        } else {
+          // Çoklu dosya
+          fileNameDisplay.textContent = `✓ ${files.length} dosya seçildi`;
+          queueDisplay.innerHTML = `<strong>📋 Dosya Listesi:</strong><br>${files.map((f, i) => `${i+1}. ${f.name}`).join('<br>')}`;
+          showInfo(inputInfo, `📁 ${files.length} dosya yüklendi. "Convert All" ile toplu işlem yapın.`, 'success');
+          document.getElementById('convertAllBtn').style.display = 'inline-block';
+        }
+      }
+      
+      function loadSingleFile(file) {
+        const inputInfo = document.getElementById('inputInfo');
+        const fileNameDisplay = document.getElementById('fileName');
         
         const reader = new FileReader();
         reader.onload = function(e) {
           document.getElementById('mdInput').value = e.target.result;
           fileNameDisplay.textContent = '✓ ' + file.name;
-          // .md uzantısını .json ile değiştir
           currentFileName = file.name.replace(/\\.(md|txt)$/i, '.json');
+          document.getElementById('fileQueue').innerHTML = '';
           showInfo(inputInfo, `📁 ${file.name} yüklendi (${(file.size/1024).toFixed(1)} KB)`, 'success');
           setTimeout(() => inputInfo.classList.add('hidden'), 3000);
         };
@@ -369,15 +393,73 @@ Markdown formatınızı buraya yapıştırın veya yukarıdan .md dosyası yükl
         });
       }
 
+      function convertAll() {
+        if (fileQueue.length === 0) return;
+        
+        const outputInfo = document.getElementById('outputInfo');
+        const year = parseInt(document.getElementById('year').value);
+        let processed = 0;
+        let errors = 0;
+        
+        showInfo(outputInfo, `⏳ ${fileQueue.length} dosya işleniyor...`, 'success');
+        
+        fileQueue.forEach((file, index) => {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const content = e.target.result;
+            const filename = file.name.replace(/\\.(md|txt)$/i, '.json');
+            
+            fetch('./convert', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({content: content, year: year})
+            })
+            .then(res => res.json())
+            .then(data => {
+              if (data.error) {
+                errors++;
+                return;
+              }
+              
+              // Otomatik kaydet
+              return fetch('./save', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({data: data, filename: filename})
+              });
+            })
+            .then(res => res ? res.json() : null)
+            .then(saveResult => {
+              processed++;
+              if (processed + errors === fileQueue.length) {
+                const msg = `✅ ${processed} dosya kaydedildi` + (errors > 0 ? `, ${errors} hata` : '');
+                showInfo(outputInfo, msg, errors > 0 ? 'error' : 'success');
+              }
+            })
+            .catch(err => {
+              errors++;
+              if (processed + errors === fileQueue.length) {
+                showInfo(outputInfo, `✅ ${processed} dosya kaydedildi, ${errors} hata`, 'error');
+              }
+            });
+          };
+          reader.readAsText(file, 'UTF-8');
+        });
+      }
+      
       function clearInput() {
         document.getElementById('mdInput').value = '';
         document.getElementById('fileInput').value = '';
         document.getElementById('fileName').textContent = '';
+        document.getElementById('fileQueue').innerHTML = '';
         document.getElementById('jsonOutput').textContent = 'JSON çıktısı burada görünecek...';
         document.getElementById('inputInfo').classList.add('hidden');
         document.getElementById('outputInfo').classList.add('hidden');
+        document.getElementById('convertAllBtn').style.display = 'none';
         currentJSON = null;
         currentFileName = 'news_data.json';
+        fileQueue = [];
+        currentFileIndex = 0;
         updateButtons(false);
       }
 
