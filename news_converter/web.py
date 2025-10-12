@@ -229,7 +229,7 @@ Markdown formatınızı buraya yapıştırın...'></textarea>
         }
 
         // Send to server
-        fetch('/convert', {
+        fetch('./convert', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({content: mdInput, year: year})
@@ -285,7 +285,7 @@ Markdown formatınızı buraya yapıştırın...'></textarea>
         
         const outputInfo = document.getElementById('outputInfo');
         
-        fetch('/save', {
+        fetch('./save', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({data: currentJSON, filename: filename})
