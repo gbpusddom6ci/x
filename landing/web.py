@@ -81,10 +81,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         main {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }}
       }}
       @media (min-width: 1280px) {{
-        main {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }}
-      }}
-      @media (min-width: 1600px) {{
-        main {{ grid-template-columns: repeat(6, minmax(0, 1fr)); }}
+        main {{ grid-template-columns: repeat(5, minmax(0, 1fr)); }}
       }}
       .card {{
         background: var(--card-bg);
@@ -123,7 +120,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
   <body>
     <header>
       <h1>Trading Araçları</h1>
-      <p>app48, app72, app80, app120, app321 ve News Converter arayüzlerine tek yerden erişin. Her kart ilgili modülü yeni sekmede açar.</p>
+      <p>app48, app72, app80, app120 ve app321 arayüzlerine tek yerden erişin. Her kart ilgili modülü yeni sekmede açar.</p>
     </header>
     <main>
       {''.join(cards)}
@@ -216,11 +213,6 @@ def main(argv: list[str] | None = None) -> int:
         default="http://127.0.0.1:2120/",
         help="app120 web arayüzü için URL",
     )
-    parser.add_argument(
-        "--news-converter-url",
-        default="http://127.0.0.1:3000/",
-        help="News Converter web arayüzü için URL",
-    )
     args = parser.parse_args(argv)
 
     app_links = {
@@ -248,11 +240,6 @@ def main(argv: list[str] | None = None) -> int:
             "title": "app321",
             "url": args.app321_url,
             "description": "60 dakikalık sayım araçları, DC listesi ve offset matrisi.",
-        },
-        "news_converter": {
-            "title": "📰 News Converter",
-            "url": args.news_converter_url,
-            "description": "Markdown formatından JSON'a haber verisi dönüştürücü. news_data/ klasörüne kayıt.",
         },
     }
 
