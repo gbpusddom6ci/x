@@ -418,8 +418,17 @@ Markdown formatınızı buraya yapıştırın veya yukarıdan .md dosyası yükl
             .then(data => {
               if (data.error) {
                 errors++;
-                return;
+                return Promise.reject('conversion error');
               }
+              
+              // İndir
+              const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = filename;
+              a.click();
+              URL.revokeObjectURL(url);
               
               // Otomatik kaydet
               return fetch('./save', {
@@ -432,14 +441,14 @@ Markdown formatınızı buraya yapıştırın veya yukarıdan .md dosyası yükl
             .then(saveResult => {
               processed++;
               if (processed + errors === fileQueue.length) {
-                const msg = `✅ ${processed} dosya kaydedildi` + (errors > 0 ? `, ${errors} hata` : '');
+                const msg = `✅ ${processed} dosya kaydedildi ve indirildi` + (errors > 0 ? `, ${errors} hata` : '');
                 showInfo(outputInfo, msg, errors > 0 ? 'error' : 'success');
               }
             })
             .catch(err => {
               errors++;
               if (processed + errors === fileQueue.length) {
-                showInfo(outputInfo, `✅ ${processed} dosya kaydedildi, ${errors} hata`, 'error');
+                showInfo(outputInfo, `✅ ${processed} dosya kaydedildi ve indirildi, ${errors} hata`, 'error');
               }
             });
           };
