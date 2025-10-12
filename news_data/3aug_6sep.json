@@ -1,0 +1,1457 @@
+{
+  "meta": {
+    "source": "markdown_converter",
+    "year": 2025,
+    "total_days": 35,
+    "total_events": 96,
+    "date_range": "2025-08-03 -> 2025-09-06"
+  },
+  "days": [
+    {
+      "date": "2025-08-03",
+      "weekday": "Sun",
+      "events": []
+    },
+    {
+      "date": "2025-08-04",
+      "weekday": "Mon",
+      "events": [
+        {
+          "date": "2025-08-04",
+          "weekday": "Mon",
+          "time_label": null,
+          "time_24h": "02:30",
+          "currency": "CHF",
+          "title": "CPI m/m",
+          "values": {
+            "actual": "0.0%",
+            "forecast": "-0.2%",
+            "previous": "0.2%"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-08-05",
+      "weekday": "Tue",
+      "events": [
+        {
+          "date": "2025-08-05",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "08:00",
+          "currency": "USD",
+          "title": "ISM Services PMI",
+          "values": {
+            "actual": "50.1",
+            "forecast": "51.5",
+            "previous": "50.8"
+          }
+        },
+        {
+          "date": "2025-08-05",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "18:45",
+          "currency": "NZD",
+          "title": "Employment Change q/q",
+          "values": {
+            "actual": "-0.1%",
+            "forecast": "-0.1%",
+            "previous": "0.0%"
+          }
+        },
+        {
+          "date": "2025-08-05",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "18:45",
+          "currency": "NZD",
+          "title": "Unemployment Rate",
+          "values": {
+            "actual": "5.2%",
+            "forecast": "5.3%",
+            "previous": "5.1%"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-08-06",
+      "weekday": "Wed",
+      "events": [
+        {
+          "date": "2025-08-06",
+          "weekday": "Wed",
+          "time_label": null,
+          "time_24h": "23:00",
+          "currency": "NZD",
+          "title": "Inflation Expectations q/q",
+          "values": {
+            "actual": "2.28%",
+            "forecast": "2.29%",
+            "previous": null
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-08-07",
+      "weekday": "Thu",
+      "events": [
+        {
+          "date": "2025-08-07",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "07:00",
+          "currency": "GBP",
+          "title": "MPC Official Bank Rate Votes",
+          "values": {
+            "actual": "0-5-4",
+            "forecast": "0-8-1",
+            "previous": "0-3-6"
+          }
+        },
+        {
+          "date": "2025-08-07",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "07:00",
+          "currency": "GBP",
+          "title": "Official Bank Rate",
+          "values": {
+            "actual": "4.00%",
+            "forecast": "4.00%",
+            "previous": "4.25%"
+          }
+        },
+        {
+          "date": "2025-08-07",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "07:30",
+          "currency": "USD",
+          "title": "Unemployment Claims",
+          "values": {
+            "actual": "226K",
+            "forecast": "221K",
+            "previous": "219K"
+          }
+        },
+        {
+          "date": "2025-08-07",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "10:00",
+          "currency": "CAD",
+          "title": "Ivey PMI",
+          "values": {
+            "actual": "55.8",
+            "forecast": "55.2",
+            "previous": "53.3"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-08-08",
+      "weekday": "Fri",
+      "events": [
+        {
+          "date": "2025-08-08",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "CAD",
+          "title": "Employment Change",
+          "values": {
+            "actual": "-40.8K",
+            "forecast": "15.3K",
+            "previous": "83.1K"
+          }
+        },
+        {
+          "date": "2025-08-08",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "CAD",
+          "title": "Unemployment Rate",
+          "values": {
+            "actual": "6.9%",
+            "forecast": "7.0%",
+            "previous": "6.9%"
+          }
+        },
+        {
+          "date": "2025-08-08",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "21:30",
+          "currency": "CNY",
+          "title": "CPI y/y",
+          "values": {
+            "actual": "0.0%",
+            "forecast": "-0.1%",
+            "previous": "0.1%"
+          }
+        },
+        {
+          "date": "2025-08-08",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "21:30",
+          "currency": "CNY",
+          "title": "PPI y/y",
+          "values": {
+            "actual": "-3.6%",
+            "forecast": "-3.3%",
+            "previous": "-3.6%"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-08-09",
+      "weekday": "Sat",
+      "events": []
+    },
+    {
+      "date": "2025-08-10",
+      "weekday": "Sun",
+      "events": []
+    },
+    {
+      "date": "2025-08-11",
+      "weekday": "Mon",
+      "events": []
+    },
+    {
+      "date": "2025-08-12",
+      "weekday": "Tue",
+      "events": [
+        {
+          "date": "2025-08-12",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "00:30",
+          "currency": "AUD",
+          "title": "Cash Rate",
+          "values": {
+            "actual": "3.60%",
+            "forecast": "3.60%",
+            "previous": "3.85%"
+          }
+        },
+        {
+          "date": "2025-08-12",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "00:30",
+          "currency": "GBP",
+          "title": "Average Earnings Index 3m/y",
+          "values": {
+            "actual": "4.6%",
+            "forecast": "4.7%",
+            "previous": "5.0%"
+          }
+        },
+        {
+          "date": "2025-08-12",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "00:30",
+          "currency": "GBP",
+          "title": "Claimant Count Change",
+          "values": {
+            "actual": "-6.2K",
+            "forecast": "19.7K",
+            "previous": "-15.5K"
+          }
+        },
+        {
+          "date": "2025-08-12",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "05:00",
+          "currency": "EUR",
+          "title": "German ZEW Economic Sentiment",
+          "values": {
+            "actual": "34.7",
+            "forecast": "39.5",
+            "previous": "52.7"
+          }
+        },
+        {
+          "date": "2025-08-12",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "Core CPI m/m",
+          "values": {
+            "actual": "0.3%",
+            "forecast": "0.3%",
+            "previous": "0.2%"
+          }
+        },
+        {
+          "date": "2025-08-12",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "CPI m/m",
+          "values": {
+            "actual": "0.2%",
+            "forecast": "0.2%",
+            "previous": "0.3%"
+          }
+        },
+        {
+          "date": "2025-08-12",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "CPI y/y",
+          "values": {
+            "actual": "2.7%",
+            "forecast": "2.8%",
+            "previous": "2.7%"
+          }
+        },
+        {
+          "date": "2025-08-12",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "21:30",
+          "currency": "AUD",
+          "title": "Wage Price Index q/q",
+          "values": {
+            "actual": "0.8%",
+            "forecast": "0.8%",
+            "previous": "0.9%"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-08-13",
+      "weekday": "Wed",
+      "events": [
+        {
+          "date": "2025-08-13",
+          "weekday": "Wed",
+          "time_label": null,
+          "time_24h": "05:03",
+          "currency": "CNY",
+          "title": "New Loans",
+          "values": {
+            "actual": "-50B",
+            "forecast": "305B",
+            "previous": "2240B"
+          }
+        },
+        {
+          "date": "2025-08-13",
+          "weekday": "Wed",
+          "time_label": null,
+          "time_24h": "11:15",
+          "currency": "AUD",
+          "title": "Employment Change",
+          "values": {
+            "actual": "24.5K",
+            "forecast": "25.3K",
+            "previous": "1.0K"
+          }
+        },
+        {
+          "date": "2025-08-13",
+          "weekday": "Wed",
+          "time_label": null,
+          "time_24h": "11:15",
+          "currency": "AUD",
+          "title": "Unemployment Rate",
+          "values": {
+            "actual": "4.2%",
+            "forecast": "4.2%",
+            "previous": "4.3%"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-08-14",
+      "weekday": "Thu",
+      "events": [
+        {
+          "date": "2025-08-14",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "02:00",
+          "currency": "GBP",
+          "title": "GDP m/m",
+          "values": {
+            "actual": "0.4%",
+            "forecast": "0.2%",
+            "previous": "-0.1%"
+          }
+        },
+        {
+          "date": "2025-08-14",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "02:00",
+          "currency": "GBP",
+          "title": "Prelim GDP q/q",
+          "values": {
+            "actual": "0.3%",
+            "forecast": "0.1%",
+            "previous": "0.7%"
+          }
+        },
+        {
+          "date": "2025-08-14",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "Core PPI m/m",
+          "values": {
+            "actual": "0.9%",
+            "forecast": "0.2%",
+            "previous": "0.0%"
+          }
+        },
+        {
+          "date": "2025-08-14",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "PPI m/m",
+          "values": {
+            "actual": "0.9%",
+            "forecast": "0.2%",
+            "previous": "0.0%"
+          }
+        },
+        {
+          "date": "2025-08-14",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "Unemployment Claims",
+          "values": {
+            "actual": "224K",
+            "forecast": "225K",
+            "previous": "227K"
+          }
+        },
+        {
+          "date": "2025-08-14",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "13:00",
+          "currency": "CNY",
+          "title": "Industrial Production y/y",
+          "values": {
+            "actual": "5.7%",
+            "forecast": "6.0%",
+            "previous": "6.8%"
+          }
+        },
+        {
+          "date": "2025-08-14",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "13:00",
+          "currency": "CNY",
+          "title": "Retail Sales y/y",
+          "values": {
+            "actual": "3.7%",
+            "forecast": "4.6%",
+            "previous": "4.8%"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-08-15",
+      "weekday": "Fri",
+      "events": [
+        {
+          "date": "2025-08-15",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "Core Retail Sales m/m",
+          "values": {
+            "actual": "0.3%",
+            "forecast": "0.3%",
+            "previous": "0.8%"
+          }
+        },
+        {
+          "date": "2025-08-15",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "Retail Sales m/m",
+          "values": {
+            "actual": "0.5%",
+            "forecast": "0.6%",
+            "previous": "0.9%"
+          }
+        },
+        {
+          "date": "2025-08-15",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "Empire State Manufacturing Index",
+          "values": {
+            "actual": "11.9",
+            "forecast": "-1.2",
+            "previous": "5.5"
+          }
+        },
+        {
+          "date": "2025-08-15",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "10:00",
+          "currency": "USD",
+          "title": "Prelim UoM Consumer Sentiment",
+          "values": {
+            "actual": "58.6",
+            "forecast": "61.9",
+            "previous": "61.7"
+          }
+        },
+        {
+          "date": "2025-08-15",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "10:00",
+          "currency": "USD",
+          "title": "Prelim UoM Inflation Expectations",
+          "values": {
+            "actual": "4.9%",
+            "forecast": "4.5%",
+            "previous": null
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-08-16",
+      "weekday": "Sat",
+      "events": []
+    },
+    {
+      "date": "2025-08-17",
+      "weekday": "Sun",
+      "events": []
+    },
+    {
+      "date": "2025-08-18",
+      "weekday": "Mon",
+      "events": []
+    },
+    {
+      "date": "2025-08-19",
+      "weekday": "Tue",
+      "events": [
+        {
+          "date": "2025-08-19",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "08:00",
+          "currency": "CAD",
+          "title": "CPI m/m",
+          "values": {
+            "actual": "0.3%",
+            "forecast": "0.3%",
+            "previous": "0.1%"
+          }
+        },
+        {
+          "date": "2025-08-19",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "08:00",
+          "currency": "CAD",
+          "title": "Median CPI y/y",
+          "values": {
+            "actual": "3.1%",
+            "forecast": "3.1%",
+            "previous": "3.0%"
+          }
+        },
+        {
+          "date": "2025-08-19",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "08:00",
+          "currency": "CAD",
+          "title": "Trimmed CPI y/y",
+          "values": {
+            "actual": "3.0%",
+            "forecast": "3.0%",
+            "previous": "3.0%"
+          }
+        },
+        {
+          "date": "2025-08-19",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "08:00",
+          "currency": "CAD",
+          "title": "Common CPI y/y",
+          "values": {
+            "actual": "2.6%",
+            "forecast": "2.7%",
+            "previous": "2.6%"
+          }
+        },
+        {
+          "date": "2025-08-19",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "21:00",
+          "currency": "CNY",
+          "title": "1-y Loan Prime Rate",
+          "values": {
+            "actual": "3.00%",
+            "forecast": "3.00%",
+            "previous": "3.00%"
+          }
+        },
+        {
+          "date": "2025-08-19",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "21:00",
+          "currency": "CNY",
+          "title": "5-y Loan Prime Rate",
+          "values": {
+            "actual": "3.50%",
+            "forecast": "3.50%",
+            "previous": "3.50%"
+          }
+        },
+        {
+          "date": "2025-08-19",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "22:00",
+          "currency": "NZD",
+          "title": "Official Cash Rate",
+          "values": {
+            "actual": "3.00%",
+            "forecast": "3.00%",
+            "previous": "3.25%"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-08-20",
+      "weekday": "Wed",
+      "events": [
+        {
+          "date": "2025-08-20",
+          "weekday": "Wed",
+          "time_label": null,
+          "time_24h": "02:00",
+          "currency": "GBP",
+          "title": "CPI y/y",
+          "values": {
+            "actual": "3.8%",
+            "forecast": "3.7%",
+            "previous": "3.6%"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-08-21",
+      "weekday": "Thu",
+      "events": [
+        {
+          "date": "2025-08-21",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "03:15",
+          "currency": "EUR",
+          "title": "French Flash Manufacturing PMI",
+          "values": {
+            "actual": "49.9",
+            "forecast": "48.2",
+            "previous": "48.2"
+          }
+        },
+        {
+          "date": "2025-08-21",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "03:15",
+          "currency": "EUR",
+          "title": "French Flash Services PMI",
+          "values": {
+            "actual": "49.7",
+            "forecast": "48.5",
+            "previous": "48.5"
+          }
+        },
+        {
+          "date": "2025-08-21",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "03:30",
+          "currency": "EUR",
+          "title": "German Flash Manufacturing PMI",
+          "values": {
+            "actual": "49.9",
+            "forecast": "48.8",
+            "previous": "49.1"
+          }
+        },
+        {
+          "date": "2025-08-21",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "03:30",
+          "currency": "EUR",
+          "title": "German Flash Services PMI",
+          "values": {
+            "actual": "50.1",
+            "forecast": "50.4",
+            "previous": "50.6"
+          }
+        },
+        {
+          "date": "2025-08-21",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "04:00",
+          "currency": "EUR",
+          "title": "Flash Manufacturing PMI",
+          "values": {
+            "actual": "50.5",
+            "forecast": "49.5",
+            "previous": "49.8"
+          }
+        },
+        {
+          "date": "2025-08-21",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "04:00",
+          "currency": "EUR",
+          "title": "Flash Services PMI",
+          "values": {
+            "actual": "50.7",
+            "forecast": "50.8",
+            "previous": "51.0"
+          }
+        },
+        {
+          "date": "2025-08-21",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "04:30",
+          "currency": "GBP",
+          "title": "Flash Manufacturing PMI",
+          "values": {
+            "actual": "47.3",
+            "forecast": "48.2",
+            "previous": "48.0"
+          }
+        },
+        {
+          "date": "2025-08-21",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "04:30",
+          "currency": "GBP",
+          "title": "Flash Services PMI",
+          "values": {
+            "actual": "53.6",
+            "forecast": "51.8",
+            "previous": "51.8"
+          }
+        },
+        {
+          "date": "2025-08-21",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "Unemployment Claims",
+          "values": {
+            "actual": "235K",
+            "forecast": "226K",
+            "previous": "224K"
+          }
+        },
+        {
+          "date": "2025-08-21",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "Philly Fed Manufacturing Index",
+          "values": {
+            "actual": "-0.3",
+            "forecast": "6.8",
+            "previous": "15.9"
+          }
+        },
+        {
+          "date": "2025-08-21",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "09:45",
+          "currency": "USD",
+          "title": "Flash Manufacturing PMI",
+          "values": {
+            "actual": "53.3",
+            "forecast": "49.7",
+            "previous": "49.8"
+          }
+        },
+        {
+          "date": "2025-08-21",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "09:45",
+          "currency": "USD",
+          "title": "Flash Services PMI",
+          "values": {
+            "actual": "55.4",
+            "forecast": "54.2",
+            "previous": "55.7"
+          }
+        },
+        {
+          "date": "2025-08-21",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "10:00",
+          "currency": "USD",
+          "title": "Existing Home Sales",
+          "values": {
+            "actual": "4.01M",
+            "forecast": "3.92M",
+            "previous": "3.93M"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-08-22",
+      "weekday": "Fri",
+      "events": [
+        {
+          "date": "2025-08-22",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "CAD",
+          "title": "Core Retail Sales m/m",
+          "values": {
+            "actual": "1.9%",
+            "forecast": "0.9%",
+            "previous": "-0.3%"
+          }
+        },
+        {
+          "date": "2025-08-22",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "CAD",
+          "title": "Retail Sales m/m",
+          "values": {
+            "actual": "1.5%",
+            "forecast": "1.3%",
+            "previous": "-1.2%"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-08-23",
+      "weekday": "Sat",
+      "events": []
+    },
+    {
+      "date": "2025-08-24",
+      "weekday": "Sun",
+      "events": [
+        {
+          "date": "2025-08-24",
+          "weekday": "Sun",
+          "time_label": null,
+          "time_24h": "18:45",
+          "currency": "NZD",
+          "title": "Retail Sales q/q",
+          "values": {
+            "actual": "0.5%",
+            "forecast": "0.1%",
+            "previous": "0.8%"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-08-25",
+      "weekday": "Mon",
+      "events": [
+        {
+          "date": "2025-08-25",
+          "weekday": "Mon",
+          "time_label": null,
+          "time_24h": "04:00",
+          "currency": "EUR",
+          "title": "German ifo Business Climate",
+          "values": {
+            "actual": "89.0",
+            "forecast": "88.7",
+            "previous": "88.6"
+          }
+        },
+        {
+          "date": "2025-08-25",
+          "weekday": "Mon",
+          "time_label": null,
+          "time_24h": "10:00",
+          "currency": "USD",
+          "title": "New Home Sales",
+          "values": {
+            "actual": "652K",
+            "forecast": "635K",
+            "previous": "656K"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-08-26",
+      "weekday": "Tue",
+      "events": [
+        {
+          "date": "2025-08-26",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "Core Durable Goods Orders m/m",
+          "values": {
+            "actual": "1.1%",
+            "forecast": "0.2%",
+            "previous": "0.3%"
+          }
+        },
+        {
+          "date": "2025-08-26",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "Durable Goods Orders m/m",
+          "values": {
+            "actual": "-2.8%",
+            "forecast": "-3.8%",
+            "previous": "-9.4%"
+          }
+        },
+        {
+          "date": "2025-08-26",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "09:59",
+          "currency": "USD",
+          "title": "Richmond Manufacturing Index",
+          "values": {
+            "actual": "-7",
+            "forecast": "-11",
+            "previous": "-20"
+          }
+        },
+        {
+          "date": "2025-08-26",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "10:00",
+          "currency": "USD",
+          "title": "CB Consumer Confidence",
+          "values": {
+            "actual": "97.4",
+            "forecast": "96.4",
+            "previous": "98.7"
+          }
+        },
+        {
+          "date": "2025-08-26",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "14:30",
+          "currency": "AUD",
+          "title": "CPI y/y",
+          "values": {
+            "actual": "2.8%",
+            "forecast": "2.3%",
+            "previous": "1.9%"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-08-27",
+      "weekday": "Wed",
+      "events": []
+    },
+    {
+      "date": "2025-08-28",
+      "weekday": "Thu",
+      "events": [
+        {
+          "date": "2025-08-28",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "03:00",
+          "currency": "CHF",
+          "title": "GDP q/q",
+          "values": {
+            "actual": "0.1%",
+            "forecast": "0.1%",
+            "previous": "0.4%"
+          }
+        },
+        {
+          "date": "2025-08-28",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "Prelim GDP q/q",
+          "values": {
+            "actual": "3.3%",
+            "forecast": "3.1%",
+            "previous": "3.0%"
+          }
+        },
+        {
+          "date": "2025-08-28",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "Unemployment Claims",
+          "values": {
+            "actual": "229K",
+            "forecast": "231K",
+            "previous": "234K"
+          }
+        },
+        {
+          "date": "2025-08-28",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "Prelim GDP Price Index q/q",
+          "values": {
+            "actual": "2.0%",
+            "forecast": "2.0%",
+            "previous": "2.0%"
+          }
+        },
+        {
+          "date": "2025-08-28",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "10:00",
+          "currency": "USD",
+          "title": "Pending Home Sales m/m",
+          "values": {
+            "actual": "-0.4%",
+            "forecast": "-0.4%",
+            "previous": "-0.8%"
+          }
+        },
+        {
+          "date": "2025-08-28",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "18:30",
+          "currency": "JPY",
+          "title": "Tokyo Core CPI y/y",
+          "values": {
+            "actual": "2.5%",
+            "forecast": "2.5%",
+            "previous": "2.9%"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-08-29",
+      "weekday": "Fri",
+      "events": [
+        {
+          "date": "2025-08-29",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "03:00",
+          "currency": "EUR",
+          "title": "Spanish Flash CPI y/y",
+          "values": {
+            "actual": "2.7%",
+            "forecast": "2.8%",
+            "previous": "2.7%"
+          }
+        },
+        {
+          "date": "2025-08-29",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "CAD",
+          "title": "GDP m/m",
+          "values": {
+            "actual": "-0.1%",
+            "forecast": "0.1%",
+            "previous": "-0.1%"
+          }
+        },
+        {
+          "date": "2025-08-29",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "Core PCE Price Index m/m",
+          "values": {
+            "actual": "0.3%",
+            "forecast": "0.3%",
+            "previous": "0.3%"
+          }
+        },
+        {
+          "date": "2025-08-29",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "10:00",
+          "currency": "USD",
+          "title": "Revised UoM Consumer Sentiment",
+          "values": {
+            "actual": "58.2",
+            "forecast": "58.7",
+            "previous": "58.6"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-08-30",
+      "weekday": "Sat",
+      "events": [
+        {
+          "date": "2025-08-30",
+          "weekday": "Sat",
+          "time_label": null,
+          "time_24h": "21:30",
+          "currency": "CNY",
+          "title": "Manufacturing PMI",
+          "values": {
+            "actual": "49.4",
+            "forecast": "49.5",
+            "previous": "49.3"
+          }
+        },
+        {
+          "date": "2025-08-30",
+          "weekday": "Sat",
+          "time_label": null,
+          "time_24h": "21:30",
+          "currency": "CNY",
+          "title": "Non-Manufacturing PMI",
+          "values": {
+            "actual": "50.3",
+            "forecast": "50.3",
+            "previous": "50.1"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-08-31",
+      "weekday": "Sun",
+      "events": []
+    },
+    {
+      "date": "2025-09-01",
+      "weekday": "Mon",
+      "events": []
+    },
+    {
+      "date": "2025-09-02",
+      "weekday": "Tue",
+      "events": [
+        {
+          "date": "2025-09-02",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "05:00",
+          "currency": "EUR",
+          "title": "Core CPI Flash Estimate y/y",
+          "values": {
+            "actual": "2.3%",
+            "forecast": "2.2%",
+            "previous": "2.3%"
+          }
+        },
+        {
+          "date": "2025-09-02",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "05:00",
+          "currency": "EUR",
+          "title": "CPI Flash Estimate y/y",
+          "values": {
+            "actual": "2.1%",
+            "forecast": "2.1%",
+            "previous": "2.0%"
+          }
+        },
+        {
+          "date": "2025-09-02",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "10:00",
+          "currency": "USD",
+          "title": "ISM Manufacturing PMI",
+          "values": {
+            "actual": "48.7",
+            "forecast": "49.0",
+            "previous": "48.0"
+          }
+        },
+        {
+          "date": "2025-09-02",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "10:00",
+          "currency": "USD",
+          "title": "ISM Manufacturing Prices",
+          "values": {
+            "actual": "63.7",
+            "forecast": "65.1",
+            "previous": "64.8"
+          }
+        },
+        {
+          "date": "2025-09-02",
+          "weekday": "Tue",
+          "time_label": null,
+          "time_24h": "14:00",
+          "currency": "AUD",
+          "title": "GDP q/q",
+          "values": {
+            "actual": "0.6%",
+            "forecast": "0.5%",
+            "previous": "0.3%"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-09-03",
+      "weekday": "Wed",
+      "events": [
+        {
+          "date": "2025-09-03",
+          "weekday": "Wed",
+          "time_label": null,
+          "time_24h": "03:30",
+          "currency": "USD",
+          "title": "JOLTS Job Openings",
+          "values": {
+            "actual": "7.18M",
+            "forecast": "7.38M",
+            "previous": "7.36M"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-09-04",
+      "weekday": "Thu",
+      "events": [
+        {
+          "date": "2025-09-04",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "02:30",
+          "currency": "CHF",
+          "title": "CPI m/m",
+          "values": {
+            "actual": "-0.1%",
+            "forecast": "0.0%",
+            "previous": "0.0%"
+          }
+        },
+        {
+          "date": "2025-09-04",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "08:15",
+          "currency": "USD",
+          "title": "ADP Non-Farm Employment Change",
+          "values": {
+            "actual": "54K",
+            "forecast": "73K",
+            "previous": "106K"
+          }
+        },
+        {
+          "date": "2025-09-04",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "Unemployment Claims",
+          "values": {
+            "actual": "237K",
+            "forecast": "230K",
+            "previous": "229K"
+          }
+        },
+        {
+          "date": "2025-09-04",
+          "weekday": "Thu",
+          "time_label": null,
+          "time_24h": "10:00",
+          "currency": "USD",
+          "title": "ISM Services PMI",
+          "values": {
+            "actual": "52.0",
+            "forecast": "50.9",
+            "previous": "50.1"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-09-05",
+      "weekday": "Fri",
+      "events": [
+        {
+          "date": "2025-09-05",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "02:00",
+          "currency": "GBP",
+          "title": "Retail Sales m/m",
+          "values": {
+            "actual": "0.6%",
+            "forecast": "0.3%",
+            "previous": "0.3%"
+          }
+        },
+        {
+          "date": "2025-09-05",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "CAD",
+          "title": "Employment Change",
+          "values": {
+            "actual": "-65.5K",
+            "forecast": "4.9K",
+            "previous": "-40.8K"
+          }
+        },
+        {
+          "date": "2025-09-05",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "CAD",
+          "title": "Unemployment Rate",
+          "values": {
+            "actual": "7.1%",
+            "forecast": "7.0%",
+            "previous": "6.9%"
+          }
+        },
+        {
+          "date": "2025-09-05",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "Average Hourly Earnings m/m",
+          "values": {
+            "actual": "0.3%",
+            "forecast": "0.3%",
+            "previous": "0.3%"
+          }
+        },
+        {
+          "date": "2025-09-05",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "Non-Farm Employment Change",
+          "values": {
+            "actual": "22K",
+            "forecast": "75K",
+            "previous": "79K"
+          }
+        },
+        {
+          "date": "2025-09-05",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "08:30",
+          "currency": "USD",
+          "title": "Unemployment Rate",
+          "values": {
+            "actual": "4.3%",
+            "forecast": "4.3%",
+            "previous": "4.2%"
+          }
+        },
+        {
+          "date": "2025-09-05",
+          "weekday": "Fri",
+          "time_label": null,
+          "time_24h": "10:00",
+          "currency": "CAD",
+          "title": "Ivey PMI",
+          "values": {
+            "actual": "50.1",
+            "forecast": "53.1",
+            "previous": "55.8"
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-09-06",
+      "weekday": "Sat",
+      "events": []
+    }
+  ]
+}

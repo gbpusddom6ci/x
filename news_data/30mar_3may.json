@@ -1,7 +1,10 @@
 {
   "meta": {
-    "source": "converted",
-    "year": 2025
+    "source": "markdown_converter",
+    "year": 2025,
+    "total_days": 35,
+    "total_events": 108,
+    "date_range": "2025-03-30 -> 2025-05-03"
   },
   "days": [
     {
@@ -44,19 +47,6 @@
           "date": "2025-03-31",
           "weekday": "Mon",
           "time_label": null,
-          "time_24h": null,
-          "currency": "EUR",
-          "title": "German Prelim CPI m/m",
-          "values": {
-            "actual": "0.3%",
-            "forecast": "0.3%",
-            "previous": "0.4%"
-          }
-        },
-        {
-          "date": "2025-03-31",
-          "weekday": "Mon",
-          "time_label": null,
           "time_24h": "20:30",
           "currency": "AUD",
           "title": "Retail Sales m/m",
@@ -78,19 +68,6 @@
             "forecast": "4.10%",
             "previous": "4.10%"
           }
-        },
-        {
-          "date": "2025-03-31",
-          "weekday": "Mon",
-          "time_label": null,
-          "time_24h": "23:30",
-          "currency": "AUD",
-          "title": "RBA Rate Statement",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
         }
       ]
     },
@@ -103,19 +80,6 @@
           "weekday": "Tue",
           "time_label": null,
           "time_24h": "00:30",
-          "currency": "AUD",
-          "title": "RBA Press Conference",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-01",
-          "weekday": "Tue",
-          "time_label": null,
-          "time_24h": "05:00",
           "currency": "EUR",
           "title": "Core CPI Flash Estimate y/y",
           "values": {
@@ -128,7 +92,7 @@
           "date": "2025-04-01",
           "weekday": "Tue",
           "time_label": null,
-          "time_24h": "05:00",
+          "time_24h": "00:30",
           "currency": "EUR",
           "title": "CPI Flash Estimate y/y",
           "values": {
@@ -142,19 +106,6 @@
           "weekday": "Tue",
           "time_label": null,
           "time_24h": "08:30",
-          "currency": "EUR",
-          "title": "ECB President Lagarde Speaks",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-01",
-          "weekday": "Tue",
-          "time_label": null,
-          "time_24h": "09:45",
           "currency": "USD",
           "title": "Final Manufacturing PMI",
           "values": {
@@ -220,19 +171,6 @@
             "forecast": "118K",
             "previous": "84K"
           }
-        },
-        {
-          "date": "2025-04-02",
-          "weekday": "Wed",
-          "time_label": null,
-          "time_24h": "16:00",
-          "currency": "USD",
-          "title": "President Trump Speaks",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
         }
       ]
     },
@@ -251,19 +189,6 @@
             "actual": "0.0%",
             "forecast": "0.1%",
             "previous": "0.6%"
-          }
-        },
-        {
-          "date": "2025-04-03",
-          "weekday": "Thu",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "ALL",
-          "title": "OPEC-JMMC Meetings",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
           }
         },
         {
@@ -303,19 +228,6 @@
             "actual": "50.8",
             "forecast": "53.0",
             "previous": "53.5"
-          }
-        },
-        {
-          "date": "2025-04-03",
-          "weekday": "Thu",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "CNY",
-          "title": "Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
           }
         }
       ]
@@ -401,66 +313,23 @@
             "forecast": "4.1%",
             "previous": "4.1%"
           }
-        },
-        {
-          "date": "2025-04-04",
-          "weekday": "Fri",
-          "time_label": null,
-          "time_24h": "11:25",
-          "currency": "USD",
-          "title": "Fed Chair Powell Speaks",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-04",
-          "weekday": "Fri",
-          "time_label": null,
-          "time_24h": "12:45",
-          "currency": "USD",
-          "title": "FOMC Member Waller Speaks",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
         }
       ]
     },
     {
       "date": "2025-04-05",
       "weekday": "Sat",
-      "events": [
-        {
-          "date": "2025-04-05",
-          "weekday": "Sat",
-          "time_label": null,
-          "time_24h": "10:00",
-          "currency": "NZD",
-          "title": "Daylight Saving Time Shift",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-05",
-          "weekday": "Sat",
-          "time_label": null,
-          "time_24h": "12:00",
-          "currency": "AUD",
-          "title": "Daylight Saving Time Shift",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        }
-      ]
+      "events": []
+    },
+    {
+      "date": "2025-04-06",
+      "weekday": "Sun",
+      "events": []
+    },
+    {
+      "date": "2025-04-07",
+      "weekday": "Mon",
+      "events": []
     },
     {
       "date": "2025-04-08",
@@ -484,38 +353,12 @@
           "weekday": "Tue",
           "time_label": null,
           "time_24h": "18:45",
-          "currency": "USD",
-          "title": "President Trump Speaks",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-08",
-          "weekday": "Tue",
-          "time_label": null,
-          "time_24h": "22:00",
           "currency": "NZD",
           "title": "Official Cash Rate",
           "values": {
             "actual": "3.50%",
             "forecast": "3.50%",
             "previous": "3.75%"
-          }
-        },
-        {
-          "date": "2025-04-08",
-          "weekday": "Tue",
-          "time_label": null,
-          "time_24h": "22:00",
-          "currency": "NZD",
-          "title": "RBNZ Rate Statement",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
           }
         }
       ]
@@ -529,19 +372,6 @@
           "weekday": "Wed",
           "time_label": null,
           "time_24h": "02:15",
-          "currency": "JPY",
-          "title": "BOJ Gov Ueda Speaks",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-09",
-          "weekday": "Wed",
-          "time_label": null,
-          "time_24h": "13:01",
           "currency": "USD",
           "title": "10-y Bond Auction",
           "values": {
@@ -555,19 +385,6 @@
           "weekday": "Wed",
           "time_label": null,
           "time_24h": "14:00",
-          "currency": "USD",
-          "title": "FOMC Meeting Minutes",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-09",
-          "weekday": "Wed",
-          "time_label": null,
-          "time_24h": "21:30",
           "currency": "CNY",
           "title": "CPI y/y",
           "values": {
@@ -580,7 +397,7 @@
           "date": "2025-04-09",
           "weekday": "Wed",
           "time_label": null,
-          "time_24h": "21:30",
+          "time_24h": "14:00",
           "currency": "CNY",
           "title": "PPI y/y",
           "values": {
@@ -600,19 +417,6 @@
           "weekday": "Thu",
           "time_label": null,
           "time_24h": "06:00",
-          "currency": "AUD",
-          "title": "RBA Gov Bullock Speaks",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-10",
-          "weekday": "Thu",
-          "time_label": null,
-          "time_24h": "08:30",
           "currency": "USD",
           "title": "Core CPI m/m",
           "values": {
@@ -625,7 +429,7 @@
           "date": "2025-04-10",
           "weekday": "Thu",
           "time_label": null,
-          "time_24h": "08:30",
+          "time_24h": "06:00",
           "currency": "USD",
           "title": "CPI m/m",
           "values": {
@@ -638,7 +442,7 @@
           "date": "2025-04-10",
           "weekday": "Thu",
           "time_label": null,
-          "time_24h": "08:30",
+          "time_24h": "06:00",
           "currency": "USD",
           "title": "CPI y/y",
           "values": {
@@ -651,7 +455,7 @@
           "date": "2025-04-10",
           "weekday": "Thu",
           "time_label": null,
-          "time_24h": "08:30",
+          "time_24h": "06:00",
           "currency": "USD",
           "title": "Unemployment Claims",
           "values": {
@@ -747,6 +551,11 @@
       ]
     },
     {
+      "date": "2025-04-12",
+      "weekday": "Sat",
+      "events": []
+    },
+    {
       "date": "2025-04-13",
       "weekday": "Sun",
       "events": [
@@ -768,34 +577,7 @@
     {
       "date": "2025-04-14",
       "weekday": "Mon",
-      "events": [
-        {
-          "date": "2025-04-14",
-          "weekday": "Mon",
-          "time_label": null,
-          "time_24h": "13:00",
-          "currency": "USD",
-          "title": "FOMC Member Waller Speaks",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-14",
-          "weekday": "Mon",
-          "time_label": null,
-          "time_24h": "21:30",
-          "currency": "AUD",
-          "title": "Monetary Policy Meeting Minutes",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        }
-      ]
+      "events": []
     },
     {
       "date": "2025-04-15",
@@ -995,32 +777,6 @@
           "time_label": null,
           "time_24h": "09:45",
           "currency": "CAD",
-          "title": "BOC Monetary Policy Report",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-16",
-          "weekday": "Wed",
-          "time_label": null,
-          "time_24h": "09:45",
-          "currency": "CAD",
-          "title": "BOC Rate Statement",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-16",
-          "weekday": "Wed",
-          "time_label": null,
-          "time_24h": "09:45",
-          "currency": "CAD",
           "title": "Overnight Rate",
           "values": {
             "actual": "2.75%",
@@ -1033,32 +789,6 @@
           "weekday": "Wed",
           "time_label": null,
           "time_24h": "10:30",
-          "currency": "CAD",
-          "title": "BOC Press Conference",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-16",
-          "weekday": "Wed",
-          "time_label": null,
-          "time_24h": "13:30",
-          "currency": "USD",
-          "title": "Fed Chair Powell Speaks",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-16",
-          "weekday": "Wed",
-          "time_label": null,
-          "time_24h": "18:45",
           "currency": "NZD",
           "title": "CPI q/q",
           "values": {
@@ -1117,19 +847,6 @@
           "weekday": "Thu",
           "time_label": null,
           "time_24h": "08:15",
-          "currency": "EUR",
-          "title": "Monetary Policy Statement",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-17",
-          "weekday": "Thu",
-          "time_label": null,
-          "time_24h": "08:30",
           "currency": "USD",
           "title": "Unemployment Claims",
           "values": {
@@ -1142,7 +859,7 @@
           "date": "2025-04-17",
           "weekday": "Thu",
           "time_label": null,
-          "time_24h": "08:30",
+          "time_24h": "08:15",
           "currency": "USD",
           "title": "Philly Fed Manufacturing Index",
           "values": {
@@ -1150,136 +867,23 @@
             "forecast": "2.2",
             "previous": "12.5"
           }
-        },
-        {
-          "date": "2025-04-17",
-          "weekday": "Thu",
-          "time_label": null,
-          "time_24h": "08:45",
-          "currency": "EUR",
-          "title": "ECB Press Conference",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-17",
-          "weekday": "Thu",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "NZD",
-          "title": "Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-17",
-          "weekday": "Thu",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "AUD",
-          "title": "Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
         }
       ]
     },
     {
       "date": "2025-04-18",
       "weekday": "Fri",
-      "events": [
-        {
-          "date": "2025-04-18",
-          "weekday": "Fri",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "CHF",
-          "title": "Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-18",
-          "weekday": "Fri",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "EUR",
-          "title": "German Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-18",
-          "weekday": "Fri",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "GBP",
-          "title": "Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-18",
-          "weekday": "Fri",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "CAD",
-          "title": "Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        }
-      ]
+      "events": []
+    },
+    {
+      "date": "2025-04-19",
+      "weekday": "Sat",
+      "events": []
     },
     {
       "date": "2025-04-20",
       "weekday": "Sun",
       "events": [
-        {
-          "date": "2025-04-20",
-          "weekday": "Sun",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "NZD",
-          "title": "Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-20",
-          "weekday": "Sun",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "AUD",
-          "title": "Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
         {
           "date": "2025-04-20",
           "weekday": "Sun",
@@ -1311,73 +915,7 @@
     {
       "date": "2025-04-21",
       "weekday": "Mon",
-      "events": [
-        {
-          "date": "2025-04-21",
-          "weekday": "Mon",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "CHF",
-          "title": "Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-21",
-          "weekday": "Mon",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "EUR",
-          "title": "French Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-21",
-          "weekday": "Mon",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "EUR",
-          "title": "German Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-21",
-          "weekday": "Mon",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "EUR",
-          "title": "Italian Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-21",
-          "weekday": "Mon",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "GBP",
-          "title": "Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        }
-      ]
+      "events": []
     },
     {
       "date": "2025-04-22",
@@ -1394,19 +932,6 @@
             "actual": "-13",
             "forecast": "-6",
             "previous": "-4"
-          }
-        },
-        {
-          "date": "2025-04-22",
-          "weekday": "Tue",
-          "time_label": null,
-          "time_24h": "10:00",
-          "currency": "EUR",
-          "title": "ECB President Lagarde Speaks",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
           }
         }
       ]
@@ -1525,19 +1050,6 @@
           "time_label": null,
           "time_24h": "09:35",
           "currency": "USD",
-          "title": "FOMC Member Waller Speaks",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-23",
-          "weekday": "Wed",
-          "time_label": null,
-          "time_24h": "09:45",
-          "currency": "USD",
           "title": "Flash Manufacturing PMI",
           "values": {
             "actual": "50.7",
@@ -1549,7 +1061,7 @@
           "date": "2025-04-23",
           "weekday": "Wed",
           "time_label": null,
-          "time_24h": "09:45",
+          "time_24h": "09:35",
           "currency": "USD",
           "title": "Flash Services PMI",
           "values": {
@@ -1569,19 +1081,6 @@
             "actual": "724K",
             "forecast": "684K",
             "previous": "674K"
-          }
-        },
-        {
-          "date": "2025-04-23",
-          "weekday": "Wed",
-          "time_label": null,
-          "time_24h": "13:15",
-          "currency": "GBP",
-          "title": "BOE Gov Bailey Speaks",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
           }
         }
       ]
@@ -1659,32 +1158,6 @@
           "date": "2025-04-24",
           "weekday": "Thu",
           "time_label": null,
-          "time_24h": null,
-          "currency": "NZD",
-          "title": "Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-24",
-          "weekday": "Thu",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "AUD",
-          "title": "Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-24",
-          "weekday": "Thu",
-          "time_label": null,
           "time_24h": "19:30",
           "currency": "JPY",
           "title": "Tokyo Core CPI y/y",
@@ -1717,33 +1190,7 @@
           "date": "2025-04-25",
           "weekday": "Fri",
           "time_label": null,
-          "time_24h": null,
-          "currency": "EUR",
-          "title": "Italian Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-25",
-          "weekday": "Fri",
-          "time_label": null,
           "time_24h": "04:00",
-          "currency": "CHF",
-          "title": "SNB Chairman Schlegel Speaks",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-25",
-          "weekday": "Fri",
-          "time_label": null,
-          "time_24h": "08:30",
           "currency": "CAD",
           "title": "Core Retail Sales m/m",
           "values": {
@@ -1756,7 +1203,7 @@
           "date": "2025-04-25",
           "weekday": "Fri",
           "time_label": null,
-          "time_24h": "08:30",
+          "time_24h": "04:00",
           "currency": "CAD",
           "title": "Retail Sales m/m",
           "values": {
@@ -1781,36 +1228,19 @@
       ]
     },
     {
+      "date": "2025-04-26",
+      "weekday": "Sat",
+      "events": []
+    },
+    {
+      "date": "2025-04-27",
+      "weekday": "Sun",
+      "events": []
+    },
+    {
       "date": "2025-04-28",
       "weekday": "Mon",
-      "events": [
-        {
-          "date": "2025-04-28",
-          "weekday": "Mon",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "CAD",
-          "title": "Federal Election",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-28",
-          "weekday": "Mon",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "JPY",
-          "title": "Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        }
-      ]
+      "events": []
     },
     {
       "date": "2025-04-29",
@@ -1873,19 +1303,6 @@
           "weekday": "Tue",
           "time_label": null,
           "time_24h": "18:00",
-          "currency": "USD",
-          "title": "President Trump Speaks",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-29",
-          "weekday": "Tue",
-          "time_label": null,
-          "time_24h": "21:30",
           "currency": "AUD",
           "title": "CPI q/q",
           "values": {
@@ -1898,7 +1315,7 @@
           "date": "2025-04-29",
           "weekday": "Tue",
           "time_label": null,
-          "time_24h": "21:30",
+          "time_24h": "18:00",
           "currency": "AUD",
           "title": "CPI y/y",
           "values": {
@@ -1911,7 +1328,7 @@
           "date": "2025-04-29",
           "weekday": "Tue",
           "time_label": null,
-          "time_24h": "21:30",
+          "time_24h": "18:00",
           "currency": "AUD",
           "title": "Trimmed Mean CPI q/q",
           "values": {
@@ -1924,7 +1341,7 @@
           "date": "2025-04-29",
           "weekday": "Tue",
           "time_label": null,
-          "time_24h": "21:30",
+          "time_24h": "18:00",
           "currency": "CNY",
           "title": "Manufacturing PMI",
           "values": {
@@ -1937,7 +1354,7 @@
           "date": "2025-04-29",
           "weekday": "Tue",
           "time_label": null,
-          "time_24h": "21:30",
+          "time_24h": "18:00",
           "currency": "CNY",
           "title": "Non-Manufacturing PMI",
           "values": {
@@ -1952,19 +1369,6 @@
       "date": "2025-04-30",
       "weekday": "Wed",
       "events": [
-        {
-          "date": "2025-04-30",
-          "weekday": "Wed",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "EUR",
-          "title": "German Prelim CPI m/m",
-          "values": {
-            "actual": "0.4%",
-            "forecast": "0.3%",
-            "previous": "0.3%"
-          }
-        },
         {
           "date": "2025-04-30",
           "weekday": "Wed",
@@ -2061,64 +1465,12 @@
           "weekday": "Wed",
           "time_label": null,
           "time_24h": "20:00",
-          "currency": "USD",
-          "title": "President Trump Speaks",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-30",
-          "weekday": "Wed",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "CNY",
-          "title": "Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-30",
-          "weekday": "Wed",
-          "time_label": null,
-          "time_24h": "23:03",
-          "currency": "JPY",
-          "title": "BOJ Outlook Report",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-04-30",
-          "weekday": "Wed",
-          "time_label": null,
-          "time_24h": "23:03",
           "currency": "JPY",
           "title": "BOJ Policy Rate",
           "values": {
             "actual": "<0.50%",
             "forecast": "<0.50%",
             "previous": "<0.50%"
-          }
-        },
-        {
-          "date": "2025-04-30",
-          "weekday": "Wed",
-          "time_label": null,
-          "time_24h": "23:03",
-          "currency": "JPY",
-          "title": "Monetary Policy Statement",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
           }
         }
       ]
@@ -2131,72 +1483,7 @@
           "date": "2025-05-01",
           "weekday": "Thu",
           "time_label": null,
-          "time_24h": null,
-          "currency": "CHF",
-          "title": "Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-05-01",
-          "weekday": "Thu",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "EUR",
-          "title": "French Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-05-01",
-          "weekday": "Thu",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "EUR",
-          "title": "German Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-05-01",
-          "weekday": "Thu",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "EUR",
-          "title": "Italian Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-05-01",
-          "weekday": "Thu",
-          "time_label": null,
           "time_24h": "02:30",
-          "currency": "JPY",
-          "title": "BOJ Press Conference",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-05-01",
-          "weekday": "Thu",
-          "time_label": null,
-          "time_24h": "08:30",
           "currency": "USD",
           "title": "Unemployment Claims",
           "values": {
@@ -2229,19 +1516,6 @@
             "actual": "69.8",
             "forecast": "72.9",
             "previous": "69.4"
-          }
-        },
-        {
-          "date": "2025-05-01",
-          "weekday": "Thu",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "CNY",
-          "title": "Bank Holiday",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
           }
         },
         {
@@ -2327,40 +1601,13 @@
             "forecast": "4.2%",
             "previous": "4.2%"
           }
-        },
-        {
-          "date": "2025-05-02",
-          "weekday": "Fri",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "AUD",
-          "title": "Parliamentary Elections",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
         }
       ]
     },
     {
       "date": "2025-05-03",
       "weekday": "Sat",
-      "events": [
-        {
-          "date": "2025-05-03",
-          "weekday": "Sat",
-          "time_label": null,
-          "time_24h": null,
-          "currency": "ALL",
-          "title": "OPEC-JMMC Meetings",
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        }
-      ]
+      "events": []
     }
   ]
 }

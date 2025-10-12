@@ -1,0 +1,291 @@
+{
+  "meta": {
+    "source": "markdown_converter",
+    "year": 2025,
+    "total_days": 56,
+    "total_events": 0,
+    "date_range": "2025-11-02 -> 2025-12-27"
+  },
+  "days": [
+    {
+      "date": "2025-11-02",
+      "weekday": "Sun",
+      "events": []
+    },
+    {
+      "date": "2025-11-03",
+      "weekday": "Mon",
+      "events": []
+    },
+    {
+      "date": "2025-11-04",
+      "weekday": "Tue",
+      "events": []
+    },
+    {
+      "date": "2025-11-05",
+      "weekday": "Wed",
+      "events": []
+    },
+    {
+      "date": "2025-11-06",
+      "weekday": "Thu",
+      "events": []
+    },
+    {
+      "date": "2025-11-07",
+      "weekday": "Fri",
+      "events": []
+    },
+    {
+      "date": "2025-11-08",
+      "weekday": "Sat",
+      "events": []
+    },
+    {
+      "date": "2025-11-09",
+      "weekday": "Sun",
+      "events": []
+    },
+    {
+      "date": "2025-11-10",
+      "weekday": "Mon",
+      "events": []
+    },
+    {
+      "date": "2025-11-11",
+      "weekday": "Tue",
+      "events": []
+    },
+    {
+      "date": "2025-11-12",
+      "weekday": "Wed",
+      "events": []
+    },
+    {
+      "date": "2025-11-13",
+      "weekday": "Thu",
+      "events": []
+    },
+    {
+      "date": "2025-11-14",
+      "weekday": "Fri",
+      "events": []
+    },
+    {
+      "date": "2025-11-15",
+      "weekday": "Sat",
+      "events": []
+    },
+    {
+      "date": "2025-11-16",
+      "weekday": "Sun",
+      "events": []
+    },
+    {
+      "date": "2025-11-17",
+      "weekday": "Mon",
+      "events": []
+    },
+    {
+      "date": "2025-11-18",
+      "weekday": "Tue",
+      "events": []
+    },
+    {
+      "date": "2025-11-19",
+      "weekday": "Wed",
+      "events": []
+    },
+    {
+      "date": "2025-11-20",
+      "weekday": "Thu",
+      "events": []
+    },
+    {
+      "date": "2025-11-21",
+      "weekday": "Fri",
+      "events": []
+    },
+    {
+      "date": "2025-11-22",
+      "weekday": "Sat",
+      "events": []
+    },
+    {
+      "date": "2025-11-23",
+      "weekday": "Sun",
+      "events": []
+    },
+    {
+      "date": "2025-11-24",
+      "weekday": "Mon",
+      "events": []
+    },
+    {
+      "date": "2025-11-25",
+      "weekday": "Tue",
+      "events": []
+    },
+    {
+      "date": "2025-11-26",
+      "weekday": "Wed",
+      "events": []
+    },
+    {
+      "date": "2025-11-27",
+      "weekday": "Thu",
+      "events": []
+    },
+    {
+      "date": "2025-11-28",
+      "weekday": "Fri",
+      "events": []
+    },
+    {
+      "date": "2025-11-29",
+      "weekday": "Sat",
+      "events": []
+    },
+    {
+      "date": "2025-11-30",
+      "weekday": "Sun",
+      "events": []
+    },
+    {
+      "date": "2025-12-01",
+      "weekday": "Mon",
+      "events": []
+    },
+    {
+      "date": "2025-12-02",
+      "weekday": "Tue",
+      "events": []
+    },
+    {
+      "date": "2025-12-03",
+      "weekday": "Wed",
+      "events": []
+    },
+    {
+      "date": "2025-12-04",
+      "weekday": "Thu",
+      "events": []
+    },
+    {
+      "date": "2025-12-05",
+      "weekday": "Fri",
+      "events": []
+    },
+    {
+      "date": "2025-12-06",
+      "weekday": "Sat",
+      "events": []
+    },
+    {
+      "date": "2025-12-07",
+      "weekday": "Sun",
+      "events": []
+    },
+    {
+      "date": "2025-12-08",
+      "weekday": "Mon",
+      "events": []
+    },
+    {
+      "date": "2025-12-09",
+      "weekday": "Tue",
+      "events": []
+    },
+    {
+      "date": "2025-12-10",
+      "weekday": "Wed",
+      "events": []
+    },
+    {
+      "date": "2025-12-11",
+      "weekday": "Thu",
+      "events": []
+    },
+    {
+      "date": "2025-12-12",
+      "weekday": "Fri",
+      "events": []
+    },
+    {
+      "date": "2025-12-13",
+      "weekday": "Sat",
+      "events": []
+    },
+    {
+      "date": "2025-12-14",
+      "weekday": "Sun",
+      "events": []
+    },
+    {
+      "date": "2025-12-15",
+      "weekday": "Mon",
+      "events": []
+    },
+    {
+      "date": "2025-12-16",
+      "weekday": "Tue",
+      "events": []
+    },
+    {
+      "date": "2025-12-17",
+      "weekday": "Wed",
+      "events": []
+    },
+    {
+      "date": "2025-12-18",
+      "weekday": "Thu",
+      "events": []
+    },
+    {
+      "date": "2025-12-19",
+      "weekday": "Fri",
+      "events": []
+    },
+    {
+      "date": "2025-12-20",
+      "weekday": "Sat",
+      "events": []
+    },
+    {
+      "date": "2025-12-21",
+      "weekday": "Sun",
+      "events": []
+    },
+    {
+      "date": "2025-12-22",
+      "weekday": "Mon",
+      "events": []
+    },
+    {
+      "date": "2025-12-23",
+      "weekday": "Tue",
+      "events": []
+    },
+    {
+      "date": "2025-12-24",
+      "weekday": "Wed",
+      "events": []
+    },
+    {
+      "date": "2025-12-25",
+      "weekday": "Thu",
+      "events": []
+    },
+    {
+      "date": "2025-12-26",
+      "weekday": "Fri",
+      "events": []
+    },
+    {
+      "date": "2025-12-27",
+      "weekday": "Sat",
+      "events": []
+    }
+  ]
+}
