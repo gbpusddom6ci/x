@@ -14,7 +14,7 @@
     },
     "counts": {
       "days": 23,
-      "events": 126
+      "events": 133
     }
   },
   "days": [
@@ -95,7 +95,7 @@
           "time_label": "2:39pm",
           "time_24h": "14:39",
           "values": {
-            "actual": "7:30pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -105,12 +105,25 @@
           "weekday": "Mon",
           "currency": "AUD",
           "title": "Monetary Policy Meeting Minutes",
-          "time_label": "2:39pm",
-          "time_24h": "14:39",
+          "time_label": "7:30pm",
+          "time_24h": "19:30",
           "values": {
-            "actual": "AUD",
+            "actual": null,
             "forecast": null,
             "previous": null
+          }
+        },
+        {
+          "date": "2026-03-03",
+          "weekday": "Mon",
+          "currency": "AUD",
+          "title": "Retail Sales m/m",
+          "time_label": "7:30pm",
+          "time_24h": "19:30",
+          "values": {
+            "actual": "0.3%",
+            "forecast": "0.3%",
+            "previous": "-0.1%"
           }
         }
       ]
@@ -140,7 +153,7 @@
           "time_label": "7:30pm",
           "time_24h": "19:30",
           "values": {
-            "actual": "9:10pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -150,8 +163,8 @@
           "weekday": "Tue",
           "currency": "USD",
           "title": "President Trump Speaks",
-          "time_label": "7:30pm",
-          "time_24h": "19:30",
+          "time_label": "9:10pm",
+          "time_24h": "21:10",
           "values": {
             "actual": null,
             "forecast": null,
@@ -198,7 +211,7 @@
           "time_label": "9:30am",
           "time_24h": "09:30",
           "values": {
-            "actual": "9:45am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -208,8 +221,8 @@
           "weekday": "Wed",
           "currency": "USD",
           "title": "Final Services PMI",
-          "time_label": "9:30am",
-          "time_24h": "09:30",
+          "time_label": "9:45am",
+          "time_24h": "09:45",
           "values": {
             "actual": "51.0",
             "forecast": "49.7",
@@ -269,7 +282,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "8:15am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -279,8 +292,8 @@
           "weekday": "Thu",
           "currency": "EUR",
           "title": "Main Refinancing Rate",
-          "time_label": "All Day",
-          "time_24h": null,
+          "time_label": "8:15am",
+          "time_24h": "08:15",
           "values": {
             "actual": "2.65%",
             "forecast": "2.65%",
@@ -292,10 +305,10 @@
           "weekday": "Thu",
           "currency": "EUR",
           "title": "Monetary Policy Statement",
-          "time_label": "All Day",
-          "time_24h": null,
+          "time_label": "8:15am",
+          "time_24h": "08:15",
           "values": {
-            "actual": "8:30am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -305,8 +318,8 @@
           "weekday": "Thu",
           "currency": "USD",
           "title": "Unemployment Claims",
-          "time_label": "All Day",
-          "time_24h": null,
+          "time_label": "8:30am",
+          "time_24h": "08:30",
           "values": {
             "actual": "221K",
             "forecast": "234K",
@@ -321,7 +334,7 @@
           "time_label": "8:45am",
           "time_24h": "08:45",
           "values": {
-            "actual": "10:00am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -331,8 +344,8 @@
           "weekday": "Thu",
           "currency": "CAD",
           "title": "Ivey PMI",
-          "time_label": "8:45am",
-          "time_24h": "08:45",
+          "time_label": "10:00am",
+          "time_24h": "10:00",
           "values": {
             "actual": "55.3",
             "forecast": "50.6",
@@ -347,7 +360,7 @@
           "time_label": "2:39pm",
           "time_24h": "14:39",
           "values": {
-            "actual": "3:30pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -357,8 +370,8 @@
           "weekday": "Thu",
           "currency": "USD",
           "title": "FOMC Member Waller Speaks",
-          "time_label": "2:39pm",
-          "time_24h": "14:39",
+          "time_label": "3:30pm",
+          "time_24h": "15:30",
           "values": {
             "actual": null,
             "forecast": null,
@@ -379,7 +392,7 @@
           "time_label": "4:30am",
           "time_24h": "04:30",
           "values": {
-            "actual": "8:30am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -389,8 +402,8 @@
           "weekday": "Fri",
           "currency": "CAD",
           "title": "Employment Change",
-          "time_label": "4:30am",
-          "time_24h": "04:30",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
           "values": {
             "actual": "1.1K",
             "forecast": "19.7K",
@@ -402,8 +415,8 @@
           "weekday": "Fri",
           "currency": "CAD",
           "title": "Unemployment Rate",
-          "time_label": "4:30am",
-          "time_24h": "04:30",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
           "values": {
             "actual": "6.6%",
             "forecast": "6.7%",
@@ -415,8 +428,8 @@
           "weekday": "Fri",
           "currency": "USD",
           "title": "Average Hourly Earnings m/m",
-          "time_label": "4:30am",
-          "time_24h": "04:30",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
           "values": {
             "actual": "0.3%",
             "forecast": "0.3%",
@@ -428,8 +441,8 @@
           "weekday": "Fri",
           "currency": "USD",
           "title": "Non-Farm Employment Change",
-          "time_label": "4:30am",
-          "time_24h": "04:30",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
           "values": {
             "actual": "151K",
             "forecast": "159K",
@@ -441,8 +454,8 @@
           "weekday": "Fri",
           "currency": "USD",
           "title": "Unemployment Rate",
-          "time_label": "4:30am",
-          "time_24h": "04:30",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
           "values": {
             "actual": "4.1%",
             "forecast": "4.0%",
@@ -457,7 +470,7 @@
           "time_label": "11:00am",
           "time_24h": "11:00",
           "values": {
-            "actual": "12:30pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -467,10 +480,10 @@
           "weekday": "Fri",
           "currency": "USD",
           "title": "Fed Chair Powell Speaks",
-          "time_label": "11:00am",
-          "time_24h": "11:00",
+          "time_label": "12:30pm",
+          "time_24h": "12:30",
           "values": {
-            "actual": "3:00pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -480,8 +493,8 @@
           "weekday": "Fri",
           "currency": "USD",
           "title": "President Trump Speaks",
-          "time_label": "11:00am",
-          "time_24h": "11:00",
+          "time_label": "3:00pm",
+          "time_24h": "15:00",
           "values": {
             "actual": null,
             "forecast": null,
@@ -534,7 +547,20 @@
           "time_label": "3:00am",
           "time_24h": "03:00",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2026-03-09",
+          "weekday": "Sun",
+          "currency": "USD",
+          "title": "Daylight Saving Time Shift",
+          "time_label": "3:00am",
+          "time_24h": "03:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -585,7 +611,7 @@
           "time_label": "4:45am",
           "time_24h": "04:45",
           "values": {
-            "actual": "8:30am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -595,8 +621,8 @@
           "weekday": "Wed",
           "currency": "USD",
           "title": "Core CPI m/m",
-          "time_label": "4:45am",
-          "time_24h": "04:45",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
           "values": {
             "actual": "0.2%",
             "forecast": "0.3%",
@@ -608,8 +634,8 @@
           "weekday": "Wed",
           "currency": "USD",
           "title": "CPI m/m",
-          "time_label": "4:45am",
-          "time_24h": "04:45",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
           "values": {
             "actual": "0.2%",
             "forecast": "0.3%",
@@ -621,8 +647,8 @@
           "weekday": "Wed",
           "currency": "USD",
           "title": "CPI y/y",
-          "time_label": "4:45am",
-          "time_24h": "04:45",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
           "values": {
             "actual": "2.8%",
             "forecast": "2.9%",
@@ -637,9 +663,22 @@
           "time_label": "9:45am",
           "time_24h": "09:45",
           "values": {
-            "actual": "CAD",
+            "actual": null,
             "forecast": null,
             "previous": null
+          }
+        },
+        {
+          "date": "2026-03-12",
+          "weekday": "Wed",
+          "currency": "CAD",
+          "title": "Overnight Rate",
+          "time_label": "9:45am",
+          "time_24h": "09:45",
+          "values": {
+            "actual": "2.75%",
+            "forecast": "2.75%",
+            "previous": "3.00%"
           }
         },
         {
@@ -959,7 +998,7 @@
           "time_label": "2:30am",
           "time_24h": "02:30",
           "values": {
-            "actual": "2:00pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -969,8 +1008,8 @@
           "weekday": "Wed",
           "currency": "USD",
           "title": "Federal Funds Rate",
-          "time_label": "2:30am",
-          "time_24h": "02:30",
+          "time_label": "2:00pm",
+          "time_24h": "14:00",
           "values": {
             "actual": "4.50%",
             "forecast": "4.50%",
@@ -982,10 +1021,23 @@
           "weekday": "Wed",
           "currency": "USD",
           "title": "FOMC Economic Projections",
-          "time_label": "2:30am",
-          "time_24h": "02:30",
+          "time_label": "2:00pm",
+          "time_24h": "14:00",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2026-03-19",
+          "weekday": "Wed",
+          "currency": "USD",
+          "title": "FOMC Statement",
+          "time_label": "2:00pm",
+          "time_24h": "14:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -998,7 +1050,7 @@
           "time_label": "2:30pm",
           "time_24h": "14:30",
           "values": {
-            "actual": "5:45pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1008,8 +1060,8 @@
           "weekday": "Wed",
           "currency": "NZD",
           "title": "GDP q/q",
-          "time_label": "2:30pm",
-          "time_24h": "14:30",
+          "time_label": "5:45pm",
+          "time_24h": "17:45",
           "values": {
             "actual": "0.7%",
             "forecast": "0.4%",
@@ -1024,7 +1076,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "8:30pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1034,8 +1086,8 @@
           "weekday": "Wed",
           "currency": "AUD",
           "title": "Employment Change",
-          "time_label": "All Day",
-          "time_24h": null,
+          "time_label": "8:30pm",
+          "time_24h": "20:30",
           "values": {
             "actual": "-52.8K",
             "forecast": "30.8K",
@@ -1047,8 +1099,8 @@
           "weekday": "Wed",
           "currency": "AUD",
           "title": "Unemployment Rate",
-          "time_label": "All Day",
-          "time_24h": null,
+          "time_label": "8:30pm",
+          "time_24h": "20:30",
           "values": {
             "actual": "4.1%",
             "forecast": "4.1%",
@@ -1121,7 +1173,7 @@
           "time_label": "4:00am",
           "time_24h": "04:00",
           "values": {
-            "actual": "4:30am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1131,23 +1183,10 @@
           "weekday": "Thu",
           "currency": "CHF",
           "title": "SNB Monetary Policy Assessment",
-          "time_label": "4:00am",
-          "time_24h": "04:00",
+          "time_label": "4:30am",
+          "time_24h": "04:30",
           "values": {
-            "actual": "CHF",
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2026-03-20",
-          "weekday": "Thu",
-          "currency": "SNB",
-          "title": "0.25%\t0.25%\t0.50%",
-          "time_label": "4:00am",
-          "time_24h": "04:00",
-          "values": {
-            "actual": "5:00am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1156,11 +1195,24 @@
           "date": "2026-03-20",
           "weekday": "Thu",
           "currency": "CHF",
-          "title": "SNB Press Conference",
-          "time_label": "4:00am",
-          "time_24h": "04:00",
+          "title": "SNB Policy Rate",
+          "time_label": "4:30am",
+          "time_24h": "04:30",
           "values": {
-            "actual": "8:00am",
+            "actual": "0.25%",
+            "forecast": "0.25%",
+            "previous": "0.50%"
+          }
+        },
+        {
+          "date": "2026-03-20",
+          "weekday": "Thu",
+          "currency": "CHF",
+          "title": "SNB Press Conference",
+          "time_label": "5:00am",
+          "time_24h": "05:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1170,10 +1222,10 @@
           "weekday": "Thu",
           "currency": "GBP",
           "title": "Monetary Policy Summary",
-          "time_label": "4:00am",
-          "time_24h": "04:00",
+          "time_label": "8:00am",
+          "time_24h": "08:00",
           "values": {
-            "actual": "GBP",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1181,14 +1233,27 @@
         {
           "date": "2026-03-20",
           "weekday": "Thu",
-          "currency": "MPC",
-          "title": "0-1-8\t0-2-7\t0-9-0",
-          "time_label": "4:00am",
-          "time_24h": "04:00",
+          "currency": "GBP",
+          "title": "MPC Official Bank Rate Votes",
+          "time_label": "8:00am",
+          "time_24h": "08:00",
           "values": {
-            "actual": "GBP",
-            "forecast": null,
-            "previous": null
+            "actual": "0-1-8",
+            "forecast": "0-2-7",
+            "previous": "0-9-0"
+          }
+        },
+        {
+          "date": "2026-03-20",
+          "weekday": "Thu",
+          "currency": "GBP",
+          "title": "Official Bank Rate",
+          "time_label": "8:00am",
+          "time_24h": "08:00",
+          "values": {
+            "actual": "4.50%",
+            "forecast": "4.50%",
+            "previous": "4.50%"
           }
         },
         {
@@ -1238,7 +1303,7 @@
           "time_label": "10:40am",
           "time_24h": "10:40",
           "values": {
-            "actual": "12:50pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1248,10 +1313,10 @@
           "weekday": "Thu",
           "currency": "CAD",
           "title": "BOC Gov Macklem Speaks",
-          "time_label": "10:40am",
-          "time_24h": "10:40",
+          "time_label": "12:50pm",
+          "time_24h": "12:50",
           "values": {
-            "actual": "7:30pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1261,8 +1326,8 @@
           "weekday": "Thu",
           "currency": "JPY",
           "title": "National Core CPI y/y",
-          "time_label": "10:40am",
-          "time_24h": "10:40",
+          "time_label": "7:30pm",
+          "time_24h": "19:30",
           "values": {
             "actual": "3.0%",
             "forecast": "2.9%",
@@ -1445,7 +1510,7 @@
           "time_label": "2:00pm",
           "time_24h": "14:00",
           "values": {
-            "actual": "2:30pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1455,8 +1520,8 @@
           "weekday": "Mon",
           "currency": "USD",
           "title": "President Trump Speaks",
-          "time_label": "2:00pm",
-          "time_24h": "14:00",
+          "time_label": "2:30pm",
+          "time_24h": "14:30",
           "values": {
             "actual": null,
             "forecast": null,
@@ -1574,9 +1639,22 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "USD",
+            "actual": null,
             "forecast": null,
             "previous": null
+          }
+        },
+        {
+          "date": "2026-03-26",
+          "weekday": "Wed",
+          "currency": "USD",
+          "title": "Core Durable Goods Orders m/m",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": "0.7%",
+            "forecast": "0.2%",
+            "previous": "0.1%"
           }
         },
         {
@@ -1600,7 +1678,7 @@
           "time_label": "4:00pm",
           "time_24h": "16:00",
           "values": {
-            "actual": "9:00pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1610,8 +1688,8 @@
           "weekday": "Wed",
           "currency": "USD",
           "title": "President Trump Speaks",
-          "time_label": "4:00pm",
-          "time_24h": "16:00",
+          "time_label": "9:00pm",
+          "time_24h": "21:00",
           "values": {
             "actual": null,
             "forecast": null,
@@ -1774,7 +1852,20 @@
           "time_label": "9:00pm",
           "time_24h": "21:00",
           "values": {
-            "actual": "EUR",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2026-03-29",
+          "weekday": "Sat",
+          "currency": "EUR",
+          "title": "Daylight Saving Time Shift",
+          "time_label": "9:00pm",
+          "time_24h": "21:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
