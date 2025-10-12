@@ -167,6 +167,31 @@ def build_html() -> bytes:
         color: var(--fg);
         font-size: 0.95rem;
       }
+      .file-input-wrapper {
+        margin-bottom: 12px;
+      }
+      .file-input-wrapper input[type="file"] {
+        display: none;
+      }
+      .file-upload-btn {
+        display: inline-block;
+        padding: 8px 16px;
+        background: var(--secondary);
+        color: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+      }
+      .file-upload-btn:hover {
+        background: var(--primary);
+        transform: translateY(-1px);
+      }
+      .file-name {
+        margin-left: 12px;
+        color: var(--success);
+        font-size: 0.85rem;
+      }
     </style>
   </head>
   <body>
@@ -184,6 +209,11 @@ def build_html() -> bytes:
             <label for='year'>Yıl:</label>
             <input type='number' id='year' value='2025' min='2020' max='2030'>
           </div>
+          <div class='file-input-wrapper'>
+            <label for='fileInput' class='file-upload-btn'>📁 .md Dosyası Yükle</label>
+            <input type='file' id='fileInput' accept='.md,.txt' onchange='loadFile()'>
+            <span id='fileName' class='file-name'></span>
+          </div>
           <textarea id='mdInput' placeholder='Sun
 Mar 30
 9:30pm
@@ -192,7 +222,7 @@ Manufacturing PMI
 50.5	50.4	50.2
 ...
 
-Markdown formatınızı buraya yapıştırın...'></textarea>
+Markdown formatınızı buraya yapıştırın veya yukarıdan .md dosyası yükleyin...'></textarea>
           <div class='buttons'>
             <button class='btn-primary' onclick='convert()'>🔄 Convert to JSON</button>
             <button class='btn-secondary' onclick='clearInput()'>🗑️ Clear</button>
@@ -216,6 +246,28 @@ Markdown formatınızı buraya yapıştırın...'></textarea>
 
     <script>
       let currentJSON = null;
+
+      function loadFile() {
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+        const inputInfo = document.getElementById('inputInfo');
+        const fileNameDisplay = document.getElementById('fileName');
+        
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('mdInput').value = e.target.result;
+          fileNameDisplay.textContent = '✓ ' + file.name;
+          showInfo(inputInfo, `📁 ${file.name} yüklendi (${(file.size/1024).toFixed(1)} KB)`, 'success');
+          setTimeout(() => inputInfo.classList.add('hidden'), 3000);
+        };
+        reader.onerror = function() {
+          showInfo(inputInfo, '❌ Dosya okunamadı!', 'error');
+          fileNameDisplay.textContent = '';
+        };
+        reader.readAsText(file, 'UTF-8');
+      }
 
       function convert() {
         const mdInput = document.getElementById('mdInput').value;
@@ -316,6 +368,8 @@ Markdown formatınızı buraya yapıştırın...'></textarea>
 
       function clearInput() {
         document.getElementById('mdInput').value = '';
+        document.getElementById('fileInput').value = '';
+        document.getElementById('fileName').textContent = '';
         document.getElementById('jsonOutput').textContent = 'JSON çıktısı burada görünecek...';
         document.getElementById('inputInfo').classList.add('hidden');
         document.getElementById('outputInfo').classList.add('hidden');
