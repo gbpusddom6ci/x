@@ -178,7 +178,12 @@ def parse_markdown_to_json(md_content: str, filename: str = "unknown") -> Dict[s
                 values = {"actual": None, "forecast": None, "previous": None}
                 if i < len(lines):
                     value_line = lines[i].strip()
-                    if value_line and not value_line in WEEKDAYS and not re.match(r'([A-Z][a-z]{2})\s+(\d{1,2})$', value_line):
+                    # Check if this line is actually a time label (not a value)
+                    is_time_label = re.match(r'^(\d{1,2}:\d{2}[ap]m|All Day|Tentative|Day \d+)$', value_line, re.IGNORECASE)
+                    # Check if it's a currency line (next event)
+                    is_currency = re.match(r'^([A-Z]{3})[\s\t]+', lines[i] if i < len(lines) else "")
+                    
+                    if value_line and not value_line in WEEKDAYS and not re.match(r'([A-Z][a-z]{2})\s+(\d{1,2})$', value_line) and not is_time_label and not is_currency:
                         # Parse values
                         parts = [p.strip() for p in value_line.split('\t') if p.strip()]
                         if len(parts) == 3:

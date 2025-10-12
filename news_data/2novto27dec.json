@@ -14,7 +14,7 @@
     },
     "counts": {
       "days": 46,
-      "events": 164
+      "events": 225
     }
   },
   "days": [
@@ -30,7 +30,20 @@
           "time_label": "2:00am",
           "time_24h": "02:00",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-02",
+          "weekday": "Sun",
+          "currency": "USD",
+          "title": "Daylight Saving Time Shift",
+          "time_label": "2:00am",
+          "time_24h": "02:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -62,7 +75,7 @@
           "time_label": "2:30am",
           "time_24h": "02:30",
           "values": {
-            "actual": "10:00am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -72,10 +85,10 @@
           "weekday": "Mon",
           "currency": "USD",
           "title": "ISM Manufacturing PMI",
-          "time_label": "2:30am",
-          "time_24h": "02:30",
+          "time_label": "10:00am",
+          "time_24h": "10:00",
           "values": {
-            "actual": "USD",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -83,12 +96,25 @@
         {
           "date": "2025-11-03",
           "weekday": "Mon",
-          "currency": "ISM",
-          "title": "10:30pm",
-          "time_label": "2:30am",
-          "time_24h": "02:30",
+          "currency": "USD",
+          "title": "ISM Manufacturing Prices",
+          "time_label": "10:00am",
+          "time_24h": "10:00",
           "values": {
-            "actual": "AUD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-03",
+          "weekday": "Mon",
+          "currency": "AUD",
+          "title": "Cash Rate",
+          "time_label": "10:30pm",
+          "time_24h": "22:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -98,10 +124,10 @@
           "weekday": "Mon",
           "currency": "AUD",
           "title": "RBA Monetary Policy Statement",
-          "time_label": "2:30am",
-          "time_24h": "02:30",
+          "time_label": "10:30pm",
+          "time_24h": "22:30",
           "values": {
-            "actual": "AUD",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -109,12 +135,12 @@
         {
           "date": "2025-11-03",
           "weekday": "Mon",
-          "currency": "RBA",
-          "title": "11:30pm",
-          "time_label": "2:30am",
-          "time_24h": "02:30",
+          "currency": "AUD",
+          "title": "RBA Rate Statement",
+          "time_label": "10:30pm",
+          "time_24h": "22:30",
           "values": {
-            "actual": "AUD",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -122,10 +148,10 @@
         {
           "date": "2025-11-03",
           "weekday": "Mon",
-          "currency": "RBA",
-          "title": "Tue",
-          "time_label": "2:30am",
-          "time_24h": "02:30",
+          "currency": "AUD",
+          "title": "RBA Press Conference",
+          "time_label": "11:30pm",
+          "time_24h": "23:30",
           "values": {
             "actual": null,
             "forecast": null,
@@ -136,30 +162,43 @@
     },
     {
       "date": "2025-11-04",
-      "weekday": "Mon",
+      "weekday": "Tue",
       "events": [
         {
           "date": "2025-11-04",
-          "weekday": "Mon",
+          "weekday": "Tue",
           "currency": "USD",
           "title": "JOLTS Job Openings",
           "time_label": "10:00am",
           "time_24h": "10:00",
           "values": {
-            "actual": "4:45pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
         },
         {
           "date": "2025-11-04",
-          "weekday": "Mon",
+          "weekday": "Tue",
           "currency": "NZD",
           "title": "Employment Change q/q",
-          "time_label": "10:00am",
-          "time_24h": "10:00",
+          "time_label": "4:45pm",
+          "time_24h": "16:45",
           "values": {
-            "actual": "NZD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-04",
+          "weekday": "Tue",
+          "currency": "NZD",
+          "title": "Unemployment Rate",
+          "time_label": "4:45pm",
+          "time_24h": "16:45",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -178,7 +217,7 @@
           "time_label": "8:15am",
           "time_24h": "08:15",
           "values": {
-            "actual": "10:00am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -188,8 +227,8 @@
           "weekday": "Wed",
           "currency": "USD",
           "title": "ISM Services PMI",
-          "time_label": "8:15am",
-          "time_24h": "08:15",
+          "time_label": "10:00am",
+          "time_24h": "10:00",
           "values": {
             "actual": null,
             "forecast": null,
@@ -210,7 +249,20 @@
           "time_label": "7:00am",
           "time_24h": "07:00",
           "values": {
-            "actual": "GBP",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-06",
+          "weekday": "Thu",
+          "currency": "GBP",
+          "title": "Monetary Policy Summary",
+          "time_label": "7:00am",
+          "time_24h": "07:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -223,7 +275,20 @@
           "time_label": "7:00am",
           "time_24h": "07:00",
           "values": {
-            "actual": "GBP",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-06",
+          "weekday": "Thu",
+          "currency": "GBP",
+          "title": "Official Bank Rate",
+          "time_label": "7:00am",
+          "time_24h": "07:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -236,7 +301,7 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "10:00am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -246,8 +311,8 @@
           "weekday": "Thu",
           "currency": "CAD",
           "title": "Ivey PMI",
-          "time_label": "8:30am",
-          "time_24h": "08:30",
+          "time_label": "10:00am",
+          "time_24h": "10:00",
           "values": {
             "actual": null,
             "forecast": null,
@@ -268,7 +333,20 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "CAD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-07",
+          "weekday": "Fri",
+          "currency": "CAD",
+          "title": "Unemployment Rate",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -281,7 +359,20 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-07",
+          "weekday": "Fri",
+          "currency": "USD",
+          "title": "Non-Farm Employment Change",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -294,7 +385,7 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "10:00am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -304,10 +395,23 @@
           "weekday": "Fri",
           "currency": "USD",
           "title": "Prelim UoM Consumer Sentiment",
-          "time_label": "8:30am",
-          "time_24h": "08:30",
+          "time_label": "10:00am",
+          "time_24h": "10:00",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-07",
+          "weekday": "Fri",
+          "currency": "USD",
+          "title": "Prelim UoM Inflation Expectations",
+          "time_label": "10:00am",
+          "time_24h": "10:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -339,7 +443,7 @@
           "time_label": "8:30pm",
           "time_24h": "20:30",
           "values": {
-            "actual": "CNY",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -347,8 +451,8 @@
         {
           "date": "2025-11-08",
           "weekday": "Sat",
-          "currency": "PPI",
-          "title": "Sun",
+          "currency": "CNY",
+          "title": "PPI y/y",
           "time_label": "8:30pm",
           "time_24h": "20:30",
           "values": {
@@ -371,7 +475,7 @@
           "time_label": "Tentative",
           "time_24h": null,
           "values": {
-            "actual": "9:00pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -381,8 +485,8 @@
           "weekday": "Mon",
           "currency": "NZD",
           "title": "Inflation Expectations q/q",
-          "time_label": "Tentative",
-          "time_24h": null,
+          "time_label": "9:00pm",
+          "time_24h": "21:00",
           "values": {
             "actual": null,
             "forecast": null,
@@ -403,7 +507,20 @@
           "time_label": "2:00am",
           "time_24h": "02:00",
           "values": {
-            "actual": "GBP",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-11",
+          "weekday": "Tue",
+          "currency": "GBP",
+          "title": "Claimant Count Change",
+          "time_label": "2:00am",
+          "time_24h": "02:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -416,7 +533,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "5:00am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -426,10 +543,10 @@
           "weekday": "Tue",
           "currency": "EUR",
           "title": "German ZEW Economic Sentiment",
-          "time_label": "All Day",
-          "time_24h": null,
+          "time_label": "5:00am",
+          "time_24h": "05:00",
           "values": {
-            "actual": "All Day",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -442,7 +559,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "All Day",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -474,7 +591,20 @@
           "time_label": "7:30pm",
           "time_24h": "19:30",
           "values": {
-            "actual": "AUD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-12",
+          "weekday": "Wed",
+          "currency": "AUD",
+          "title": "Unemployment Rate",
+          "time_label": "7:30pm",
+          "time_24h": "19:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -493,7 +623,20 @@
           "time_label": "2:00am",
           "time_24h": "02:00",
           "values": {
-            "actual": "GBP",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-13",
+          "weekday": "Thu",
+          "currency": "GBP",
+          "title": "Prelim GDP q/q",
+          "time_label": "2:00am",
+          "time_24h": "02:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -506,7 +649,7 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "USD",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -514,12 +657,25 @@
         {
           "date": "2025-11-13",
           "weekday": "Thu",
-          "currency": "CPI",
-          "title": "USD",
+          "currency": "USD",
+          "title": "CPI m/m",
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "CPI y/y",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-13",
+          "weekday": "Thu",
+          "currency": "USD",
+          "title": "CPI y/y",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -532,7 +688,7 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "9:00pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -542,10 +698,23 @@
           "weekday": "Thu",
           "currency": "CNY",
           "title": "Industrial Production y/y",
-          "time_label": "8:30am",
-          "time_24h": "08:30",
+          "time_label": "9:00pm",
+          "time_24h": "21:00",
           "values": {
-            "actual": "CNY",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-13",
+          "weekday": "Thu",
+          "currency": "CNY",
+          "title": "Retail Sales y/y",
+          "time_label": "9:00pm",
+          "time_24h": "21:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -564,7 +733,20 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-14",
+          "weekday": "Fri",
+          "currency": "USD",
+          "title": "Core Retail Sales m/m",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -577,7 +759,20 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-14",
+          "weekday": "Fri",
+          "currency": "USD",
+          "title": "Retail Sales m/m",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -596,7 +791,20 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "CAD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-17",
+          "weekday": "Mon",
+          "currency": "CAD",
+          "title": "Median CPI y/y",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -609,7 +817,20 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "CAD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-17",
+          "weekday": "Mon",
+          "currency": "CAD",
+          "title": "Common CPI y/y",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -622,7 +843,7 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "7:30pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -632,8 +853,8 @@
           "weekday": "Mon",
           "currency": "AUD",
           "title": "Monetary Policy Meeting Minutes",
-          "time_label": "8:30am",
-          "time_24h": "08:30",
+          "time_label": "7:30pm",
+          "time_24h": "19:30",
           "values": {
             "actual": null,
             "forecast": null,
@@ -654,7 +875,7 @@
           "time_label": "5:00am",
           "time_24h": "05:00",
           "values": {
-            "actual": "7:30pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -664,8 +885,8 @@
           "weekday": "Tue",
           "currency": "AUD",
           "title": "Wage Price Index q/q",
-          "time_label": "5:00am",
-          "time_24h": "05:00",
+          "time_label": "7:30pm",
+          "time_24h": "19:30",
           "values": {
             "actual": null,
             "forecast": null,
@@ -686,7 +907,7 @@
           "time_label": "2:00am",
           "time_24h": "02:00",
           "values": {
-            "actual": "2:00pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -696,10 +917,10 @@
           "weekday": "Wed",
           "currency": "USD",
           "title": "FOMC Meeting Minutes",
-          "time_label": "2:00am",
-          "time_24h": "02:00",
+          "time_label": "2:00pm",
+          "time_24h": "14:00",
           "values": {
-            "actual": "8:00pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -709,10 +930,23 @@
           "weekday": "Wed",
           "currency": "CNY",
           "title": "1-y Loan Prime Rate",
-          "time_label": "2:00am",
-          "time_24h": "02:00",
+          "time_label": "8:00pm",
+          "time_24h": "20:00",
           "values": {
-            "actual": "CNY",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-19",
+          "weekday": "Wed",
+          "currency": "CNY",
+          "title": "5-y Loan Prime Rate",
+          "time_label": "8:00pm",
+          "time_24h": "20:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -731,7 +965,20 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-20",
+          "weekday": "Thu",
+          "currency": "USD",
+          "title": "Philly Fed Manufacturing Index",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -763,7 +1010,7 @@
           "time_label": "2:00am",
           "time_24h": "02:00",
           "values": {
-            "actual": "3:15am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -773,10 +1020,23 @@
           "weekday": "Fri",
           "currency": "EUR",
           "title": "French Flash Manufacturing PMI",
-          "time_label": "2:00am",
-          "time_24h": "02:00",
+          "time_label": "3:15am",
+          "time_24h": "03:15",
           "values": {
-            "actual": "EUR",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-21",
+          "weekday": "Fri",
+          "currency": "EUR",
+          "title": "French Flash Services PMI",
+          "time_label": "3:15am",
+          "time_24h": "03:15",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -789,7 +1049,20 @@
           "time_label": "3:30am",
           "time_24h": "03:30",
           "values": {
-            "actual": "EUR",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-21",
+          "weekday": "Fri",
+          "currency": "EUR",
+          "title": "German Flash Services PMI",
+          "time_label": "3:30am",
+          "time_24h": "03:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -802,7 +1075,20 @@
           "time_label": "4:00am",
           "time_24h": "04:00",
           "values": {
-            "actual": "EUR",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-21",
+          "weekday": "Fri",
+          "currency": "EUR",
+          "title": "Flash Services PMI",
+          "time_label": "4:00am",
+          "time_24h": "04:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -815,7 +1101,20 @@
           "time_label": "4:30am",
           "time_24h": "04:30",
           "values": {
-            "actual": "GBP",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-21",
+          "weekday": "Fri",
+          "currency": "GBP",
+          "title": "Flash Services PMI",
+          "time_label": "4:30am",
+          "time_24h": "04:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -828,7 +1127,20 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "CAD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-21",
+          "weekday": "Fri",
+          "currency": "CAD",
+          "title": "Retail Sales m/m",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -841,7 +1153,20 @@
           "time_label": "9:45am",
           "time_24h": "09:45",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-21",
+          "weekday": "Fri",
+          "currency": "USD",
+          "title": "Flash Services PMI",
+          "time_label": "9:45am",
+          "time_24h": "09:45",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -911,7 +1236,20 @@
           "time_label": "10:00am",
           "time_24h": "10:00",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-25",
+          "weekday": "Tue",
+          "currency": "USD",
+          "title": "Pending Home Sales m/m",
+          "time_label": "10:00am",
+          "time_24h": "10:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -924,7 +1262,7 @@
           "time_label": "10:00am",
           "time_24h": "10:00",
           "values": {
-            "actual": "7:30pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -934,10 +1272,10 @@
           "weekday": "Tue",
           "currency": "AUD",
           "title": "CPI y/y",
-          "time_label": "10:00am",
-          "time_24h": "10:00",
+          "time_label": "7:30pm",
+          "time_24h": "19:30",
           "values": {
-            "actual": "8:00pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -947,10 +1285,23 @@
           "weekday": "Tue",
           "currency": "NZD",
           "title": "Official Cash Rate",
-          "time_label": "10:00am",
-          "time_24h": "10:00",
+          "time_label": "8:00pm",
+          "time_24h": "20:00",
           "values": {
-            "actual": "NZD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-25",
+          "weekday": "Tue",
+          "currency": "NZD",
+          "title": "RBNZ Monetary Policy Statement",
+          "time_label": "8:00pm",
+          "time_24h": "20:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -960,10 +1311,10 @@
           "weekday": "Tue",
           "currency": "NZD",
           "title": "RBNZ Rate Statement",
-          "time_label": "10:00am",
-          "time_24h": "10:00",
+          "time_label": "8:00pm",
+          "time_24h": "20:00",
           "values": {
-            "actual": "9:00pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -973,8 +1324,8 @@
           "weekday": "Tue",
           "currency": "NZD",
           "title": "RBNZ Press Conference",
-          "time_label": "10:00am",
-          "time_24h": "10:00",
+          "time_label": "9:00pm",
+          "time_24h": "21:00",
           "values": {
             "actual": null,
             "forecast": null,
@@ -995,7 +1346,7 @@
           "time_label": "4:00am",
           "time_24h": "04:00",
           "values": {
-            "actual": "8:30am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1005,10 +1356,23 @@
           "weekday": "Wed",
           "currency": "USD",
           "title": "Prelim GDP q/q",
-          "time_label": "4:00am",
-          "time_24h": "04:00",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-26",
+          "weekday": "Wed",
+          "currency": "USD",
+          "title": "Unemployment Claims",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1018,10 +1382,23 @@
           "weekday": "Wed",
           "currency": "USD",
           "title": "Core Durable Goods Orders m/m",
-          "time_label": "4:00am",
-          "time_24h": "04:00",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-26",
+          "weekday": "Wed",
+          "currency": "USD",
+          "title": "Durable Goods Orders m/m",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1031,10 +1408,10 @@
           "weekday": "Wed",
           "currency": "USD",
           "title": "Prelim GDP Price Index q/q",
-          "time_label": "4:00am",
-          "time_24h": "04:00",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
           "values": {
-            "actual": "10:00am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1044,10 +1421,23 @@
           "weekday": "Wed",
           "currency": "USD",
           "title": "Core PCE Price Index m/m",
-          "time_label": "4:00am",
-          "time_24h": "04:00",
+          "time_label": "10:00am",
+          "time_24h": "10:00",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-26",
+          "weekday": "Wed",
+          "currency": "USD",
+          "title": "New Home Sales",
+          "time_label": "10:00am",
+          "time_24h": "10:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1079,7 +1469,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "6:30pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1089,8 +1479,8 @@
           "weekday": "Thu",
           "currency": "JPY",
           "title": "Tokyo Core CPI y/y",
-          "time_label": "All Day",
-          "time_24h": null,
+          "time_label": "6:30pm",
+          "time_24h": "18:30",
           "values": {
             "actual": null,
             "forecast": null,
@@ -1111,7 +1501,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "3:00am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1121,10 +1511,23 @@
           "weekday": "Fri",
           "currency": "CHF",
           "title": "GDP q/q",
-          "time_label": "All Day",
-          "time_24h": null,
+          "time_label": "3:00am",
+          "time_24h": "03:00",
           "values": {
-            "actual": "EUR",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-28",
+          "weekday": "Fri",
+          "currency": "EUR",
+          "title": "Spanish Flash CPI y/y",
+          "time_label": "3:00am",
+          "time_24h": "03:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1156,7 +1559,20 @@
           "time_label": "8:30pm",
           "time_24h": "20:30",
           "values": {
-            "actual": "CNY",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-11-29",
+          "weekday": "Sat",
+          "currency": "CNY",
+          "title": "Non-Manufacturing PMI",
+          "time_label": "8:30pm",
+          "time_24h": "20:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1175,7 +1591,7 @@
           "time_label": "10:00am",
           "time_24h": "10:00",
           "values": {
-            "actual": "USD",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1183,8 +1599,8 @@
         {
           "date": "2025-12-01",
           "weekday": "Mon",
-          "currency": "ISM",
-          "title": "Tue",
+          "currency": "USD",
+          "title": "ISM Manufacturing Prices",
           "time_label": "10:00am",
           "time_24h": "10:00",
           "values": {
@@ -1197,37 +1613,50 @@
     },
     {
       "date": "2025-12-02",
-      "weekday": "Mon",
+      "weekday": "Tue",
       "events": [
         {
           "date": "2025-12-02",
-          "weekday": "Mon",
+          "weekday": "Tue",
           "currency": "EUR",
           "title": "Core CPI Flash Estimate y/y",
           "time_label": "5:00am",
           "time_24h": "05:00",
           "values": {
-            "actual": "EUR",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
         },
         {
           "date": "2025-12-02",
-          "weekday": "Mon",
-          "currency": "CPI",
-          "title": "10:00am",
+          "weekday": "Tue",
+          "currency": "EUR",
+          "title": "CPI Flash Estimate y/y",
           "time_label": "5:00am",
           "time_24h": "05:00",
           "values": {
-            "actual": "USD",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
         },
         {
           "date": "2025-12-02",
-          "weekday": "Mon",
+          "weekday": "Tue",
+          "currency": "USD",
+          "title": "JOLTS Job Openings",
+          "time_label": "10:00am",
+          "time_24h": "10:00",
+          "values": {
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-02",
+          "weekday": "Tue",
           "currency": "AUD",
           "title": "GDP q/q",
           "time_label": "7:30pm",
@@ -1252,7 +1681,7 @@
           "time_label": "2:30am",
           "time_24h": "02:30",
           "values": {
-            "actual": "8:15am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1262,10 +1691,10 @@
           "weekday": "Wed",
           "currency": "USD",
           "title": "ADP Non-Farm Employment Change",
-          "time_label": "2:30am",
-          "time_24h": "02:30",
+          "time_label": "8:15am",
+          "time_24h": "08:15",
           "values": {
-            "actual": "10:00am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1275,8 +1704,8 @@
           "weekday": "Wed",
           "currency": "USD",
           "title": "ISM Services PMI",
-          "time_label": "2:30am",
-          "time_24h": "02:30",
+          "time_label": "10:00am",
+          "time_24h": "10:00",
           "values": {
             "actual": null,
             "forecast": null,
@@ -1297,7 +1726,7 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "10:00am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1307,8 +1736,8 @@
           "weekday": "Thu",
           "currency": "CAD",
           "title": "Ivey PMI",
-          "time_label": "8:30am",
-          "time_24h": "08:30",
+          "time_label": "10:00am",
+          "time_24h": "10:00",
           "values": {
             "actual": null,
             "forecast": null,
@@ -1329,7 +1758,20 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "CAD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-05",
+          "weekday": "Fri",
+          "currency": "CAD",
+          "title": "Unemployment Rate",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1342,7 +1784,20 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-05",
+          "weekday": "Fri",
+          "currency": "USD",
+          "title": "Non-Farm Employment Change",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1355,7 +1810,7 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "10:00am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1365,10 +1820,23 @@
           "weekday": "Fri",
           "currency": "USD",
           "title": "Prelim UoM Consumer Sentiment",
-          "time_label": "8:30am",
-          "time_24h": "08:30",
+          "time_label": "10:00am",
+          "time_24h": "10:00",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-05",
+          "weekday": "Fri",
+          "currency": "USD",
+          "title": "Prelim UoM Inflation Expectations",
+          "time_label": "10:00am",
+          "time_24h": "10:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1387,7 +1855,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "Tentative",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1397,10 +1865,10 @@
           "weekday": "Mon",
           "currency": "CNY",
           "title": "New Loans",
-          "time_label": "All Day",
+          "time_label": "Tentative",
           "time_24h": null,
           "values": {
-            "actual": "10:30pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1410,10 +1878,10 @@
           "weekday": "Mon",
           "currency": "AUD",
           "title": "Cash Rate",
-          "time_label": "All Day",
-          "time_24h": null,
+          "time_label": "10:30pm",
+          "time_24h": "22:30",
           "values": {
-            "actual": "AUD",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1421,12 +1889,12 @@
         {
           "date": "2025-12-08",
           "weekday": "Mon",
-          "currency": "RBA",
-          "title": "11:30pm",
-          "time_label": "All Day",
-          "time_24h": null,
+          "currency": "AUD",
+          "title": "RBA Rate Statement",
+          "time_label": "10:30pm",
+          "time_24h": "22:30",
           "values": {
-            "actual": "AUD",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1434,10 +1902,10 @@
         {
           "date": "2025-12-08",
           "weekday": "Mon",
-          "currency": "RBA",
-          "title": "Tue",
-          "time_label": "All Day",
-          "time_24h": null,
+          "currency": "AUD",
+          "title": "RBA Press Conference",
+          "time_label": "11:30pm",
+          "time_24h": "23:30",
           "values": {
             "actual": null,
             "forecast": null,
@@ -1448,26 +1916,26 @@
     },
     {
       "date": "2025-12-09",
-      "weekday": "Mon",
+      "weekday": "Tue",
       "events": [
         {
           "date": "2025-12-09",
-          "weekday": "Mon",
+          "weekday": "Tue",
           "currency": "CNY",
           "title": "CPI y/y",
           "time_label": "8:30pm",
           "time_24h": "20:30",
           "values": {
-            "actual": "CNY",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
         },
         {
           "date": "2025-12-09",
-          "weekday": "Mon",
-          "currency": "PPI",
-          "title": "Wed",
+          "weekday": "Tue",
+          "currency": "CNY",
+          "title": "PPI y/y",
           "time_label": "8:30pm",
           "time_24h": "20:30",
           "values": {
@@ -1480,108 +1948,160 @@
     },
     {
       "date": "2025-12-10",
-      "weekday": "Mon",
+      "weekday": "Wed",
       "events": [
         {
           "date": "2025-12-10",
-          "weekday": "Mon",
+          "weekday": "Wed",
           "currency": "USD",
           "title": "Core CPI m/m",
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "USD",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
         },
         {
           "date": "2025-12-10",
-          "weekday": "Mon",
-          "currency": "CPI",
-          "title": "USD",
+          "weekday": "Wed",
+          "currency": "USD",
+          "title": "CPI m/m",
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "CPI y/y",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
         },
         {
           "date": "2025-12-10",
-          "weekday": "Mon",
+          "weekday": "Wed",
+          "currency": "USD",
+          "title": "CPI y/y",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-10",
+          "weekday": "Wed",
           "currency": "CAD",
           "title": "BOC Rate Statement",
           "time_label": "9:45am",
           "time_24h": "09:45",
           "values": {
-            "actual": "CAD",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
         },
         {
           "date": "2025-12-10",
-          "weekday": "Mon",
+          "weekday": "Wed",
+          "currency": "CAD",
+          "title": "Overnight Rate",
+          "time_label": "9:45am",
+          "time_24h": "09:45",
+          "values": {
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-10",
+          "weekday": "Wed",
           "currency": "CAD",
           "title": "BOC Press Conference",
           "time_label": "10:30am",
           "time_24h": "10:30",
           "values": {
-            "actual": "2:00pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
         },
         {
           "date": "2025-12-10",
-          "weekday": "Mon",
+          "weekday": "Wed",
           "currency": "USD",
           "title": "Federal Funds Rate",
-          "time_label": "10:30am",
-          "time_24h": "10:30",
+          "time_label": "2:00pm",
+          "time_24h": "14:00",
           "values": {
-            "actual": "USD",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
         },
         {
           "date": "2025-12-10",
-          "weekday": "Mon",
+          "weekday": "Wed",
+          "currency": "USD",
+          "title": "FOMC Economic Projections",
+          "time_label": "2:00pm",
+          "time_24h": "14:00",
+          "values": {
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-10",
+          "weekday": "Wed",
           "currency": "USD",
           "title": "FOMC Statement",
-          "time_label": "10:30am",
-          "time_24h": "10:30",
+          "time_label": "2:00pm",
+          "time_24h": "14:00",
           "values": {
-            "actual": "2:30pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
         },
         {
           "date": "2025-12-10",
-          "weekday": "Mon",
+          "weekday": "Wed",
           "currency": "USD",
           "title": "FOMC Press Conference",
-          "time_label": "10:30am",
-          "time_24h": "10:30",
+          "time_label": "2:30pm",
+          "time_24h": "14:30",
           "values": {
-            "actual": "7:30pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
         },
         {
           "date": "2025-12-10",
-          "weekday": "Mon",
+          "weekday": "Wed",
           "currency": "AUD",
           "title": "Employment Change",
-          "time_label": "10:30am",
-          "time_24h": "10:30",
+          "time_label": "7:30pm",
+          "time_24h": "19:30",
           "values": {
-            "actual": "AUD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-10",
+          "weekday": "Wed",
+          "currency": "AUD",
+          "title": "Unemployment Rate",
+          "time_label": "7:30pm",
+          "time_24h": "19:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1600,7 +2120,7 @@
           "time_label": "3:30am",
           "time_24h": "03:30",
           "values": {
-            "actual": "CHF",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1608,12 +2128,12 @@
         {
           "date": "2025-12-11",
           "weekday": "Thu",
-          "currency": "SNB",
-          "title": "4:00am",
+          "currency": "CHF",
+          "title": "SNB Policy Rate",
           "time_label": "3:30am",
           "time_24h": "03:30",
           "values": {
-            "actual": "CHF",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1621,12 +2141,25 @@
         {
           "date": "2025-12-11",
           "weekday": "Thu",
-          "currency": "SNB",
-          "title": "8:30am",
-          "time_label": "3:30am",
-          "time_24h": "03:30",
+          "currency": "CHF",
+          "title": "SNB Press Conference",
+          "time_label": "4:00am",
+          "time_24h": "04:00",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-11",
+          "weekday": "Thu",
+          "currency": "USD",
+          "title": "Core PPI m/m",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1636,10 +2169,23 @@
           "weekday": "Thu",
           "currency": "USD",
           "title": "PPI m/m",
-          "time_label": "3:30am",
-          "time_24h": "03:30",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-11",
+          "weekday": "Thu",
+          "currency": "USD",
+          "title": "Unemployment Claims",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1677,7 +2223,20 @@
           "time_label": "9:00pm",
           "time_24h": "21:00",
           "values": {
-            "actual": "CNY",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-14",
+          "weekday": "Sun",
+          "currency": "CNY",
+          "title": "Retail Sales y/y",
+          "time_label": "9:00pm",
+          "time_24h": "21:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1696,7 +2255,20 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "CAD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-15",
+          "weekday": "Mon",
+          "currency": "CAD",
+          "title": "Median CPI y/y",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1709,7 +2281,20 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "CAD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-15",
+          "weekday": "Mon",
+          "currency": "CAD",
+          "title": "Common CPI y/y",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1741,7 +2326,20 @@
           "time_label": "2:00am",
           "time_24h": "02:00",
           "values": {
-            "actual": "GBP",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-16",
+          "weekday": "Tue",
+          "currency": "GBP",
+          "title": "Claimant Count Change",
+          "time_label": "2:00am",
+          "time_24h": "02:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1754,7 +2352,20 @@
           "time_label": "3:15am",
           "time_24h": "03:15",
           "values": {
-            "actual": "EUR",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-16",
+          "weekday": "Tue",
+          "currency": "EUR",
+          "title": "French Flash Services PMI",
+          "time_label": "3:15am",
+          "time_24h": "03:15",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1767,7 +2378,20 @@
           "time_label": "3:30am",
           "time_24h": "03:30",
           "values": {
-            "actual": "EUR",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-16",
+          "weekday": "Tue",
+          "currency": "EUR",
+          "title": "German Flash Services PMI",
+          "time_label": "3:30am",
+          "time_24h": "03:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1780,7 +2404,20 @@
           "time_label": "4:00am",
           "time_24h": "04:00",
           "values": {
-            "actual": "EUR",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-16",
+          "weekday": "Tue",
+          "currency": "EUR",
+          "title": "Flash Services PMI",
+          "time_label": "4:00am",
+          "time_24h": "04:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1793,7 +2430,20 @@
           "time_label": "4:30am",
           "time_24h": "04:30",
           "values": {
-            "actual": "GBP",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-16",
+          "weekday": "Tue",
+          "currency": "GBP",
+          "title": "Flash Services PMI",
+          "time_label": "4:30am",
+          "time_24h": "04:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1806,7 +2456,7 @@
           "time_label": "5:00am",
           "time_24h": "05:00",
           "values": {
-            "actual": "9:45am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1816,10 +2466,23 @@
           "weekday": "Tue",
           "currency": "USD",
           "title": "Flash Manufacturing PMI",
-          "time_label": "5:00am",
-          "time_24h": "05:00",
+          "time_label": "9:45am",
+          "time_24h": "09:45",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-16",
+          "weekday": "Tue",
+          "currency": "USD",
+          "title": "Flash Services PMI",
+          "time_label": "9:45am",
+          "time_24h": "09:45",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1838,7 +2501,7 @@
           "time_label": "2:00am",
           "time_24h": "02:00",
           "values": {
-            "actual": "4:00am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1848,10 +2511,10 @@
           "weekday": "Wed",
           "currency": "EUR",
           "title": "German ifo Business Climate",
-          "time_label": "2:00am",
-          "time_24h": "02:00",
+          "time_label": "4:00am",
+          "time_24h": "04:00",
           "values": {
-            "actual": "8:30am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1861,10 +2524,23 @@
           "weekday": "Wed",
           "currency": "USD",
           "title": "Core Retail Sales m/m",
-          "time_label": "2:00am",
-          "time_24h": "02:00",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-17",
+          "weekday": "Wed",
+          "currency": "USD",
+          "title": "Retail Sales m/m",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1896,7 +2572,7 @@
           "time_label": "7:00am",
           "time_24h": "07:00",
           "values": {
-            "actual": "GBP",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1904,12 +2580,25 @@
         {
           "date": "2025-12-18",
           "weekday": "Thu",
-          "currency": "MPC",
-          "title": "GBP",
+          "currency": "GBP",
+          "title": "MPC Official Bank Rate Votes",
           "time_label": "7:00am",
           "time_24h": "07:00",
           "values": {
-            "actual": "Official Bank Rate",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-18",
+          "weekday": "Thu",
+          "currency": "GBP",
+          "title": "Official Bank Rate",
+          "time_label": "7:00am",
+          "time_24h": "07:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1922,7 +2611,20 @@
           "time_label": "8:15am",
           "time_24h": "08:15",
           "values": {
-            "actual": "EUR",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-18",
+          "weekday": "Thu",
+          "currency": "EUR",
+          "title": "Monetary Policy Statement",
+          "time_label": "8:15am",
+          "time_24h": "08:15",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1935,7 +2637,20 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-18",
+          "weekday": "Thu",
+          "currency": "USD",
+          "title": "Philly Fed Manufacturing Index",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1948,7 +2663,7 @@
           "time_label": "8:45am",
           "time_24h": "08:45",
           "values": {
-            "actual": "Tentative",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1958,10 +2673,10 @@
           "weekday": "Thu",
           "currency": "JPY",
           "title": "BOJ Policy Rate",
-          "time_label": "8:45am",
-          "time_24h": "08:45",
+          "time_label": "Tentative",
+          "time_24h": null,
           "values": {
-            "actual": "Tentative",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -1971,8 +2686,8 @@
           "weekday": "Thu",
           "currency": "JPY",
           "title": "Monetary Policy Statement",
-          "time_label": "8:45am",
-          "time_24h": "08:45",
+          "time_label": "Tentative",
+          "time_24h": null,
           "values": {
             "actual": null,
             "forecast": null,
@@ -1993,7 +2708,7 @@
           "time_label": "Tentative",
           "time_24h": null,
           "values": {
-            "actual": "2:00am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2003,10 +2718,10 @@
           "weekday": "Fri",
           "currency": "GBP",
           "title": "Retail Sales m/m",
-          "time_label": "Tentative",
-          "time_24h": null,
+          "time_label": "2:00am",
+          "time_24h": "02:00",
           "values": {
-            "actual": "8:30am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2016,10 +2731,23 @@
           "weekday": "Fri",
           "currency": "CAD",
           "title": "Core Retail Sales m/m",
-          "time_label": "Tentative",
-          "time_24h": null,
+          "time_label": "8:30am",
+          "time_24h": "08:30",
           "values": {
-            "actual": "CAD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-19",
+          "weekday": "Fri",
+          "currency": "CAD",
+          "title": "Retail Sales m/m",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2029,10 +2757,23 @@
           "weekday": "Fri",
           "currency": "USD",
           "title": "Final GDP q/q",
-          "time_label": "Tentative",
-          "time_24h": null,
+          "time_label": "8:30am",
+          "time_24h": "08:30",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-19",
+          "weekday": "Fri",
+          "currency": "USD",
+          "title": "Final GDP Price Index q/q",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2045,7 +2786,20 @@
           "time_label": "10:00am",
           "time_24h": "10:00",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-19",
+          "weekday": "Fri",
+          "currency": "USD",
+          "title": "Existing Home Sales",
+          "time_label": "10:00am",
+          "time_24h": "10:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2077,7 +2831,20 @@
           "time_label": "8:00pm",
           "time_24h": "20:00",
           "values": {
-            "actual": "CNY",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-21",
+          "weekday": "Sun",
+          "currency": "CNY",
+          "title": "5-y Loan Prime Rate",
+          "time_label": "8:00pm",
+          "time_24h": "20:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2115,7 +2882,7 @@
           "time_label": "8:30am",
           "time_24h": "08:30",
           "values": {
-            "actual": "10:00am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2125,10 +2892,23 @@
           "weekday": "Tue",
           "currency": "USD",
           "title": "CB Consumer Confidence",
-          "time_label": "8:30am",
-          "time_24h": "08:30",
+          "time_label": "10:00am",
+          "time_24h": "10:00",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-23",
+          "weekday": "Tue",
+          "currency": "USD",
+          "title": "New Home Sales",
+          "time_label": "10:00am",
+          "time_24h": "10:00",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2138,8 +2918,8 @@
           "weekday": "Tue",
           "currency": "USD",
           "title": "Richmond Manufacturing Index",
-          "time_label": "8:30am",
-          "time_24h": "08:30",
+          "time_label": "10:00am",
+          "time_24h": "10:00",
           "values": {
             "actual": null,
             "forecast": null,
@@ -2160,7 +2940,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "8:30am",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2170,10 +2950,23 @@
           "weekday": "Wed",
           "currency": "USD",
           "title": "Unemployment Claims",
-          "time_label": "All Day",
-          "time_24h": null,
+          "time_label": "8:30am",
+          "time_24h": "08:30",
           "values": {
-            "actual": "USD",
+            "actual": null,
+            "forecast": null,
+            "previous": null
+          }
+        },
+        {
+          "date": "2025-12-24",
+          "weekday": "Wed",
+          "currency": "USD",
+          "title": "Core Durable Goods Orders m/m",
+          "time_label": "8:30am",
+          "time_24h": "08:30",
+          "values": {
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2183,10 +2976,10 @@
           "weekday": "Wed",
           "currency": "USD",
           "title": "Durable Goods Orders m/m",
-          "time_label": "All Day",
-          "time_24h": null,
+          "time_label": "8:30am",
+          "time_24h": "08:30",
           "values": {
-            "actual": "All Day",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2199,7 +2992,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "All Day",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2231,7 +3024,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "All Day",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2244,7 +3037,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "All Day",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2257,7 +3050,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "All Day",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2270,7 +3063,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "All Day",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2283,7 +3076,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "All Day",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2296,7 +3089,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "All Day",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2309,7 +3102,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "All Day",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2322,7 +3115,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "All Day",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2335,7 +3128,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "6:30pm",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2345,8 +3138,8 @@
           "weekday": "Thu",
           "currency": "JPY",
           "title": "Tokyo Core CPI y/y",
-          "time_label": "All Day",
-          "time_24h": null,
+          "time_label": "6:30pm",
+          "time_24h": "18:30",
           "values": {
             "actual": null,
             "forecast": null,
@@ -2367,7 +3160,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "All Day",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2380,7 +3173,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "All Day",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2393,7 +3186,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "All Day",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
@@ -2406,7 +3199,7 @@
           "time_label": "All Day",
           "time_24h": null,
           "values": {
-            "actual": "All Day",
+            "actual": null,
             "forecast": null,
             "previous": null
           }
