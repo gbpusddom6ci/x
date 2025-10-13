@@ -1,16 +1,165 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import argparse
+import html
 import io
 import csv
-from typing import List, Optional, Dict
-from datetime import datetime
+import json
+import os
+from typing import List, Optional, Dict, Any
+from datetime import datetime, timedelta
 
 from .counter import (
     analyze_iou, load_candles, fmt_ts, fmt_pip,
-    SEQUENCES_FILTERED, IOUResult, Candle
+    SEQUENCES_FILTERED, IOUResult, Candle, normalize_key, parse_float, parse_time_value
 )
 from email.parser import BytesParser
 from email.policy import default as email_default
+
+
+def load_news_data_from_directory(directory_path: str) -> Dict[str, List[Dict[str, Any]]]:
+    """
+    Load all ForexFactory news data from JSON files in a directory.
+    Returns a dict: date_string -> list of events for that date.
+    Automatically merges all JSON files in the directory.
+    """
+    if not os.path.exists(directory_path) or not os.path.isdir(directory_path):
+        return {}
+    
+    events_by_date: Dict[str, List[Dict[str, Any]]] = {}
+    
+    try:
+        # Find all JSON files in directory
+        json_files = [f for f in os.listdir(directory_path) if f.endswith('.json')]
+        
+        for json_file in json_files:
+            json_path = os.path.join(directory_path, json_file)
+            try:
+                with open(json_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                
+                # Index events by date
+                for day in data.get('days', []):
+                    date_str = day.get('date')  # e.g., "2025-03-17"
+                    events = day.get('events', [])
+                    if date_str:
+                        # Merge events if date already exists
+                        if date_str in events_by_date:
+                            events_by_date[date_str].extend(events)
+                        else:
+                            events_by_date[date_str] = events
+            except Exception:
+                # Skip invalid JSON files
+                continue
+        
+        return events_by_date
+    except Exception:
+        return {}
+
+
+def find_news_in_timerange(
+    events_by_date: Dict[str, List[Dict[str, Any]]],
+    start_ts: datetime,
+    duration_minutes: int = 120
+) -> List[Dict[str, Any]]:
+    """
+    Find news events that fall within [start_ts, start_ts + duration_minutes).
+    For null-valued events (speeches, statements), check 1 hour before candle start.
+    News data is in UTC-4 (same as candle data).
+    
+    IMPORTANT: Uses candle year to match news (ignores JSON year).
+    """
+    end_ts = start_ts + timedelta(minutes=duration_minutes)
+    matching = []
+    
+    # For null events, extend search to 1 hour before candle start
+    extended_start_ts = start_ts - timedelta(hours=1)
+    
+    # Get candle year to match with news (JSON might have different year)
+    candle_year = start_ts.year
+    
+    # Check all dates in events_by_date with matching month-day
+    for date_str, events in events_by_date.items():
+        try:
+            # Parse JSON date (might be any year)
+            json_year, json_month, json_day = map(int, date_str.split('-'))
+            
+            # Replace with candle year for comparison
+            adjusted_date = datetime(candle_year, json_month, json_day)
+            
+            # Check if this date is relevant to our time range
+            if not (adjusted_date.date() >= extended_start_ts.date() - timedelta(days=1) and
+                    adjusted_date.date() <= end_ts.date() + timedelta(days=1)):
+                continue
+            
+            for event in events:
+                time_24h = event.get('time_24h')
+                if not time_24h:  # Skip "All Day" events
+                    continue
+                
+                try:
+                    # Parse time_24h (e.g., "04:48")
+                    hour, minute = map(int, time_24h.split(':'))
+                    
+                    # Create event timestamp using candle year
+                    event_ts = datetime(candle_year, json_month, json_day, hour, minute)
+                    
+                    # Check if event has null values (speeches, statements)
+                    values = event.get('values', {})
+                    is_null_event = (
+                        values.get('actual') is None and 
+                        values.get('forecast') is None and 
+                        values.get('previous') is None
+                    )
+                    
+                    # For null events: check 1 hour before candle to candle end
+                    # For regular events: check candle start to candle end
+                    if is_null_event:
+                        if extended_start_ts <= event_ts < end_ts:
+                            matching.append(event)
+                    else:
+                        if start_ts <= event_ts < end_ts:
+                            matching.append(event)
+                except Exception:
+                    continue
+        except Exception:
+            continue
+    
+    return matching
+
+
+def format_news_events(events: List[Dict[str, Any]]) -> str:
+    """
+    Format news events for display in IOU table.
+    Format: var: CURRENCY Title (actual:X, forecast:Y, prev:Z); ...
+    """
+    if not events:
+        return "-"
+    
+    parts = []
+    for event in events:
+        currency = event.get('currency', '?')
+        title = event.get('title', 'Unknown')
+        values = event.get('values', {})
+        
+        actual = values.get('actual')
+        forecast = values.get('forecast')
+        previous = values.get('previous')
+        
+        # Format values
+        if actual is None and forecast is None and previous is None:
+            # Event without values (e.g., speeches)
+            parts.append(f"{currency} {title}")
+        else:
+            val_strs = []
+            if actual is not None:
+                val_strs.append(f"actual:{actual}")
+            if forecast is not None:
+                val_strs.append(f"forecast:{forecast}")
+            if previous is not None:
+                val_strs.append(f"prev:{previous}")
+            parts.append(f"{currency} {title} ({', '.join(val_strs)})")
+    
+    return "var: " + "; ".join(parts)
 
 
 def load_candles_from_text(text: str) -> List[Candle]:
@@ -119,6 +268,11 @@ def render_index() -> bytes:
         </div>
         <label>Limit (mutlak değer):</label>
         <input type='number' name='limit' step='0.001' value='0.1' min='0' required />
+        <div>
+          <label>
+            <input type='checkbox' name='xyz_analysis' /> XYZ Küme Analizi
+          </label>
+        </div>
         
         <button type='submit'>Analiz Et</button>
       </form>
@@ -132,6 +286,7 @@ def render_index() -> bytes:
         <li><strong>Aynı İşaret</strong> - OC ve PrevOC her ikisi de (+) VEYA her ikisi de (-) olmalı</li>
       </ul>
       <p><strong>Not:</strong> S1 için 1 ve 3 değerleri, S2 için 1 ve 5 değerleri analiz edilmez.</p>
+      <p><strong>XYZ Analizi:</strong> Habersiz IOU içeren offsetler elenir, kalan offsetler XYZ kümesini oluşturur.</p>
     </div>
     """
     return page("app120_iou", body)
@@ -141,7 +296,9 @@ def render_results(
     candles: List[Candle],
     sequence: str,
     limit: float,
-    results: Dict[int, List[IOUResult]]
+    results: Dict[int, List[IOUResult]],
+    xyz_analysis: bool = False,
+    events_by_date: Optional[Dict[str, List[Dict[str, Any]]]] = None
 ) -> bytes:
     total_iou = sum(len(v) for v in results.values())
     
@@ -152,10 +309,15 @@ def render_results(
         <strong>📁 Veri:</strong> {len(candles)} mum ({fmt_ts(candles[0].ts)} → {fmt_ts(candles[-1].ts)})<br>
         <strong>🔢 Sequence:</strong> {sequence} (Filtered: {', '.join(map(str, SEQUENCES_FILTERED[sequence]))})<br>
         <strong>📏 Limit:</strong> {limit}<br>
-        <strong>🎯 Toplam IOU Mum:</strong> {total_iou}
+        <strong>🎯 Toplam IOU Mum:</strong> {total_iou}<br>
+        <strong>🎯 XYZ Analizi:</strong> {'✅ Aktif' if xyz_analysis else '❌ Pasif'}
       </div>
     </div>
     """
+    
+    # XYZ Analysis: Track news-free IOUs per offset
+    if xyz_analysis:
+        file_xyz_data = {offset: {"news_free": 0, "with_news": 0} for offset in range(-3, 4)}
     
     # Only show offsets with IOU candles
     for offset in range(-3, 4):
@@ -171,6 +333,20 @@ def render_results(
                 oc_class = "oc-positive" if iou.oc > 0 else "oc-negative"
                 prev_oc_class = "oc-positive" if iou.prev_oc > 0 else "oc-negative"
                 
+                # Check for news if xyz_analysis is enabled
+                news_text = "-"
+                has_news = False
+                if xyz_analysis and events_by_date:
+                    news_events = find_news_in_timerange(events_by_date, iou.timestamp, 120)
+                    news_text = format_news_events(news_events)
+                    has_news = bool(news_events)
+                    
+                    # Track for XYZ analysis
+                    if has_news:
+                        file_xyz_data[offset]["with_news"] += 1
+                    else:
+                        file_xyz_data[offset]["news_free"] += 1
+                
                 body += f"""
                 <div class='iou-item'>
                   <span class='seq-badge'>Seq {iou.seq_value}</span>
@@ -179,11 +355,60 @@ def render_results(
                     <strong>OC:</strong> <span class='{oc_class}'>{fmt_pip(iou.oc)}</span> | 
                     <strong>PrevOC:</strong> <span class='{prev_oc_class}'>{fmt_pip(iou.prev_oc)}</span>
                     <span style='color:#888;'>(Prev Index: {iou.prev_index}, {fmt_ts(iou.prev_timestamp)})</span>
+                """
+                
+                if xyz_analysis:
+                    body += f"<br><strong>Haber:</strong> <span style='font-size:11px;'>{html.escape(news_text)}</span>"
+                
+                body += """
                   </div>
                 </div>
                 """
             
             body += "</div>"
+    
+    # Display XYZ Set Analysis Results
+    if xyz_analysis:
+        xyz_set = []
+        eliminated = []
+        
+        for offset in range(-3, 4):
+            news_free_count = file_xyz_data[offset]["news_free"]
+            if news_free_count > 0:
+                eliminated.append(offset)
+            else:
+                xyz_set.append(offset)
+        
+        xyz_set_str = ", ".join([f"{o:+d}" if o != 0 else "0" for o in xyz_set])
+        eliminated_str = ", ".join([f"{o:+d}" if o != 0 else "0" for o in eliminated])
+        
+        body += f"""
+        <div class='card' style='background:#e8f0fe; border-left:4px solid #1a73e8;'>
+          <h3>🎯 XYZ Küme Analizi</h3>
+          <p><strong>Mantık:</strong> Habersiz IOU içeren offsetler elenir.</p>
+          <div class='summary'>
+            <strong>XYZ Kümesi:</strong> <code style='background:#fff; padding:4px 8px; border-radius:4px;'>{html.escape(xyz_set_str) if xyz_set else 'Ø (boş)'}</code><br>
+            <strong>Elenen Offsetler:</strong> <code style='background:#fff; padding:4px 8px; border-radius:4px;'>{html.escape(eliminated_str) if eliminated else 'Ø (yok)'}</code>
+          </div>
+          <table style='margin-top:12px;'>
+            <thead>
+              <tr><th>Offset</th><th>Habersiz IOU</th><th>Haberli IOU</th><th>Durum</th></tr>
+            </thead>
+            <tbody>
+        """
+        
+        for offset in range(-3, 4):
+            nf = file_xyz_data[offset]["news_free"]
+            wn = file_xyz_data[offset]["with_news"]
+            status = "❌ Elendi" if offset in eliminated else "✅ XYZ'de"
+            offset_str = f"{offset:+d}" if offset != 0 else "0"
+            body += f"<tr><td>{offset_str}</td><td>{nf}</td><td>{wn}</td><td>{status}</td></tr>"
+        
+        body += """
+            </tbody>
+          </table>
+        </div>
+        """
     
     body += """
     <div class='card'>
@@ -238,6 +463,7 @@ class Handler(BaseHTTPRequestHandler):
                 csv_text = None
                 sequence = "S2"
                 limit = 0.1
+                xyz_analysis = False
 
                 for part in msg.iter_parts():
                     name = part.get_param("name", header="content-disposition")
@@ -247,6 +473,8 @@ class Handler(BaseHTTPRequestHandler):
                         sequence = part.get_content().strip()
                     elif name == "limit":
                         limit = float(part.get_content().strip())
+                    elif name == "xyz_analysis":
+                        xyz_analysis = True
 
                 if not csv_text:
                     raise ValueError("CSV dosyası yüklenemedi")
@@ -256,11 +484,17 @@ class Handler(BaseHTTPRequestHandler):
                     raise ValueError("CSV verisi boş")
 
                 results = analyze_iou(candles, sequence, limit)
+                
+                # Load news data if xyz_analysis is enabled
+                events_by_date = None
+                if xyz_analysis:
+                    news_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'news_data')
+                    events_by_date = load_news_data_from_directory(news_dir)
 
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
                 self.end_headers()
-                self.wfile.write(render_results(candles, sequence, limit, results))
+                self.wfile.write(render_results(candles, sequence, limit, results, xyz_analysis, events_by_date))
 
             except Exception as e:
                 error_body = f"""

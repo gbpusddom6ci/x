@@ -140,6 +140,8 @@ def find_news_in_timerange(
     Find news events that fall within [start_ts, start_ts + duration_minutes).
     For null-valued events (speeches, statements), check 1 hour before candle start.
     News data is in UTC-4 (same as candle data).
+    
+    IMPORTANT: Uses candle year to match news (ignores JSON year).
     """
     end_ts = start_ts + timedelta(minutes=duration_minutes)
     matching = []
@@ -147,47 +149,55 @@ def find_news_in_timerange(
     # For null events, extend search to 1 hour before candle start
     extended_start_ts = start_ts - timedelta(hours=1)
     
-    # Check both start and end date (in case range spans midnight)
-    dates_to_check = {start_ts.strftime('%Y-%m-%d')}
-    if end_ts.date() != start_ts.date():
-        dates_to_check.add(end_ts.strftime('%Y-%m-%d'))
-    if extended_start_ts.date() != start_ts.date():
-        dates_to_check.add(extended_start_ts.strftime('%Y-%m-%d'))
+    # Get candle year to match with news (JSON might have different year)
+    candle_year = start_ts.year
     
-    for date_str in dates_to_check:
-        events = events_by_date.get(date_str, [])
-        
-        for event in events:
-            time_24h = event.get('time_24h')
-            if not time_24h:  # Skip "All Day" events
+    # Check all dates in events_by_date with matching month-day
+    for date_str, events in events_by_date.items():
+        try:
+            # Parse JSON date (might be any year)
+            json_year, json_month, json_day = map(int, date_str.split('-'))
+            
+            # Replace with candle year for comparison
+            adjusted_date = datetime(candle_year, json_month, json_day)
+            
+            # Check if this date is relevant to our time range
+            if not (adjusted_date.date() >= extended_start_ts.date() - timedelta(days=1) and
+                    adjusted_date.date() <= end_ts.date() + timedelta(days=1)):
                 continue
             
-            try:
-                # Parse time_24h (e.g., "04:48")
-                hour, minute = map(int, time_24h.split(':'))
+            for event in events:
+                time_24h = event.get('time_24h')
+                if not time_24h:  # Skip "All Day" events
+                    continue
                 
-                # Parse the date from date_str to handle multi-day ranges
-                year, month, day = map(int, date_str.split('-'))
-                event_ts = datetime(year, month, day, hour, minute)
-                
-                # Check if event has null values (speeches, statements)
-                values = event.get('values', {})
-                is_null_event = (
-                    values.get('actual') is None and 
-                    values.get('forecast') is None and 
-                    values.get('previous') is None
-                )
-                
-                # For null events: check 1 hour before candle to candle end
-                # For regular events: check candle start to candle end
-                if is_null_event:
-                    if extended_start_ts <= event_ts < end_ts:
-                        matching.append(event)
-                else:
-                    if start_ts <= event_ts < end_ts:
-                        matching.append(event)
-            except Exception:
-                continue
+                try:
+                    # Parse time_24h (e.g., "04:48")
+                    hour, minute = map(int, time_24h.split(':'))
+                    
+                    # Create event timestamp using candle year
+                    event_ts = datetime(candle_year, json_month, json_day, hour, minute)
+                    
+                    # Check if event has null values (speeches, statements)
+                    values = event.get('values', {})
+                    is_null_event = (
+                        values.get('actual') is None and 
+                        values.get('forecast') is None and 
+                        values.get('previous') is None
+                    )
+                    
+                    # For null events: check 1 hour before candle to candle end
+                    # For regular events: check candle start to candle end
+                    if is_null_event:
+                        if extended_start_ts <= event_ts < end_ts:
+                            matching.append(event)
+                    else:
+                        if start_ts <= event_ts < end_ts:
+                            matching.append(event)
+                except Exception:
+                    continue
+        except Exception:
+            continue
     
     return matching
 
@@ -405,6 +415,10 @@ def render_iou_index() -> bytes:
             <label>Limit</label>
             <input type='number' name='limit' value='0.1' step='0.01' min='0' style='width:80px' />
           </div>
+          <div>
+            <label>XYZ Küme Analizi</label>
+            <input type='checkbox' name='xyz_analysis' />
+          </div>
         </div>
         <div style='margin-top:12px;'>
           <button type='submit'>Analiz Et</button>
@@ -413,6 +427,7 @@ def render_iou_index() -> bytes:
     </div>
     <p><strong>IOU Kriterleri:</strong> |OC| ≥ limit VE |PrevOC| ≥ limit VE aynı işaret (++ veya --)</p>
     <p>2 haftalık değil, <strong>1 haftalık 48m veri</strong> kullanılır.</p>
+    <p><strong>XYZ Analizi:</strong> Habersiz IOU içeren offsetler elenir, kalan offsetler XYZ kümesini oluşturur.</p>
     """
     return page("app48 - IOU", body, active_tab="iou")
 
@@ -604,6 +619,8 @@ class AppHandler(BaseHTTPRequestHandler):
                 except:
                     limit = 0.1
                 
+                xyz_analysis = "xyz_analysis" in params
+                
                 # Load news data from directory (auto-detects all JSON files)
                 news_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'news_data')
                 events_by_date = load_news_data_from_directory(news_dir)
@@ -623,6 +640,7 @@ class AppHandler(BaseHTTPRequestHandler):
                   <div><strong>Sequence:</strong> {html.escape(sequence)} (Filtered: {', '.join(map(str, SEQUENCES_FILTERED[sequence]))})</div>
                   <div><strong>Limit:</strong> {limit}</div>
                   <div><strong>Haber Verisi:</strong> {f'✅ {json_files_count} JSON dosyası yüklendi ({len(events_by_date)} gün)' if news_loaded else '❌ news_data/ klasöründe JSON bulunamadı'}</div>
+                  <div><strong>XYZ Analizi:</strong> {'✅ Aktif' if xyz_analysis else '❌ Pasif'}</div>
                 </div>
                 """
                 
@@ -652,6 +670,9 @@ class AppHandler(BaseHTTPRequestHandler):
                             body += f"<div class='card' style='padding:10px;'><strong>📄 {html.escape(filename)}</strong> - <span style='color:#888;'>IOU yok</span></div>"
                             continue
                         
+                        # XYZ Analysis: Track news-free IOUs per offset for THIS file
+                        file_xyz_data = {offset: {"news_free": 0, "with_news": 0} for offset in range(-3, 4)}
+                        
                         # Compact table with all offsets
                         body += f"""
                         <div class='card' style='padding:10px;'>
@@ -668,10 +689,58 @@ class AppHandler(BaseHTTPRequestHandler):
                                 # Find news for this candle's timerange (48 minutes)
                                 news_events = find_news_in_timerange(events_by_date, iou.timestamp, 48) if news_loaded else []
                                 news_text = format_news_events(news_events)
+                                has_news = bool(news_events)
+                                
+                                # Track for XYZ analysis (per file)
+                                if xyz_analysis:
+                                    if has_news:
+                                        file_xyz_data[offset]["with_news"] += 1
+                                    else:
+                                        file_xyz_data[offset]["news_free"] += 1
                                 
                                 body += f"<tr><td>{offset:+d}</td><td>{iou.seq_value}</td><td>{iou.index}</td><td>{iou.timestamp.strftime('%m-%d %H:%M')}</td><td>{html.escape(oc_fmt)}</td><td>{html.escape(prev_oc_fmt)}</td><td>{iou.prev_index}</td><td style='font-size:11px;max-width:400px;'>{html.escape(news_text)}</td></tr>"
                         
-                        body += "</table></div>"
+                        body += "</table>"
+                        
+                        # Display XYZ Set Analysis Results for THIS file
+                        if xyz_analysis:
+                            xyz_set = []
+                            eliminated = []
+                            
+                            for offset in range(-3, 4):
+                                news_free_count = file_xyz_data[offset]["news_free"]
+                                if news_free_count > 0:
+                                    eliminated.append(offset)
+                                else:
+                                    xyz_set.append(offset)
+                            
+                            xyz_set_str = ", ".join([f"{o:+d}" if o != 0 else "0" for o in xyz_set])
+                            eliminated_str = ", ".join([f"{o:+d}" if o != 0 else "0" for o in eliminated])
+                            
+                            body += f"""
+                            <div style='margin-top:12px; padding:8px; background:#f0f9ff; border:1px solid #0ea5e9; border-radius:4px;'>
+                              <strong>🎯 XYZ Kümesi:</strong> <code>{html.escape(xyz_set_str) if xyz_set else 'Ø (boş)'}</code><br>
+                              <strong>Elenen:</strong> <code>{html.escape(eliminated_str) if eliminated else 'Ø (yok)'}</code>
+                              <details style='margin-top:4px;'>
+                                <summary style='cursor:pointer;'>Detaylar</summary>
+                                <table style='margin-top:4px; font-size:12px;'>
+                                  <tr><th>Offset</th><th>Habersiz</th><th>Haberli</th><th>Durum</th></tr>
+                            """
+                            
+                            for offset in range(-3, 4):
+                                nf = file_xyz_data[offset]["news_free"]
+                                wn = file_xyz_data[offset]["with_news"]
+                                status = "❌ Elendi" if offset in eliminated else "✅ XYZ'de"
+                                offset_str = f"{offset:+d}" if offset != 0 else "0"
+                                body += f"<tr><td>{offset_str}</td><td>{nf}</td><td>{wn}</td><td>{status}</td></tr>"
+                            
+                            body += """
+                                </table>
+                              </details>
+                            </div>
+                            """
+                        
+                        body += "</div>"
                         
                     except Exception as e:
                         body += f"<div class='card' style='padding:10px;'><strong>❌ {html.escape(filename)}</strong> - <span style='color:red;'>Hata: {html.escape(str(e))}</span></div>"
