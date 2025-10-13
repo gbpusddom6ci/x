@@ -192,6 +192,15 @@ def find_news_in_timerange(
     return matching
 
 
+def is_holiday_event(event: Dict[str, Any]) -> bool:
+    """
+    Check if an event is a holiday (should not affect XYZ analysis).
+    Holidays are identified by title containing 'Holiday' or 'Bank Holiday'.
+    """
+    title = event.get('title', '').lower()
+    return 'holiday' in title
+
+
 def format_news_events(events: List[Dict[str, Any]]) -> str:
     """
     Format news events for display in IOU table.
@@ -651,7 +660,11 @@ class AppHandler(BaseHTTPRequestHandler):
                                 # Find news for this candle's timerange (321 minutes)
                                 news_events = find_news_in_timerange(events_by_date, iou.timestamp, 321) if news_loaded else []
                                 news_text = format_news_events(news_events)
-                                has_news = bool(news_events)
+                                
+                                # For XYZ analysis: only non-holiday events count as "news"
+                                # Holidays are shown but don't affect XYZ filtering
+                                non_holiday_events = [e for e in news_events if not is_holiday_event(e)]
+                                has_news = bool(non_holiday_events)
                                 
                                 # Track for XYZ analysis (per file)
                                 if xyz_analysis:
