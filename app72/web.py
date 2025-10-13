@@ -138,6 +138,8 @@ def find_news_in_timerange(
     Find news events that fall within [start_ts, start_ts + duration_minutes).
     For null-valued events (speeches, statements), check 1 hour before candle start.
     News data is in UTC-4 (same as candle data).
+    
+    IMPORTANT: Uses candle year to match news (ignores JSON year).
     """
     end_ts = start_ts + timedelta(minutes=duration_minutes)
     matching = []
@@ -145,47 +147,56 @@ def find_news_in_timerange(
     # For null events, extend search to 1 hour before candle start
     extended_start_ts = start_ts - timedelta(hours=1)
     
-    # Check both start and end date (in case range spans midnight)
-    dates_to_check = {start_ts.strftime('%Y-%m-%d')}
-    if end_ts.date() != start_ts.date():
-        dates_to_check.add(end_ts.strftime('%Y-%m-%d'))
-    if extended_start_ts.date() != start_ts.date():
-        dates_to_check.add(extended_start_ts.strftime('%Y-%m-%d'))
+    # Get candle year to match with news (JSON might have different year)
+    candle_year = start_ts.year
     
-    for date_str in dates_to_check:
-        events = events_by_date.get(date_str, [])
-        
-        for event in events:
-            time_24h = event.get('time_24h')
-            if not time_24h:  # Skip "All Day" events
+    # Check all dates in events_by_date with matching month-day
+    for date_str, events in events_by_date.items():
+        try:
+            # Parse JSON date (might be any year)
+            json_year, json_month, json_day = map(int, date_str.split('-'))
+            
+            # Replace with candle year for comparison
+            adjusted_date = datetime(candle_year, json_month, json_day)
+            
+            # Check if this date is relevant to our time range
+            # (could be same day, previous day, or next day due to time range)
+            if not (adjusted_date.date() >= extended_start_ts.date() - timedelta(days=1) and
+                    adjusted_date.date() <= end_ts.date() + timedelta(days=1)):
                 continue
             
-            try:
-                # Parse time_24h (e.g., "04:48")
-                hour, minute = map(int, time_24h.split(':'))
+            for event in events:
+                time_24h = event.get('time_24h')
+                if not time_24h:  # Skip "All Day" events
+                    continue
                 
-                # Parse the date from date_str to handle multi-day ranges
-                year, month, day = map(int, date_str.split('-'))
-                event_ts = datetime(year, month, day, hour, minute)
-                
-                # Check if event has null values (speeches, statements)
-                values = event.get('values', {})
-                is_null_event = (
-                    values.get('actual') is None and 
-                    values.get('forecast') is None and 
-                    values.get('previous') is None
-                )
-                
-                # For null events: check 1 hour before candle to candle end
-                # For regular events: check candle start to candle end
-                if is_null_event:
-                    if extended_start_ts <= event_ts < end_ts:
-                        matching.append(event)
-                else:
-                    if start_ts <= event_ts < end_ts:
-                        matching.append(event)
-            except Exception:
-                continue
+                try:
+                    # Parse time_24h (e.g., "04:48")
+                    hour, minute = map(int, time_24h.split(':'))
+                    
+                    # Create event timestamp using candle year
+                    event_ts = datetime(candle_year, json_month, json_day, hour, minute)
+                    
+                    # Check if event has null values (speeches, statements)
+                    values = event.get('values', {})
+                    is_null_event = (
+                        values.get('actual') is None and 
+                        values.get('forecast') is None and 
+                        values.get('previous') is None
+                    )
+                    
+                    # For null events: check 1 hour before candle to candle end
+                    # For regular events: check candle start to candle end
+                    if is_null_event:
+                        if extended_start_ts <= event_ts < end_ts:
+                            matching.append(event)
+                    else:
+                        if start_ts <= event_ts < end_ts:
+                            matching.append(event)
+                except Exception:
+                    continue
+        except Exception:
+            continue
     
     return matching
 
