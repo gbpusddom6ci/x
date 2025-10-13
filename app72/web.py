@@ -377,6 +377,10 @@ def render_iou_index() -> bytes:
             <label>Limit</label>
             <input type='number' name='limit' value='0.1' step='0.01' min='0' style='width:80px' />
           </div>
+          <div>
+            <label>XYZ Küme Analizi</label>
+            <input type='checkbox' name='xyz_analysis' />
+          </div>
         </div>
         <div style='margin-top:12px;'>
           <button type='submit'>Analiz Et</button>
@@ -385,6 +389,7 @@ def render_iou_index() -> bytes:
     </div>
     <p><strong>IOU Kriterleri:</strong> |OC| ≥ limit VE |PrevOC| ≥ limit VE aynı işaret (++ veya --)</p>
     <p><strong>2 haftalık 72m veri</strong> kullanılır.</p>
+    <p><strong>XYZ Analizi:</strong> Habersiz IOU içeren offsetler elenir, kalan offsetler XYZ kümesini oluşturur.</p>
     """
     return page("app72 - IOU", body, active_tab="iou")
 
@@ -588,6 +593,8 @@ class App72Handler(BaseHTTPRequestHandler):
                 except:
                     limit = 0.1
                 
+                xyz_analysis = "xyz_analysis" in params
+                
                 # Load news data from directory (auto-detects all JSON files)
                 news_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'news_data')
                 events_by_date = load_news_data_from_directory(news_dir)
@@ -599,6 +606,9 @@ class App72Handler(BaseHTTPRequestHandler):
                 
                 news_loaded = bool(events_by_date)
                 
+                # XYZ Analysis: Track news-free IOUs per offset across all files
+                xyz_data = {offset: {"news_free": 0, "with_news": 0} for offset in range(-3, 4)}
+                
                 # Build HTML header
                 body = f"""
                 <div class='card'>
@@ -607,6 +617,7 @@ class App72Handler(BaseHTTPRequestHandler):
                   <div><strong>Sequence:</strong> {html.escape(sequence)} (Filtered: {', '.join(map(str, SEQUENCES_FILTERED[sequence]))})</div>
                   <div><strong>Limit:</strong> {limit}</div>
                   <div><strong>Haber Verisi:</strong> {f'✅ {json_files_count} JSON dosyası yüklendi ({len(events_by_date)} gün)' if news_loaded else '❌ news_data/ klasöründe JSON bulunamadı'}</div>
+                  <div><strong>XYZ Analizi:</strong> {'✅ Aktif' if xyz_analysis else '❌ Pasif'}</div>
                 </div>
                 """
                 
@@ -646,6 +657,14 @@ class App72Handler(BaseHTTPRequestHandler):
                                 # Find news for this candle's timerange (72 minutes)
                                 news_events = find_news_in_timerange(events_by_date, iou.timestamp, 72) if news_loaded else []
                                 news_text = format_news_events(news_events)
+                                has_news = bool(news_events)
+                                
+                                # Track for XYZ analysis
+                                if xyz_analysis:
+                                    if has_news:
+                                        xyz_data[offset]["with_news"] += 1
+                                    else:
+                                        xyz_data[offset]["news_free"] += 1
                                 
                                 body += f"<tr><td>{offset:+d}</td><td>{iou.seq_value}</td><td>{iou.index}</td><td>{iou.timestamp.strftime('%m-%d %H:%M')}</td><td>{html.escape(oc_fmt)}</td><td>{html.escape(prev_oc_fmt)}</td><td>{iou.prev_index}</td><td style='font-size:11px;max-width:400px;'>{html.escape(news_text)}</td></tr>"
                         
@@ -653,6 +672,43 @@ class App72Handler(BaseHTTPRequestHandler):
                         
                     except Exception as e:
                         body += f"<div class='card' style='padding:10px;'><strong>❌ {html.escape(filename)}</strong> - <span style='color:red;'>Hata: {html.escape(str(e))}</span></div>"
+                
+                # Display XYZ Set Analysis Results
+                if xyz_analysis:
+                    xyz_set = []
+                    eliminated = []
+                    
+                    for offset in range(-3, 4):
+                        news_free_count = xyz_data[offset]["news_free"]
+                        # If at least 1 news-free IOU exists, eliminate this offset
+                        if news_free_count > 0:
+                            eliminated.append(offset)
+                        else:
+                            xyz_set.append(offset)
+                    
+                    xyz_set_str = ", ".join([f"{o:+d}" if o != 0 else "0" for o in xyz_set])
+                    eliminated_str = ", ".join([f"{o:+d}" if o != 0 else "0" for o in eliminated])
+                    
+                    body += f"""
+                    <div class='card' style='background:#f0f9ff; border-color:#0ea5e9;'>
+                      <h3>🎯 XYZ Küme Analizi</h3>
+                      <div><strong>Mantık:</strong> Habersiz IOU içeren offsetler elenir.</div>
+                      <table style='margin-top:8px;'>
+                        <tr><th>Offset</th><th>Habersiz IOU</th><th>Haberli IOU</th><th>Durum</th></tr>
+                    """
+                    
+                    for offset in range(-3, 4):
+                        nf = xyz_data[offset]["news_free"]
+                        wn = xyz_data[offset]["with_news"]
+                        status = "❌ Elendi" if offset in eliminated else "✅ XYZ'de"
+                        body += f"<tr><td>{offset:+d if offset != 0 else 0}</td><td>{nf}</td><td>{wn}</td><td>{status}</td></tr>"
+                    
+                    body += f"""
+                      </table>
+                      <div style='margin-top:12px;'><strong>XYZ Kümesi:</strong> <code>{html.escape(xyz_set_str) if xyz_set else 'Ø (boş)'}</code></div>
+                      <div><strong>Elenen Offsetler:</strong> <code>{html.escape(eliminated_str) if eliminated else 'Ø (yok)'}</code></div>
+                    </div>
+                    """
                 
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
