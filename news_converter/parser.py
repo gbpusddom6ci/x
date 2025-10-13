@@ -164,7 +164,8 @@ def parse_markdown_to_json(md_content: str, filename: str = "unknown") -> Dict[s
         
         # Check if it's a currency line (3 capital letters, possibly with tabs/spaces after)
         # Use the raw line to detect tabs
-        currency_match = re.match(r'^([A-Z]{3})[\s\t]+', line_raw)
+        # Accept both with and without trailing whitespace (some MD files may not have tabs)
+        currency_match = re.match(r'^([A-Z]{3})[\s\t]*$', line_raw)
         if currency_match:
             currency = currency_match.group(1)
             i += 1
@@ -181,7 +182,7 @@ def parse_markdown_to_json(md_content: str, filename: str = "unknown") -> Dict[s
                     # Check if this line is actually a time label (not a value)
                     is_time_label = re.match(r'^(\d{1,2}:\d{2}[ap]m|All Day|Tentative|Day \d+)$', value_line, re.IGNORECASE)
                     # Check if it's a currency line (next event)
-                    is_currency = re.match(r'^([A-Z]{3})[\s\t]+', lines[i] if i < len(lines) else "")
+                    is_currency = re.match(r'^([A-Z]{3})[\s\t]*$', lines[i] if i < len(lines) else "")
                     
                     if value_line and not value_line in WEEKDAYS and not re.match(r'([A-Z][a-z]{2})\s+(\d{1,2})$', value_line) and not is_time_label and not is_currency:
                         # Parse values
