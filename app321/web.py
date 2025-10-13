@@ -196,6 +196,7 @@ def format_news_events(events: List[Dict[str, Any]]) -> str:
     """
     Format news events for display in IOU table.
     Format: var: CURRENCY Title (actual:X, forecast:Y, prev:Z); ...
+    All Day events are marked with [ALL DAY] prefix.
     """
     if not events:
         return "-"
@@ -205,6 +206,11 @@ def format_news_events(events: List[Dict[str, Any]]) -> str:
         currency = event.get('currency', '?')
         title = event.get('title', 'Unknown')
         values = event.get('values', {})
+        time_label = event.get('time_label', '')
+        
+        # Check if this is an All Day event
+        is_all_day = time_label.lower() == 'all day'
+        prefix = "[ALL DAY] " if is_all_day else ""
         
         actual = values.get('actual')
         forecast = values.get('forecast')
@@ -212,8 +218,8 @@ def format_news_events(events: List[Dict[str, Any]]) -> str:
         
         # Format values
         if actual is None and forecast is None and previous is None:
-            # Event without values (e.g., speeches)
-            parts.append(f"{currency} {title}")
+            # Event without values (e.g., speeches, bank holidays)
+            parts.append(f"{prefix}{currency} {title}")
         else:
             val_strs = []
             if actual is not None:
@@ -222,7 +228,7 @@ def format_news_events(events: List[Dict[str, Any]]) -> str:
                 val_strs.append(f"forecast:{forecast}")
             if previous is not None:
                 val_strs.append(f"prev:{previous}")
-            parts.append(f"{currency} {title} ({', '.join(val_strs)})")
+            parts.append(f"{prefix}{currency} {title} ({', '.join(val_strs)})")
     
     return "var: " + "; ".join(parts)
 
