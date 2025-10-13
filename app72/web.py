@@ -701,7 +701,8 @@ class App72Handler(BaseHTTPRequestHandler):
                         nf = xyz_data[offset]["news_free"]
                         wn = xyz_data[offset]["with_news"]
                         status = "❌ Elendi" if offset in eliminated else "✅ XYZ'de"
-                        body += f"<tr><td>{offset:+d if offset != 0 else 0}</td><td>{nf}</td><td>{wn}</td><td>{status}</td></tr>"
+                        offset_str = f"{offset:+d}" if offset != 0 else "0"
+                        body += f"<tr><td>{offset_str}</td><td>{nf}</td><td>{wn}</td><td>{status}</td></tr>"
                     
                     body += f"""
                       </table>
