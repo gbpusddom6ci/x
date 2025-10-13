@@ -606,9 +606,6 @@ class App72Handler(BaseHTTPRequestHandler):
                 
                 news_loaded = bool(events_by_date)
                 
-                # XYZ Analysis: Track news-free IOUs per offset across all files
-                xyz_data = {offset: {"news_free": 0, "with_news": 0} for offset in range(-3, 4)}
-                
                 # Build HTML header
                 body = f"""
                 <div class='card'>
@@ -641,6 +638,9 @@ class App72Handler(BaseHTTPRequestHandler):
                             body += f"<div class='card' style='padding:10px;'><strong>📄 {html.escape(filename)}</strong> - <span style='color:#888;'>IOU yok</span></div>"
                             continue
                         
+                        # XYZ Analysis: Track news-free IOUs per offset for THIS file
+                        file_xyz_data = {offset: {"news_free": 0, "with_news": 0} for offset in range(-3, 4)}
+                        
                         # Compact table with all offsets
                         body += f"""
                         <div class='card' style='padding:10px;'>
@@ -659,57 +659,60 @@ class App72Handler(BaseHTTPRequestHandler):
                                 news_text = format_news_events(news_events)
                                 has_news = bool(news_events)
                                 
-                                # Track for XYZ analysis
+                                # Track for XYZ analysis (per file)
                                 if xyz_analysis:
                                     if has_news:
-                                        xyz_data[offset]["with_news"] += 1
+                                        file_xyz_data[offset]["with_news"] += 1
                                     else:
-                                        xyz_data[offset]["news_free"] += 1
+                                        file_xyz_data[offset]["news_free"] += 1
                                 
                                 body += f"<tr><td>{offset:+d}</td><td>{iou.seq_value}</td><td>{iou.index}</td><td>{iou.timestamp.strftime('%m-%d %H:%M')}</td><td>{html.escape(oc_fmt)}</td><td>{html.escape(prev_oc_fmt)}</td><td>{iou.prev_index}</td><td style='font-size:11px;max-width:400px;'>{html.escape(news_text)}</td></tr>"
                         
-                        body += "</table></div>"
+                        body += "</table>"
+                        
+                        # Display XYZ Set Analysis Results for THIS file
+                        if xyz_analysis:
+                            xyz_set = []
+                            eliminated = []
+                            
+                            for offset in range(-3, 4):
+                                news_free_count = file_xyz_data[offset]["news_free"]
+                                # If at least 1 news-free IOU exists, eliminate this offset
+                                if news_free_count > 0:
+                                    eliminated.append(offset)
+                                else:
+                                    xyz_set.append(offset)
+                            
+                            xyz_set_str = ", ".join([f"{o:+d}" if o != 0 else "0" for o in xyz_set])
+                            eliminated_str = ", ".join([f"{o:+d}" if o != 0 else "0" for o in eliminated])
+                            
+                            body += f"""
+                            <div style='margin-top:12px; padding:8px; background:#f0f9ff; border:1px solid #0ea5e9; border-radius:4px;'>
+                              <strong>🎯 XYZ Kümesi:</strong> <code>{html.escape(xyz_set_str) if xyz_set else 'Ø (boş)'}</code><br>
+                              <strong>Elenen:</strong> <code>{html.escape(eliminated_str) if eliminated else 'Ø (yok)'}</code>
+                              <details style='margin-top:4px;'>
+                                <summary style='cursor:pointer;'>Detaylar</summary>
+                                <table style='margin-top:4px; font-size:12px;'>
+                                  <tr><th>Offset</th><th>Habersiz</th><th>Haberli</th><th>Durum</th></tr>
+                            """
+                            
+                            for offset in range(-3, 4):
+                                nf = file_xyz_data[offset]["news_free"]
+                                wn = file_xyz_data[offset]["with_news"]
+                                status = "❌ Elendi" if offset in eliminated else "✅ XYZ'de"
+                                offset_str = f"{offset:+d}" if offset != 0 else "0"
+                                body += f"<tr><td>{offset_str}</td><td>{nf}</td><td>{wn}</td><td>{status}</td></tr>"
+                            
+                            body += """
+                                </table>
+                              </details>
+                            </div>
+                            """
+                        
+                        body += "</div>"
                         
                     except Exception as e:
                         body += f"<div class='card' style='padding:10px;'><strong>❌ {html.escape(filename)}</strong> - <span style='color:red;'>Hata: {html.escape(str(e))}</span></div>"
-                
-                # Display XYZ Set Analysis Results
-                if xyz_analysis:
-                    xyz_set = []
-                    eliminated = []
-                    
-                    for offset in range(-3, 4):
-                        news_free_count = xyz_data[offset]["news_free"]
-                        # If at least 1 news-free IOU exists, eliminate this offset
-                        if news_free_count > 0:
-                            eliminated.append(offset)
-                        else:
-                            xyz_set.append(offset)
-                    
-                    xyz_set_str = ", ".join([f"{o:+d}" if o != 0 else "0" for o in xyz_set])
-                    eliminated_str = ", ".join([f"{o:+d}" if o != 0 else "0" for o in eliminated])
-                    
-                    body += f"""
-                    <div class='card' style='background:#f0f9ff; border-color:#0ea5e9;'>
-                      <h3>🎯 XYZ Küme Analizi</h3>
-                      <div><strong>Mantık:</strong> Habersiz IOU içeren offsetler elenir.</div>
-                      <table style='margin-top:8px;'>
-                        <tr><th>Offset</th><th>Habersiz IOU</th><th>Haberli IOU</th><th>Durum</th></tr>
-                    """
-                    
-                    for offset in range(-3, 4):
-                        nf = xyz_data[offset]["news_free"]
-                        wn = xyz_data[offset]["with_news"]
-                        status = "❌ Elendi" if offset in eliminated else "✅ XYZ'de"
-                        offset_str = f"{offset:+d}" if offset != 0 else "0"
-                        body += f"<tr><td>{offset_str}</td><td>{nf}</td><td>{wn}</td><td>{status}</td></tr>"
-                    
-                    body += f"""
-                      </table>
-                      <div style='margin-top:12px;'><strong>XYZ Kümesi:</strong> <code>{html.escape(xyz_set_str) if xyz_set else 'Ø (boş)'}</code></div>
-                      <div><strong>Elenen Offsetler:</strong> <code>{html.escape(eliminated_str) if eliminated else 'Ø (yok)'}</code></div>
-                    </div>
-                    """
                 
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
