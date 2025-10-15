@@ -89,6 +89,125 @@ x/
 └── README.md
 ```
 
+## 📊 Veri Yapıları (Data Structures)
+
+### Candle (Mum) Dataclass
+**Tüm uygulamalarda kullanılır**
+
+```python
+from dataclasses import dataclass
+from datetime import datetime
+
+@dataclass
+class Candle:
+    ts: datetime      # Timestamp (UTC-4, timezone-naive)
+    open: float       # Açılış fiyatı
+    high: float       # En yüksek fiyat
+    low: float        # En düşük fiyat
+    close: float      # Kapanış fiyatı
+```
+
+### SequenceAllocation Dataclass
+**Dosya:** `app120/counter.py`, tüm counter.py dosyaları
+
+```python
+@dataclass
+class SequenceAllocation:
+    seq_value: int          # Sequence değeri (örn: 7, 13, 21)
+    idx: Optional[int]      # Candle index (None = predicted/missing)
+    ts: Optional[datetime]  # Timestamp (None = predicted)
+    is_pred: bool           # True = tahmin edilen (missing)
+```
+
+### IOVResult Dataclass
+**Dosya:** `app120_iov/counter.py`
+
+```python
+@dataclass
+class IOVResult:
+    seq_value: int          # Sequence değeri
+    offset: int             # Offset (-3 to +3)
+    index: int              # Candle index
+    timestamp: datetime     # Candle timestamp
+    oc: float               # OC (open-close) değeri
+    prev_oc: float          # Önceki mumun OC değeri
+    prev_index: int         # Önceki mum index
+    prev_timestamp: datetime # Önceki mum timestamp
+```
+
+### IOUResult Dataclass
+**Dosya:** `app120_iou/counter.py`
+
+```python
+@dataclass
+class IOUResult:
+    seq_value: int          # Sequence değeri
+    offset: int             # Offset (-3 to +3)  
+    index: int              # Candle index
+    timestamp: datetime     # Candle timestamp
+    oc: float               # OC (open-close) değeri
+    prev_oc: float          # Önceki mumun OC değeri
+    prev_index: int         # Önceki mum index
+    prev_timestamp: datetime # Önceki mum timestamp
+```
+
+**Not:** IOVResult ve IOUResult yapısal olarak aynıdır, sadece mantık farklıdır (zıt işaret vs aynı işaret).
+
+### News Event JSON Schema
+**Dosya:** `news_data/*.json`
+
+```json
+{
+  "meta": {
+    "source": "markdown_import",
+    "assumptions": {
+      "year": 2025,
+      "time_zone": "UTC-4",
+      "value_columns_order": ["actual", "forecast", "previous"],
+      "two_value_rule": "When only two values are present, interpret as (actual, previous)."
+    },
+    "counts": {
+      "days": 35,
+      "events": 156
+    }
+  },
+  "days": [
+    {
+      "date": "2025-06-01",
+      "weekday": "Sun",
+      "events": [
+        {
+          "date": "2025-06-01",
+          "weekday": "Sun",
+          "currency": "USD",
+          "title": "Non-Farm Payrolls",
+          "time_label": "14:30",
+          "time_24h": "14:30",
+          "impact": "high",
+          "actual": 200,
+          "forecast": 180,
+          "previous": 190
+        },
+        {
+          "title": "Bank Holiday",
+          "time_label": "All Day",
+          "time_24h": null,
+          "impact": "holiday"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Kritik Alanlar:**
+- `time_24h`: `null` ise "All Day" event (speeches, statements)
+- `impact`: "high", "medium", "low", "holiday"
+- `actual`, `forecast`, `previous`: `null` olabilir
+- Timezone: **UTC-4** (mum verileriyle aynı)
+
+---
+
 ## 🔑 Kritik Fonksiyonlar ve Kod Parçaları
 
 ### `parse_multipart_with_multiple_files()` - Çoklu Dosya Parser
@@ -140,6 +259,125 @@ def parse_multipart_with_multiple_files(handler: BaseHTTPRequestHandler) -> Dict
     
     return {"files": files, "params": params}
 ```
+
+### Helper Functions (Yardımcı Fonksiyonlar)
+
+#### `format_pip()` - OC Değeri Formatlama
+**Tüm web.py dosyalarında**
+
+```python
+def format_pip(delta: Optional[float]) -> str:
+    """
+    OC (open-close) değerini formatlar.
+    
+    Args:
+        delta: OC değeri (None olabilir)
+    
+    Returns:
+        "+0.15200" formatında string veya "-" (None için)
+    """
+    if delta is None:
+        return "-"
+    return f"{delta:+.5f}"  # +/- işareti dahil, 5 decimal
+```
+
+#### `is_holiday_event()` - Holiday Kontrolü
+**Tüm web.py dosyalarında**
+
+```python
+def is_holiday_event(event: Dict[str, Any]) -> bool:
+    """
+    Bir event'in holiday olup olmadığını kontrol eder.
+    
+    XYZ Analysis için: Holidays gösterilir ama offset eleme'yi ETKİLEMEZ.
+    
+    Args:
+        event: News event dict
+    
+    Returns:
+        True if title contains 'holiday' (case-insensitive)
+    """
+    title = event.get('title', '').lower()
+    return 'holiday' in title
+```
+
+#### `find_news_in_timerange()` - Haber Arama
+**Tüm web.py dosyalarında**
+
+```python
+def find_news_in_timerange(
+    events_by_date: Dict[str, List[Dict[str, Any]]],
+    start_ts: datetime,
+    duration_minutes: int = 120  # App'e göre değişir (48, 72, 80, 120)
+) -> List[Dict[str, Any]]:
+    """
+    Belirli bir zaman aralığındaki haberleri bulur.
+    
+    Özel Kural: Null-valued events (speeches, statements) için
+    mum başlangıcından 1 SAAT ÖNCE kontrol edilir.
+    
+    Args:
+        events_by_date: {date_str: [event, ...]}
+        start_ts: Mum başlangıç zamanı (UTC-4)
+        duration_minutes: Mum süresi (48/72/80/120)
+    
+    Returns:
+        Matching events listesi
+        
+    Mantık:
+        1. Regular events: [start_ts, start_ts + duration) aralığında
+        2. Null events (time_24h=null): [start_ts - 1 hour, start_ts + duration)
+        3. JSON'daki yıl GÖRMEZDEN GELİNİR, mum yılı kullanılır
+    """
+    end_ts = start_ts + timedelta(minutes=duration_minutes)
+    extended_start_ts = start_ts - timedelta(hours=1)  # Null events için
+    
+    # Mum tarihini kullan (JSON yılını ignore et)
+    candle_date_str = start_ts.strftime("%Y-%m-%d")
+    
+    # ... (event matching logic)
+```
+
+#### `format_news_events()` - Haber Formatla
+**Tüm web.py dosyalarında**
+
+```python
+def format_news_events(events: List[Dict[str, Any]]) -> str:
+    """
+    Haber listesini HTML tablo gösterimi için formatlar.
+    
+    Format: "var: CURRENCY Title (actual:X, forecast:Y, prev:Z); ..."
+    
+    All Day events: "[ALL DAY] CURRENCY Title" formatında
+    
+    Args:
+        events: News events listesi
+    
+    Returns:
+        Formatted string (HTML escape gerekmez, sonradan yapılır)
+    """
+    if not events:
+        return "-"
+    
+    parts = []
+    for event in events:
+        currency = event.get('currency', '')
+        title = event.get('title', '')
+        
+        is_all_day = event.get('time_24h') is None
+        
+        if is_all_day:
+            prefix = "[ALL DAY] "
+        else:
+            prefix = "var: "
+        
+        # actual, forecast, previous değerleri varsa ekle
+        # ...
+    
+    return "; ".join(parts)
+```
+
+---
 
 ### `analyze_iov()` - IOV Analiz Mantığı
 **Dosya:** `app120_iov/counter.py` (satır 282-391)
@@ -278,12 +516,93 @@ if not ((oc > 0 and prev_oc > 0) or (oc < 0 and prev_oc < 0)):
 - **Timeframe:** app321 için 60 dakikalık, app48 için 48 dakikalık, app72 için 72 dakikalık, app80 için 80 dakikalık, app120 için 120 dakikalık mumlar işlenir.
 - **Varsayılan başlangıç saati:** Tüm uygulamalar varsayılan olarak 18:00 mumundan saymaya başlar.
 
-## CSV Formatı
-Aşağıdaki başlıklar zorunludur (eş anlamlılar desteklenir):
+## 📄 CSV Formatı ve Parsing Detayları
+
+### Zorunlu Başlıklar (Headers)
+**Kabul edilen header isimleri (case-insensitive, eş anlamlılar):**
+
+| Alan | Kabul Edilen İsimler |
+|------|---------------------|
+| **Time** | `time`, `date`, `datetime`, `timestamp` |
+| **Open** | `open` |
+| **High** | `high` |
+| **Low** | `low` |
+| **Close** | `close`, `last` |
+
+### Tarih-Saat Format Desteği
+**Otomatik tespit edilen formatlar:**
+
+```python
+# ISO format (timezone drop edilir)
+"2025-01-10T18:00:00Z"          → 2025-01-10 18:00:00
+"2025-01-10T18:00:00+00:00"     → 2025-01-10 18:00:00
+
+# Standart formatlar
+"2025-01-10 18:00:00"
+"2025-01-10 18:00"
+"10.01.2025 18:00:00"
+"10.01.2025 18:00"
+"01/10/2025 18:00:00"
+"01/10/2025 18:00"
 ```
-Time, Open, High, Low, Close (Last)
+
+### Ondalık Ayraç (Decimal Separator)
+**Otomatik algılama:**
+
+```python
+# Nokta separator (standart)
+1.23456 → 1.23456
+
+# Virgül separator (Avrupa formatı)
+"1,23456"  # Eğer sadece virgül varsa
+→ Replace "," ile "."
+→ 1.23456
 ```
-Saat değerleri ISO veya yaygın tarih-saat formatlarında olabilir. CSV dosyaları yüklenmeden önce sıralanır.
+
+### Eksik/Geçersiz Değerler
+**Atlanır (skip):**
+- Boş string: `""`
+- `NaN`, `null`, `None` (case-insensitive)
+- Parse edilemeyen değerler
+
+### Örnek CSV
+**Geçerli format:**
+
+```csv
+Time,Open,High,Low,Close
+2025-01-05 18:00:00,1.09450,1.09580,1.09420,1.09520
+2025-01-05 20:00:00,1.09520,1.09650,1.09500,1.09610
+2025-01-05 22:00:00,1.09610,1.09720,1.09580,1.09680
+2025-01-06 00:00:00,1.09680,1.09750,1.09650,1.09720
+```
+
+**Alternatif format (virgül separator):**
+
+```csv
+Time;Open;High;Low;Last
+10.01.2025 18:00;1,09450;1,09580;1,09420;1,09520
+10.01.2025 20:00;1,09520;1,09650;1,09500;1,09610
+```
+
+### CSV Sıralama
+**Önemli:** CSV yüklendikten sonra **timestamp'e göre sıralanır** (ascending).
+
+```python
+candles.sort(key=lambda x: x.ts)
+```
+
+Bu sayede kullanıcı sırasız CSV yüklese bile doğru çalışır.
+
+### Dialect Detection
+**Otomatik delimiter algılama:**
+
+```python
+# csv.Sniffer kullanır
+# Desteklenen: , ; \t
+# Bulamazsa default: comma (,)
+```
+
+---
 
 ## Distorted Candle (DC) Tanımı
 Bir mumun Distorted Candle (DC) sayılması için üç şart bir önceki muma göre aynı anda sağlanmalıdır:
