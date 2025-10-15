@@ -476,8 +476,8 @@ def fmt_pip(delta: Optional[float]) -> str:
 
 def main(argv: Optional[List[str]] = None) -> int:
     p = argparse.ArgumentParser(
-        prog="app72.counter",
-        description="72m sayımı (gap yok) ve DC istisnası yok",
+        prog="app80.counter",
+        description="80m sayımı (gap yok) ve DC istisnası yok",
     )
     p.add_argument("--csv", required=True, help="CSV dosya yolu")
     p.add_argument("--sequence", choices=list(SEQUENCES.keys()), default="S2", help="Kullanılacak dizi: S1 veya S2")

@@ -214,7 +214,7 @@ def convert_20m_to_80m(candles: List[Candle]) -> List[Candle]:
         aggregated.append(Candle(ts=block_ts, open=open_, high=high_, low=low_, close=close_))
 
     if not aggregated:
-        raise ValueError("72 dakikalık mum üretilemedi")
+        raise ValueError("80 dakikalık mum üretilemedi")
 
     for i in range(len(aggregated) - 1):
         next_open = aggregated[i + 1].open
