@@ -1,8 +1,9 @@
 {
   "meta": {
     "source": "markdown_import",
+    "source_file": "6julto2aug.md",
     "assumptions": {
-      "year": 2025,
+      "year": 2026,
       "time_zone": "UTC-4",
       "value_columns_order": [
         "actual",
@@ -12,27 +13,17 @@
       "two_value_rule": "When only two values are present, interpret as (actual, previous)."
     },
     "counts": {
-      "days": 28,
-      "events": 119
+      "days": 19,
+      "events": 118
     }
   },
   "days": [
     {
-      "date": "2025-07-06",
-      "weekday": "Sun",
-      "events": []
-    },
-    {
-      "date": "2025-07-07",
-      "weekday": "Mon",
-      "events": []
-    },
-    {
-      "date": "2025-07-08",
+      "date": "2026-07-08",
       "weekday": "Tue",
       "events": [
         {
-          "date": "2025-07-08",
+          "date": "2026-07-08",
           "weekday": "Tue",
           "currency": "AUD",
           "title": "Cash Rate",
@@ -45,7 +36,7 @@
           }
         },
         {
-          "date": "2025-07-08",
+          "date": "2026-07-08",
           "weekday": "Tue",
           "currency": "AUD",
           "title": "RBA Rate Statement",
@@ -58,7 +49,7 @@
           }
         },
         {
-          "date": "2025-07-08",
+          "date": "2026-07-08",
           "weekday": "Tue",
           "currency": "AUD",
           "title": "RBA Press Conference",
@@ -71,7 +62,7 @@
           }
         },
         {
-          "date": "2025-07-08",
+          "date": "2026-07-08",
           "weekday": "Tue",
           "currency": "CAD",
           "title": "Ivey PMI",
@@ -84,7 +75,7 @@
           }
         },
         {
-          "date": "2025-07-08",
+          "date": "2026-07-08",
           "weekday": "Tue",
           "currency": "CNY",
           "title": "CPI y/y",
@@ -97,7 +88,7 @@
           }
         },
         {
-          "date": "2025-07-08",
+          "date": "2026-07-08",
           "weekday": "Tue",
           "currency": "CNY",
           "title": "PPI y/y",
@@ -110,7 +101,7 @@
           }
         },
         {
-          "date": "2025-07-08",
+          "date": "2026-07-08",
           "weekday": "Tue",
           "currency": "NZD",
           "title": "Official Cash Rate",
@@ -123,7 +114,7 @@
           }
         },
         {
-          "date": "2025-07-08",
+          "date": "2026-07-08",
           "weekday": "Tue",
           "currency": "NZD",
           "title": "RBNZ Rate Statement",
@@ -138,11 +129,11 @@
       ]
     },
     {
-      "date": "2025-07-09",
+      "date": "2026-07-09",
       "weekday": "Wed",
       "events": [
         {
-          "date": "2025-07-09",
+          "date": "2026-07-09",
           "weekday": "Wed",
           "currency": "GBP",
           "title": "BOE Gov Bailey Speaks",
@@ -155,7 +146,7 @@
           }
         },
         {
-          "date": "2025-07-09",
+          "date": "2026-07-09",
           "weekday": "Wed",
           "currency": "USD",
           "title": "FOMC Meeting Minutes",
@@ -170,11 +161,11 @@
       ]
     },
     {
-      "date": "2025-07-10",
+      "date": "2026-07-10",
       "weekday": "Thu",
       "events": [
         {
-          "date": "2025-07-10",
+          "date": "2026-07-10",
           "weekday": "Thu",
           "currency": "USD",
           "title": "Unemployment Claims",
@@ -187,7 +178,7 @@
           }
         },
         {
-          "date": "2025-07-10",
+          "date": "2026-07-10",
           "weekday": "Thu",
           "currency": "USD",
           "title": "FOMC Member Waller Speaks",
@@ -202,11 +193,11 @@
       ]
     },
     {
-      "date": "2025-07-11",
+      "date": "2026-07-11",
       "weekday": "Fri",
       "events": [
         {
-          "date": "2025-07-11",
+          "date": "2026-07-11",
           "weekday": "Fri",
           "currency": "GBP",
           "title": "GDP m/m",
@@ -219,7 +210,7 @@
           }
         },
         {
-          "date": "2025-07-11",
+          "date": "2026-07-11",
           "weekday": "Fri",
           "currency": "CAD",
           "title": "Employment Change",
@@ -232,7 +223,7 @@
           }
         },
         {
-          "date": "2025-07-11",
+          "date": "2026-07-11",
           "weekday": "Fri",
           "currency": "CAD",
           "title": "Unemployment Rate",
@@ -247,21 +238,11 @@
       ]
     },
     {
-      "date": "2025-07-12",
-      "weekday": "Sat",
-      "events": []
-    },
-    {
-      "date": "2025-07-13",
-      "weekday": "Sun",
-      "events": []
-    },
-    {
-      "date": "2025-07-14",
+      "date": "2026-07-14",
       "weekday": "Mon",
       "events": [
         {
-          "date": "2025-07-14",
+          "date": "2026-07-14",
           "weekday": "Mon",
           "currency": "EUR",
           "title": "French Bank Holiday",
@@ -274,7 +255,7 @@
           }
         },
         {
-          "date": "2025-07-14",
+          "date": "2026-07-14",
           "weekday": "Mon",
           "currency": "CNY",
           "title": "New Loans",
@@ -287,7 +268,7 @@
           }
         },
         {
-          "date": "2025-07-14",
+          "date": "2026-07-14",
           "weekday": "Mon",
           "currency": "CNY",
           "title": "GDP q/y",
@@ -300,7 +281,7 @@
           }
         },
         {
-          "date": "2025-07-14",
+          "date": "2026-07-14",
           "weekday": "Mon",
           "currency": "CNY",
           "title": "Industrial Production y/y",
@@ -313,7 +294,7 @@
           }
         },
         {
-          "date": "2025-07-14",
+          "date": "2026-07-14",
           "weekday": "Mon",
           "currency": "CNY",
           "title": "Retail Sales y/y",
@@ -328,11 +309,11 @@
       ]
     },
     {
-      "date": "2025-07-15",
+      "date": "2026-07-15",
       "weekday": "Tue",
       "events": [
         {
-          "date": "2025-07-15",
+          "date": "2026-07-15",
           "weekday": "Tue",
           "currency": "EUR",
           "title": "German ZEW Economic Sentiment",
@@ -345,7 +326,7 @@
           }
         },
         {
-          "date": "2025-07-15",
+          "date": "2026-07-15",
           "weekday": "Tue",
           "currency": "CAD",
           "title": "CPI m/m",
@@ -358,7 +339,7 @@
           }
         },
         {
-          "date": "2025-07-15",
+          "date": "2026-07-15",
           "weekday": "Tue",
           "currency": "CAD",
           "title": "Median CPI y/y",
@@ -371,7 +352,7 @@
           }
         },
         {
-          "date": "2025-07-15",
+          "date": "2026-07-15",
           "weekday": "Tue",
           "currency": "CAD",
           "title": "Trimmed CPI y/y",
@@ -384,7 +365,7 @@
           }
         },
         {
-          "date": "2025-07-15",
+          "date": "2026-07-15",
           "weekday": "Tue",
           "currency": "CAD",
           "title": "Common CPI y/y",
@@ -397,7 +378,7 @@
           }
         },
         {
-          "date": "2025-07-15",
+          "date": "2026-07-15",
           "weekday": "Tue",
           "currency": "USD",
           "title": "Core CPI m/m",
@@ -410,7 +391,7 @@
           }
         },
         {
-          "date": "2025-07-15",
+          "date": "2026-07-15",
           "weekday": "Tue",
           "currency": "USD",
           "title": "CPI m/m",
@@ -423,7 +404,7 @@
           }
         },
         {
-          "date": "2025-07-15",
+          "date": "2026-07-15",
           "weekday": "Tue",
           "currency": "USD",
           "title": "CPI y/y",
@@ -436,7 +417,7 @@
           }
         },
         {
-          "date": "2025-07-15",
+          "date": "2026-07-15",
           "weekday": "Tue",
           "currency": "USD",
           "title": "Empire State Manufacturing Index",
@@ -449,7 +430,7 @@
           }
         },
         {
-          "date": "2025-07-15",
+          "date": "2026-07-15",
           "weekday": "Tue",
           "currency": "GBP",
           "title": "BOE Gov Bailey Speaks",
@@ -464,11 +445,11 @@
       ]
     },
     {
-      "date": "2025-07-16",
+      "date": "2026-07-16",
       "weekday": "Wed",
       "events": [
         {
-          "date": "2025-07-16",
+          "date": "2026-07-16",
           "weekday": "Wed",
           "currency": "GBP",
           "title": "CPI y/y",
@@ -481,7 +462,7 @@
           }
         },
         {
-          "date": "2025-07-16",
+          "date": "2026-07-16",
           "weekday": "Wed",
           "currency": "USD",
           "title": "Core PPI m/m",
@@ -494,7 +475,7 @@
           }
         },
         {
-          "date": "2025-07-16",
+          "date": "2026-07-16",
           "weekday": "Wed",
           "currency": "USD",
           "title": "PPI m/m",
@@ -507,7 +488,7 @@
           }
         },
         {
-          "date": "2025-07-16",
+          "date": "2026-07-16",
           "weekday": "Wed",
           "currency": "AUD",
           "title": "Employment Change",
@@ -520,7 +501,7 @@
           }
         },
         {
-          "date": "2025-07-16",
+          "date": "2026-07-16",
           "weekday": "Wed",
           "currency": "AUD",
           "title": "Unemployment Rate",
@@ -535,11 +516,11 @@
       ]
     },
     {
-      "date": "2025-07-17",
+      "date": "2026-07-17",
       "weekday": "Thu",
       "events": [
         {
-          "date": "2025-07-17",
+          "date": "2026-07-17",
           "weekday": "Thu",
           "currency": "GBP",
           "title": "Average Earnings Index 3m/y",
@@ -552,7 +533,7 @@
           }
         },
         {
-          "date": "2025-07-17",
+          "date": "2026-07-17",
           "weekday": "Thu",
           "currency": "GBP",
           "title": "Claimant Count Change",
@@ -565,7 +546,7 @@
           }
         },
         {
-          "date": "2025-07-17",
+          "date": "2026-07-17",
           "weekday": "Thu",
           "currency": "USD",
           "title": "Core Retail Sales m/m",
@@ -578,7 +559,7 @@
           }
         },
         {
-          "date": "2025-07-17",
+          "date": "2026-07-17",
           "weekday": "Thu",
           "currency": "USD",
           "title": "Retail Sales m/m",
@@ -591,7 +572,7 @@
           }
         },
         {
-          "date": "2025-07-17",
+          "date": "2026-07-17",
           "weekday": "Thu",
           "currency": "USD",
           "title": "Unemployment Claims",
@@ -604,7 +585,7 @@
           }
         },
         {
-          "date": "2025-07-17",
+          "date": "2026-07-17",
           "weekday": "Thu",
           "currency": "USD",
           "title": "Philly Fed Manufacturing Index",
@@ -617,7 +598,7 @@
           }
         },
         {
-          "date": "2025-07-17",
+          "date": "2026-07-17",
           "weekday": "Thu",
           "currency": "USD",
           "title": "FOMC Member Waller Speaks",
@@ -632,11 +613,11 @@
       ]
     },
     {
-      "date": "2025-07-18",
+      "date": "2026-07-18",
       "weekday": "Fri",
       "events": [
         {
-          "date": "2025-07-18",
+          "date": "2026-07-18",
           "weekday": "Fri",
           "currency": "USD",
           "title": "Prelim UoM Consumer Sentiment",
@@ -649,7 +630,7 @@
           }
         },
         {
-          "date": "2025-07-18",
+          "date": "2026-07-18",
           "weekday": "Fri",
           "currency": "USD",
           "title": "Prelim UoM Inflation Expectations",
@@ -664,16 +645,11 @@
       ]
     },
     {
-      "date": "2025-07-19",
-      "weekday": "Sat",
-      "events": []
-    },
-    {
-      "date": "2025-07-20",
+      "date": "2026-07-20",
       "weekday": "Sun",
       "events": [
         {
-          "date": "2025-07-20",
+          "date": "2026-07-20",
           "weekday": "Sun",
           "currency": "JPY",
           "title": "Upper House Elections",
@@ -686,7 +662,7 @@
           }
         },
         {
-          "date": "2025-07-20",
+          "date": "2026-07-20",
           "weekday": "Sun",
           "currency": "NZD",
           "title": "CPI q/q",
@@ -699,7 +675,7 @@
           }
         },
         {
-          "date": "2025-07-20",
+          "date": "2026-07-20",
           "weekday": "Sun",
           "currency": "JPY",
           "title": "Bank Holiday",
@@ -712,7 +688,7 @@
           }
         },
         {
-          "date": "2025-07-20",
+          "date": "2026-07-20",
           "weekday": "Sun",
           "currency": "CNY",
           "title": "1-y Loan Prime Rate",
@@ -725,7 +701,7 @@
           }
         },
         {
-          "date": "2025-07-20",
+          "date": "2026-07-20",
           "weekday": "Sun",
           "currency": "CNY",
           "title": "5-y Loan Prime Rate",
@@ -740,11 +716,11 @@
       ]
     },
     {
-      "date": "2025-07-21",
+      "date": "2026-07-21",
       "weekday": "Mon",
       "events": [
         {
-          "date": "2025-07-21",
+          "date": "2026-07-21",
           "weekday": "Mon",
           "currency": "AUD",
           "title": "Monetary Policy Meeting Minutes",
@@ -759,11 +735,11 @@
       ]
     },
     {
-      "date": "2025-07-22",
+      "date": "2026-07-22",
       "weekday": "Tue",
       "events": [
         {
-          "date": "2025-07-22",
+          "date": "2026-07-22",
           "weekday": "Tue",
           "currency": "GBP",
           "title": "BOE Gov Bailey Speaks",
@@ -776,7 +752,7 @@
           }
         },
         {
-          "date": "2025-07-22",
+          "date": "2026-07-22",
           "weekday": "Tue",
           "currency": "USD",
           "title": "Fed Chair Powell Speaks",
@@ -789,7 +765,7 @@
           }
         },
         {
-          "date": "2025-07-22",
+          "date": "2026-07-22",
           "weekday": "Tue",
           "currency": "USD",
           "title": "Richmond Manufacturing Index",
@@ -804,11 +780,11 @@
       ]
     },
     {
-      "date": "2025-07-23",
+      "date": "2026-07-23",
       "weekday": "Wed",
       "events": [
         {
-          "date": "2025-07-23",
+          "date": "2026-07-23",
           "weekday": "Wed",
           "currency": "USD",
           "title": "Existing Home Sales",
@@ -821,7 +797,7 @@
           }
         },
         {
-          "date": "2025-07-23",
+          "date": "2026-07-23",
           "weekday": "Wed",
           "currency": "USD",
           "title": "President Trump Speaks",
@@ -834,7 +810,7 @@
           }
         },
         {
-          "date": "2025-07-23",
+          "date": "2026-07-23",
           "weekday": "Wed",
           "currency": "AUD",
           "title": "RBA Gov Bullock Speaks",
@@ -849,11 +825,11 @@
       ]
     },
     {
-      "date": "2025-07-24",
+      "date": "2026-07-24",
       "weekday": "Thu",
       "events": [
         {
-          "date": "2025-07-24",
+          "date": "2026-07-24",
           "weekday": "Thu",
           "currency": "EUR",
           "title": "French Flash Manufacturing PMI",
@@ -866,7 +842,7 @@
           }
         },
         {
-          "date": "2025-07-24",
+          "date": "2026-07-24",
           "weekday": "Thu",
           "currency": "EUR",
           "title": "French Flash Services PMI",
@@ -879,7 +855,7 @@
           }
         },
         {
-          "date": "2025-07-24",
+          "date": "2026-07-24",
           "weekday": "Thu",
           "currency": "EUR",
           "title": "German Flash Manufacturing PMI",
@@ -892,7 +868,7 @@
           }
         },
         {
-          "date": "2025-07-24",
+          "date": "2026-07-24",
           "weekday": "Thu",
           "currency": "EUR",
           "title": "German Flash Services PMI",
@@ -905,7 +881,7 @@
           }
         },
         {
-          "date": "2025-07-24",
+          "date": "2026-07-24",
           "weekday": "Thu",
           "currency": "EUR",
           "title": "Flash Manufacturing PMI",
@@ -918,7 +894,7 @@
           }
         },
         {
-          "date": "2025-07-24",
+          "date": "2026-07-24",
           "weekday": "Thu",
           "currency": "EUR",
           "title": "Flash Services PMI",
@@ -931,7 +907,7 @@
           }
         },
         {
-          "date": "2025-07-24",
+          "date": "2026-07-24",
           "weekday": "Thu",
           "currency": "GBP",
           "title": "Flash Manufacturing PMI",
@@ -944,7 +920,7 @@
           }
         },
         {
-          "date": "2025-07-24",
+          "date": "2026-07-24",
           "weekday": "Thu",
           "currency": "GBP",
           "title": "Flash Services PMI",
@@ -957,7 +933,7 @@
           }
         },
         {
-          "date": "2025-07-24",
+          "date": "2026-07-24",
           "weekday": "Thu",
           "currency": "EUR",
           "title": "Main Refinancing Rate",
@@ -970,7 +946,7 @@
           }
         },
         {
-          "date": "2025-07-24",
+          "date": "2026-07-24",
           "weekday": "Thu",
           "currency": "EUR",
           "title": "Monetary Policy Statement",
@@ -983,7 +959,7 @@
           }
         },
         {
-          "date": "2025-07-24",
+          "date": "2026-07-24",
           "weekday": "Thu",
           "currency": "CAD",
           "title": "Core Retail Sales m/m",
@@ -996,7 +972,7 @@
           }
         },
         {
-          "date": "2025-07-24",
+          "date": "2026-07-24",
           "weekday": "Thu",
           "currency": "CAD",
           "title": "Retail Sales m/m",
@@ -1009,7 +985,7 @@
           }
         },
         {
-          "date": "2025-07-24",
+          "date": "2026-07-24",
           "weekday": "Thu",
           "currency": "USD",
           "title": "Unemployment Claims",
@@ -1022,7 +998,7 @@
           }
         },
         {
-          "date": "2025-07-24",
+          "date": "2026-07-24",
           "weekday": "Thu",
           "currency": "EUR",
           "title": "ECB Press Conference",
@@ -1035,7 +1011,7 @@
           }
         },
         {
-          "date": "2025-07-24",
+          "date": "2026-07-24",
           "weekday": "Thu",
           "currency": "USD",
           "title": "Flash Manufacturing PMI",
@@ -1048,7 +1024,7 @@
           }
         },
         {
-          "date": "2025-07-24",
+          "date": "2026-07-24",
           "weekday": "Thu",
           "currency": "USD",
           "title": "Flash Services PMI",
@@ -1061,7 +1037,7 @@
           }
         },
         {
-          "date": "2025-07-24",
+          "date": "2026-07-24",
           "weekday": "Thu",
           "currency": "USD",
           "title": "New Home Sales",
@@ -1074,7 +1050,7 @@
           }
         },
         {
-          "date": "2025-07-24",
+          "date": "2026-07-24",
           "weekday": "Thu",
           "currency": "JPY",
           "title": "Tokyo Core CPI y/y",
@@ -1089,11 +1065,11 @@
       ]
     },
     {
-      "date": "2025-07-25",
+      "date": "2026-07-25",
       "weekday": "Fri",
       "events": [
         {
-          "date": "2025-07-25",
+          "date": "2026-07-25",
           "weekday": "Fri",
           "currency": "GBP",
           "title": "Retail Sales m/m",
@@ -1106,7 +1082,7 @@
           }
         },
         {
-          "date": "2025-07-25",
+          "date": "2026-07-25",
           "weekday": "Fri",
           "currency": "EUR",
           "title": "German ifo Business Climate",
@@ -1119,7 +1095,7 @@
           }
         },
         {
-          "date": "2025-07-25",
+          "date": "2026-07-25",
           "weekday": "Fri",
           "currency": "USD",
           "title": "Core Durable Goods Orders m/m",
@@ -1132,7 +1108,7 @@
           }
         },
         {
-          "date": "2025-07-25",
+          "date": "2026-07-25",
           "weekday": "Fri",
           "currency": "USD",
           "title": "Durable Goods Orders m/m",
@@ -1147,40 +1123,11 @@
       ]
     },
     {
-      "date": "2025-07-26",
-      "weekday": "Sat",
-      "events": []
-    },
-    {
-      "date": "2025-07-27",
-      "weekday": "Sun",
-      "events": []
-    },
-    {
-      "date": "2025-07-28",
-      "weekday": "Mon",
-      "events": [
-        {
-          "date": "2025-07-28",
-          "weekday": "Mon",
-          "currency": "All",
-          "title": "OPEC-JMMC Meetings",
-          "time_label": "All Day",
-          "time_24h": null,
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        }
-      ]
-    },
-    {
-      "date": "2025-07-29",
+      "date": "2026-07-29",
       "weekday": "Tue",
       "events": [
         {
-          "date": "2025-07-29",
+          "date": "2026-07-29",
           "weekday": "Tue",
           "currency": "USD",
           "title": "JOLTS Job Openings",
@@ -1193,7 +1140,7 @@
           }
         },
         {
-          "date": "2025-07-29",
+          "date": "2026-07-29",
           "weekday": "Tue",
           "currency": "USD",
           "title": "CB Consumer Confidence",
@@ -1206,7 +1153,7 @@
           }
         },
         {
-          "date": "2025-07-29",
+          "date": "2026-07-29",
           "weekday": "Tue",
           "currency": "AUD",
           "title": "CPI q/q",
@@ -1219,7 +1166,7 @@
           }
         },
         {
-          "date": "2025-07-29",
+          "date": "2026-07-29",
           "weekday": "Tue",
           "currency": "AUD",
           "title": "CPI y/y",
@@ -1232,7 +1179,7 @@
           }
         },
         {
-          "date": "2025-07-29",
+          "date": "2026-07-29",
           "weekday": "Tue",
           "currency": "AUD",
           "title": "Trimmed Mean CPI q/q",
@@ -1247,11 +1194,11 @@
       ]
     },
     {
-      "date": "2025-07-30",
+      "date": "2026-07-30",
       "weekday": "Wed",
       "events": [
         {
-          "date": "2025-07-30",
+          "date": "2026-07-30",
           "weekday": "Wed",
           "currency": "EUR",
           "title": "Spanish Flash CPI y/y",
@@ -1264,7 +1211,7 @@
           }
         },
         {
-          "date": "2025-07-30",
+          "date": "2026-07-30",
           "weekday": "Wed",
           "currency": "EUR",
           "title": "German Prelim GDP q/q",
@@ -1277,7 +1224,7 @@
           }
         },
         {
-          "date": "2025-07-30",
+          "date": "2026-07-30",
           "weekday": "Wed",
           "currency": "USD",
           "title": "ADP Non-Farm Employment Change",
@@ -1290,7 +1237,7 @@
           }
         },
         {
-          "date": "2025-07-30",
+          "date": "2026-07-30",
           "weekday": "Wed",
           "currency": "USD",
           "title": "Advance GDP q/q",
@@ -1303,7 +1250,7 @@
           }
         },
         {
-          "date": "2025-07-30",
+          "date": "2026-07-30",
           "weekday": "Wed",
           "currency": "USD",
           "title": "Advance GDP Price Index q/q",
@@ -1316,7 +1263,7 @@
           }
         },
         {
-          "date": "2025-07-30",
+          "date": "2026-07-30",
           "weekday": "Wed",
           "currency": "CAD",
           "title": "BOC Monetary Policy Report",
@@ -1329,7 +1276,7 @@
           }
         },
         {
-          "date": "2025-07-30",
+          "date": "2026-07-30",
           "weekday": "Wed",
           "currency": "CAD",
           "title": "BOC Rate Statement",
@@ -1342,7 +1289,7 @@
           }
         },
         {
-          "date": "2025-07-30",
+          "date": "2026-07-30",
           "weekday": "Wed",
           "currency": "CAD",
           "title": "Overnight Rate",
@@ -1355,7 +1302,7 @@
           }
         },
         {
-          "date": "2025-07-30",
+          "date": "2026-07-30",
           "weekday": "Wed",
           "currency": "USD",
           "title": "Pending Home Sales m/m",
@@ -1368,7 +1315,7 @@
           }
         },
         {
-          "date": "2025-07-30",
+          "date": "2026-07-30",
           "weekday": "Wed",
           "currency": "CAD",
           "title": "BOC Press Conference",
@@ -1381,7 +1328,7 @@
           }
         },
         {
-          "date": "2025-07-30",
+          "date": "2026-07-30",
           "weekday": "Wed",
           "currency": "USD",
           "title": "Federal Funds Rate",
@@ -1394,7 +1341,7 @@
           }
         },
         {
-          "date": "2025-07-30",
+          "date": "2026-07-30",
           "weekday": "Wed",
           "currency": "USD",
           "title": "FOMC Statement",
@@ -1407,7 +1354,7 @@
           }
         },
         {
-          "date": "2025-07-30",
+          "date": "2026-07-30",
           "weekday": "Wed",
           "currency": "USD",
           "title": "FOMC Press Conference",
@@ -1420,7 +1367,7 @@
           }
         },
         {
-          "date": "2025-07-30",
+          "date": "2026-07-30",
           "weekday": "Wed",
           "currency": "USD",
           "title": "President Trump Speaks",
@@ -1433,7 +1380,7 @@
           }
         },
         {
-          "date": "2025-07-30",
+          "date": "2026-07-30",
           "weekday": "Wed",
           "currency": "AUD",
           "title": "Retail Sales m/m",
@@ -1446,7 +1393,7 @@
           }
         },
         {
-          "date": "2025-07-30",
+          "date": "2026-07-30",
           "weekday": "Wed",
           "currency": "CNY",
           "title": "Manufacturing PMI",
@@ -1459,7 +1406,7 @@
           }
         },
         {
-          "date": "2025-07-30",
+          "date": "2026-07-30",
           "weekday": "Wed",
           "currency": "CNY",
           "title": "Non-Manufacturing PMI",
@@ -1472,7 +1419,7 @@
           }
         },
         {
-          "date": "2025-07-30",
+          "date": "2026-07-30",
           "weekday": "Wed",
           "currency": "JPY",
           "title": "BOJ Outlook Report",
@@ -1485,7 +1432,7 @@
           }
         },
         {
-          "date": "2025-07-30",
+          "date": "2026-07-30",
           "weekday": "Wed",
           "currency": "JPY",
           "title": "BOJ Policy Rate",
@@ -1498,7 +1445,7 @@
           }
         },
         {
-          "date": "2025-07-30",
+          "date": "2026-07-30",
           "weekday": "Wed",
           "currency": "JPY",
           "title": "Monetary Policy Statement",
@@ -1513,11 +1460,11 @@
       ]
     },
     {
-      "date": "2025-07-31",
+      "date": "2026-07-31",
       "weekday": "Thu",
       "events": [
         {
-          "date": "2025-07-31",
+          "date": "2026-07-31",
           "weekday": "Thu",
           "currency": "EUR",
           "title": "German Prelim CPI m/m",
@@ -1530,7 +1477,7 @@
           }
         },
         {
-          "date": "2025-07-31",
+          "date": "2026-07-31",
           "weekday": "Thu",
           "currency": "JPY",
           "title": "BOJ Press Conference",
@@ -1543,7 +1490,7 @@
           }
         },
         {
-          "date": "2025-07-31",
+          "date": "2026-07-31",
           "weekday": "Thu",
           "currency": "CAD",
           "title": "GDP m/m",
@@ -1556,7 +1503,7 @@
           }
         },
         {
-          "date": "2025-07-31",
+          "date": "2026-07-31",
           "weekday": "Thu",
           "currency": "USD",
           "title": "Core PCE Price Index m/m",
@@ -1569,7 +1516,7 @@
           }
         },
         {
-          "date": "2025-07-31",
+          "date": "2026-07-31",
           "weekday": "Thu",
           "currency": "USD",
           "title": "Employment Cost Index q/q",
@@ -1582,7 +1529,7 @@
           }
         },
         {
-          "date": "2025-07-31",
+          "date": "2026-07-31",
           "weekday": "Thu",
           "currency": "USD",
           "title": "Unemployment Claims",
@@ -1597,11 +1544,11 @@
       ]
     },
     {
-      "date": "2025-08-01",
+      "date": "2026-08-01",
       "weekday": "Fri",
       "events": [
         {
-          "date": "2025-08-01",
+          "date": "2026-08-01",
           "weekday": "Fri",
           "currency": "CHF",
           "title": "Bank Holiday",
@@ -1614,7 +1561,7 @@
           }
         },
         {
-          "date": "2025-08-01",
+          "date": "2026-08-01",
           "weekday": "Fri",
           "currency": "EUR",
           "title": "Core CPI Flash Estimate y/y",
@@ -1627,7 +1574,7 @@
           }
         },
         {
-          "date": "2025-08-01",
+          "date": "2026-08-01",
           "weekday": "Fri",
           "currency": "EUR",
           "title": "CPI Flash Estimate y/y",
@@ -1640,7 +1587,7 @@
           }
         },
         {
-          "date": "2025-08-01",
+          "date": "2026-08-01",
           "weekday": "Fri",
           "currency": "USD",
           "title": "Average Hourly Earnings m/m",
@@ -1653,7 +1600,7 @@
           }
         },
         {
-          "date": "2025-08-01",
+          "date": "2026-08-01",
           "weekday": "Fri",
           "currency": "USD",
           "title": "Non-Farm Employment Change",
@@ -1666,7 +1613,7 @@
           }
         },
         {
-          "date": "2025-08-01",
+          "date": "2026-08-01",
           "weekday": "Fri",
           "currency": "USD",
           "title": "Unemployment Rate",
@@ -1679,7 +1626,7 @@
           }
         },
         {
-          "date": "2025-08-01",
+          "date": "2026-08-01",
           "weekday": "Fri",
           "currency": "USD",
           "title": "ISM Manufacturing PMI",
@@ -1692,7 +1639,7 @@
           }
         },
         {
-          "date": "2025-08-01",
+          "date": "2026-08-01",
           "weekday": "Fri",
           "currency": "USD",
           "title": "ISM Manufacturing Prices",
@@ -1705,7 +1652,7 @@
           }
         },
         {
-          "date": "2025-08-01",
+          "date": "2026-08-01",
           "weekday": "Fri",
           "currency": "USD",
           "title": "Revised UoM Consumer Sentiment",
@@ -1718,11 +1665,6 @@
           }
         }
       ]
-    },
-    {
-      "date": "2025-08-02",
-      "weekday": "Sat",
-      "events": []
     }
   ]
 }

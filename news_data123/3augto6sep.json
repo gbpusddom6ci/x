@@ -1,6 +1,7 @@
 {
   "meta": {
     "source": "markdown_import",
+    "source_file": "3augto6sep.md",
     "assumptions": {
       "year": 2025,
       "time_zone": "UTC-4",
@@ -12,8 +13,8 @@
       "two_value_rule": "When only two values are present, interpret as (actual, previous)."
     },
     "counts": {
-      "days": 35,
-      "events": 139
+      "days": 28,
+      "events": 137
     }
   },
   "days": [
@@ -312,11 +313,6 @@
           }
         }
       ]
-    },
-    {
-      "date": "2025-08-09",
-      "weekday": "Sat",
-      "events": []
     },
     {
       "date": "2025-08-10",
@@ -784,21 +780,6 @@
       ]
     },
     {
-      "date": "2025-08-16",
-      "weekday": "Sat",
-      "events": []
-    },
-    {
-      "date": "2025-08-17",
-      "weekday": "Sun",
-      "events": []
-    },
-    {
-      "date": "2025-08-18",
-      "weekday": "Mon",
-      "events": []
-    },
-    {
       "date": "2025-08-19",
       "weekday": "Tue",
       "events": [
@@ -1190,19 +1171,6 @@
             "forecast": "3.92M",
             "previous": "3.93M"
           }
-        },
-        {
-          "date": "2025-08-21",
-          "weekday": "Thu",
-          "currency": "Day 1",
-          "title": "All",
-          "time_label": "10:00am",
-          "time_24h": "10:00",
-          "values": {
-            "actual": "Jackson",
-            "forecast": "Hole",
-            "previous": "Symposium"
-          }
         }
       ]
     },
@@ -1241,19 +1209,6 @@
           "weekday": "Fri",
           "currency": "USD",
           "title": "Fed Chair Powell Speaks",
-          "time_label": "10:00am",
-          "time_24h": "10:00",
-          "values": {
-            "actual": "Day",
-            "forecast": null,
-            "previous": "2"
-          }
-        },
-        {
-          "date": "2025-08-22",
-          "weekday": "Fri",
-          "currency": "All",
-          "title": "Jackson Hole Symposium",
           "time_label": "10:00am",
           "time_24h": "10:00",
           "values": {
@@ -1471,11 +1426,6 @@
       ]
     },
     {
-      "date": "2025-08-27",
-      "weekday": "Wed",
-      "events": []
-    },
-    {
       "date": "2025-08-28",
       "weekday": "Thu",
       "events": [
@@ -1674,11 +1624,6 @@
           }
         }
       ]
-    },
-    {
-      "date": "2025-08-31",
-      "weekday": "Sun",
-      "events": []
     },
     {
       "date": "2025-09-01",
@@ -2021,11 +1966,6 @@
           }
         }
       ]
-    },
-    {
-      "date": "2025-09-06",
-      "weekday": "Sat",
-      "events": []
     }
   ]
 }

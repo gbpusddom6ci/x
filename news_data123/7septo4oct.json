@@ -1,6 +1,7 @@
 {
   "meta": {
     "source": "markdown_import",
+    "source_file": "7septo4oct.md",
     "assumptions": {
       "year": 2025,
       "time_zone": "UTC-4",
@@ -12,35 +13,11 @@
       "two_value_rule": "When only two values are present, interpret as (actual, previous)."
     },
     "counts": {
-      "days": 28,
-      "events": 124
+      "days": 23,
+      "events": 122
     }
   },
   "days": [
-    {
-      "date": "2025-09-07",
-      "weekday": "Sun",
-      "events": [
-        {
-          "date": "2025-09-07",
-          "weekday": "Sun",
-          "currency": "All",
-          "title": "OPEC-JMMC Meetings",
-          "time_label": "All Day",
-          "time_24h": null,
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        }
-      ]
-    },
-    {
-      "date": "2025-09-08",
-      "weekday": "Mon",
-      "events": []
-    },
     {
       "date": "2025-09-09",
       "weekday": "Tue",
@@ -298,11 +275,6 @@
           }
         }
       ]
-    },
-    {
-      "date": "2025-09-13",
-      "weekday": "Sat",
-      "events": []
     },
     {
       "date": "2025-09-14",
@@ -820,11 +792,6 @@
           }
         }
       ]
-    },
-    {
-      "date": "2025-09-20",
-      "weekday": "Sat",
-      "events": []
     },
     {
       "date": "2025-09-21",
@@ -1363,11 +1330,6 @@
       ]
     },
     {
-      "date": "2025-09-28",
-      "weekday": "Sun",
-      "events": []
-    },
-    {
       "date": "2025-09-29",
       "weekday": "Mon",
       "events": [
@@ -1602,19 +1564,6 @@
             "actual": "2.2%",
             "forecast": "2.2%",
             "previous": "2.0%"
-          }
-        },
-        {
-          "date": "2025-10-01",
-          "weekday": "Wed",
-          "currency": "All",
-          "title": "OPEC-JMMC Meetings",
-          "time_label": "All Day",
-          "time_24h": null,
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
           }
         },
         {

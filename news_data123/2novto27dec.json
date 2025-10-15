@@ -1,6 +1,7 @@
 {
   "meta": {
     "source": "markdown_import",
+    "source_file": "2novto27dec.md",
     "assumptions": {
       "year": 2025,
       "time_zone": "UTC-4",
@@ -12,8 +13,8 @@
       "two_value_rule": "When only two values are present, interpret as (actual, previous)."
     },
     "counts": {
-      "days": 56,
-      "events": 227
+      "days": 46,
+      "events": 225
     }
   },
   "days": [
@@ -463,11 +464,6 @@
       ]
     },
     {
-      "date": "2025-11-09",
-      "weekday": "Sun",
-      "events": []
-    },
-    {
       "date": "2025-11-10",
       "weekday": "Mon",
       "events": [
@@ -782,16 +778,6 @@
           }
         }
       ]
-    },
-    {
-      "date": "2025-11-15",
-      "weekday": "Sat",
-      "events": []
-    },
-    {
-      "date": "2025-11-16",
-      "weekday": "Sun",
-      "events": []
     },
     {
       "date": "2025-11-17",
@@ -1201,11 +1187,6 @@
       ]
     },
     {
-      "date": "2025-11-22",
-      "weekday": "Sat",
-      "events": []
-    },
-    {
       "date": "2025-11-23",
       "weekday": "Sun",
       "events": [
@@ -1599,38 +1580,6 @@
       ]
     },
     {
-      "date": "2025-11-30",
-      "weekday": "Sun",
-      "events": [
-        {
-          "date": "2025-11-30",
-          "weekday": "Sun",
-          "currency": "All",
-          "title": "OPEC-JMMC Meetings",
-          "time_label": "All Day",
-          "time_24h": null,
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        },
-        {
-          "date": "2025-11-30",
-          "weekday": "Sun",
-          "currency": "All",
-          "title": "OPEC Meetings",
-          "time_label": "All Day",
-          "time_24h": null,
-          "values": {
-            "actual": null,
-            "forecast": null,
-            "previous": null
-          }
-        }
-      ]
-    },
-    {
       "date": "2025-12-01",
       "weekday": "Mon",
       "events": [
@@ -1893,16 +1842,6 @@
           }
         }
       ]
-    },
-    {
-      "date": "2025-12-06",
-      "weekday": "Sat",
-      "events": []
-    },
-    {
-      "date": "2025-12-07",
-      "weekday": "Sun",
-      "events": []
     },
     {
       "date": "2025-12-08",
@@ -2271,11 +2210,6 @@
           }
         }
       ]
-    },
-    {
-      "date": "2025-12-13",
-      "weekday": "Sat",
-      "events": []
     },
     {
       "date": "2025-12-14",
@@ -2886,11 +2820,6 @@
       ]
     },
     {
-      "date": "2025-12-20",
-      "weekday": "Sat",
-      "events": []
-    },
-    {
       "date": "2025-12-21",
       "weekday": "Sun",
       "events": [
@@ -3289,11 +3218,6 @@
           }
         }
       ]
-    },
-    {
-      "date": "2025-12-27",
-      "weekday": "Sat",
-      "events": []
     }
   ]
 }

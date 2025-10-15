@@ -1,6 +1,7 @@
 {
   "meta": {
     "source": "markdown_import",
+    "source_file": "5octto1nov.md",
     "assumptions": {
       "year": 2025,
       "time_zone": "UTC-4",
@@ -12,7 +13,7 @@
       "two_value_rule": "When only two values are present, interpret as (actual, previous)."
     },
     "counts": {
-      "days": 28,
+      "days": 25,
       "events": 124
     }
   },
@@ -273,11 +274,6 @@
           }
         }
       ]
-    },
-    {
-      "date": "2025-10-11",
-      "weekday": "Sat",
-      "events": []
     },
     {
       "date": "2025-10-12",
@@ -646,11 +642,6 @@
           }
         }
       ]
-    },
-    {
-      "date": "2025-10-17",
-      "weekday": "Fri",
-      "events": []
     },
     {
       "date": "2025-10-18",
@@ -1788,11 +1779,6 @@
           }
         }
       ]
-    },
-    {
-      "date": "2025-11-01",
-      "weekday": "Sat",
-      "events": []
     }
   ]
 }
