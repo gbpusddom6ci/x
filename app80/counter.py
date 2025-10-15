@@ -635,6 +635,7 @@ def analyze_iou(
     candles: List[Candle],
     sequence: str,
     limit: float,
+    tolerance: float = 0.005,
 ) -> Dict[int, List[IOUResult]]:
     """
     Analyze IOU candles for all offsets (-3 to +3).
@@ -725,10 +726,10 @@ def analyze_iou(
             prev_oc = prev_candle.close - prev_candle.open
             
             # Check IOU criteria
-            # 1. Both |OC| and |PrevOC| must be >= limit (with ±0.005 tolerance)
-            TOLERANCE = 0.005
-            if abs(oc) < (limit - TOLERANCE) or abs(prev_oc) < (limit - TOLERANCE):
-                continue
+            # 1. Both |OC| and |PrevOC| must be >= limit
+            # Skip if too close to limit (within ±tolerance for safety)
+            if abs(abs(oc) - limit) < tolerance or abs(abs(prev_oc) - limit) < tolerance:
+                continue  # Too close to limit, unreliable
             
             # 2. OC and PrevOC must have SAME signs (opposite of IOV)
             if not ((oc > 0 and prev_oc > 0) or (oc < 0 and prev_oc < 0)):

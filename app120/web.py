@@ -421,6 +421,10 @@ def render_iov_index() -> bytes:
             <input type='number' name='limit' step='0.001' value='0.1' min='0' required />
           </div>
           <div>
+            <label>Tolerance (güvenlik payı)</label>
+            <input type='number' name='tolerance' step='0.001' value='0.005' min='0' required />
+          </div>
+          <div>
             <button type='submit'>Analiz Et</button>
           </div>
         </div>
@@ -460,6 +464,10 @@ def render_iou_index() -> bytes:
           <div>
             <label>Limit (mutlak değer)</label>
             <input type='number' name='limit' step='0.001' value='0.1' min='0' required />
+          </div>
+          <div>
+            <label>Tolerance (güvenlik payı)</label>
+            <input type='number' name='tolerance' step='0.001' value='0.005' min='0' required />
           </div>
           <div>
             <button type='submit'>Analiz Et</button>
@@ -691,6 +699,12 @@ class App120Handler(BaseHTTPRequestHandler):
                 except:
                     limit = 0.1
                 
+                tolerance_str = (params.get("tolerance") or "0.005").strip()
+                try:
+                    tolerance = float(tolerance_str)
+                except:
+                    tolerance = 0.005
+                
                 # Build HTML header
                 body = f"""
                 <div class='card'>
@@ -769,6 +783,12 @@ class App120Handler(BaseHTTPRequestHandler):
                 except:
                     limit = 0.1
                 
+                tolerance_str = (params.get("tolerance") or "0.005").strip()
+                try:
+                    tolerance = float(tolerance_str)
+                except:
+                    tolerance = 0.005
+                
                 # Load news data from directory (auto-detects all JSON files)
                 news_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'news_data')
                 events_by_date = load_news_data_from_directory(news_dir)
@@ -804,7 +824,7 @@ class App120Handler(BaseHTTPRequestHandler):
                             continue
                         
                         # Analyze IOU
-                        results = analyze_iou(candles, sequence, limit)
+                        results = analyze_iou(candles, sequence, limit, tolerance)
                         total_iou = sum(len(v) for v in results.values())
                         
                         # Skip if no IOU found

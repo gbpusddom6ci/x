@@ -403,6 +403,10 @@ def render_iou_index() -> bytes:
             <input type='number' name='limit' value='0.1' step='0.01' min='0' style='width:80px' />
           </div>
           <div>
+            <label>Tolerance</label>
+            <input type='number' name='tolerance' value='0.005' step='0.001' min='0' style='width:80px' />
+          </div>
+          <div>
             <label>XYZ Küme Analizi</label>
             <input type='checkbox' name='xyz_analysis' />
           </div>
@@ -618,6 +622,12 @@ class App80Handler(BaseHTTPRequestHandler):
                 except:
                     limit = 0.1
                 
+                tolerance_str = (params.get("tolerance") or "0.005").strip()
+                try:
+                    tolerance = float(tolerance_str)
+                except:
+                    tolerance = 0.005
+                
                 xyz_analysis = "xyz_analysis" in params
                 
                 # Load news data from directory (auto-detects all JSON files)
@@ -656,7 +666,7 @@ class App80Handler(BaseHTTPRequestHandler):
                             continue
                         
                         # Analyze IOU
-                        results = analyze_iou(candles, sequence, limit)
+                        results = analyze_iou(candles, sequence, limit, tolerance)
                         total_iou = sum(len(v) for v in results.values())
                         
                         if total_iou == 0:

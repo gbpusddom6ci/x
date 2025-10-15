@@ -283,6 +283,8 @@ def render_index() -> bytes:
         </div>
         <label>Limit (mutlak değer):</label>
         <input type='number' name='limit' step='0.001' value='0.1' min='0' required />
+        <label>Tolerance (güvenlik payı):</label>
+        <input type='number' name='tolerance' step='0.001' value='0.005' min='0' required />
         <div>
           <label>
             <input type='checkbox' name='xyz_analysis' /> XYZ Küme Analizi
@@ -482,6 +484,7 @@ class Handler(BaseHTTPRequestHandler):
                 csv_text = None
                 sequence = "S2"
                 limit = 0.1
+                tolerance = 0.005
                 xyz_analysis = False
 
                 for part in msg.iter_parts():
@@ -492,6 +495,8 @@ class Handler(BaseHTTPRequestHandler):
                         sequence = part.get_content().strip()
                     elif name == "limit":
                         limit = float(part.get_content().strip())
+                    elif name == "tolerance":
+                        tolerance = float(part.get_content().strip())
                     elif name == "xyz_analysis":
                         xyz_analysis = True
 
@@ -502,7 +507,7 @@ class Handler(BaseHTTPRequestHandler):
                 if not candles:
                     raise ValueError("CSV verisi boş")
 
-                results = analyze_iou(candles, sequence, limit)
+                results = analyze_iou(candles, sequence, limit, tolerance)
                 
                 # Load news data if xyz_analysis is enabled
                 events_by_date = None
