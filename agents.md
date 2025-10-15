@@ -1,6 +1,6 @@
 # 📘 Proje Teknik Dokümantasyonu (AI Context-Ready)
 
-**Son Güncelleme:** 2025-10-07  
+**Son Güncelleme:** 2025-01-10  
 **Amaç:** Bu dokümantasyon bir AI agent'ın projeyi tamamen anlaması için hazırlanmıştır.
 
 Bu doküman app321, app48, app72, app80, app120, app120_iov ve app120_iou uygulamalarının **tüm implementation detaylarını**, kod yapısını, fonksiyon isimlerini, dosya organizasyonunu ve özelliklerini en ince detayına kadar açıklar. Tüm açıklamalar Türkçe'dir ve en güncel davranışları yansıtır.
@@ -600,10 +600,19 @@ Non-DC Index 4 → 04:00 DC ATLA → 06:00 (Offset +4)
 ### app120_iou
 - **IOU (Inverse OC - Uniform sign)** mum analizi için özel 120m timeframe uygulaması.
 - **Amaç:** 2 haftalık 120m veride, OC ve PrevOC değerlerinin belirli bir limit değerinin üstünde ve **aynı işaretli** olduğu özel mumları tespit etmek.
-- **IOU Mum Tanımı:** Aşağıdaki 3 kriteri **birden** karşılayan mumlardır:
+- **IOU Mum Tanımı:** Aşağıdaki 5 kriteri **birden** karşılayan mumlardır:
   1. **|OC| ≥ Limit** → Mumun open-close farkı (mutlak değer) limit değerinin üstünde
   2. **|PrevOC| ≥ Limit** → Önceki mumun open-close farkı (mutlak değer) limit değerinin üstünde
-  3. **Aynı İşaret** → OC ve PrevOC'nin **her ikisi de pozitif (+) VEYA her ikisi de negatif (-)** olması
+  3. **|OC - Limit| ≥ Tolerance** → OC'nin limit'e olan uzaklığı tolerance'tan büyük olmalı (güvenlik payı)
+  4. **|PrevOC - Limit| ≥ Tolerance** → PrevOC'nin limit'e olan uzaklığı tolerance'tan büyük olmalı
+  5. **Aynı İşaret** → OC ve PrevOC'nin **her ikisi de pozitif (+) VEYA her ikisi de negatif (-)** olması
+- **Tolerance (Güvenlik Payı):** Limit değerine çok yakın olan OC/PrevOC değerleri güvenilmez kabul edilir ve elenir
+  - **Varsayılan tolerance:** 0.005
+  - **Örnek (Limit=0.1, Tolerance=0.005):**
+    - OC = 0.103 → |0.103 - 0.1| = 0.003 < 0.005 → **ELEME** (limit'e çok yakın)
+    - OC = 0.106 → |0.106 - 0.1| = 0.006 ≥ 0.005 → **GEÇİYOR** ✓
+    - OC = 0.098 → 0.098 < 0.1 → **ELEME** (limit altı)
+  - Tüm web formlarında tolerance input mevcuttur
 - **IOV ile Farkı:** IOV **zıt işaret** (+ ve -) ararken, IOU **aynı işaret** (++ veya --) arar. IOU, IOV'nin tamamlayıcısıdır.
 - **Filtrelenmiş Sequence Değerleri:**
   - **S1 için:** `7, 13, 21, 31, 43, 57, 73, 91, 111, 133, 157` (1 ve 3 analiz edilmez)
@@ -616,15 +625,17 @@ Non-DC Index 4 → 04:00 DC ATLA → 06:00 (Offset +4)
   - 2 haftalık veri desteği: 1. hafta Pazar 18:00 → 2. hafta Cuma 16:00
 - **CLI Kullanımı (`python3 -m app120_iou.counter`):**
   ```bash
-  python3 -m app120_iou.counter --csv data.csv --sequence S1 --limit 0.1
+  python3 -m app120_iou.counter --csv data.csv --sequence S1 --limit 0.1 --tolerance 0.005
   ```
   - `--csv`: 2 haftalık 120m CSV dosyası
   - `--sequence`: S1 veya S2 (varsayılan: **S1**)
   - `--limit`: IOU limit değeri (varsayılan: 0.1)
+  - `--tolerance`: Güvenlik payı (varsayılan: 0.005)
 - **Web Arayüzü (`python3 -m app120_iou.web`, port: 2122):**
   - **Çoklu dosya yükleme:** En fazla 25 CSV dosyası tek seferde yüklenebilir
   - Sequence seçimi (S1/S2)
   - Limit değeri girişi
+  - Tolerance (güvenlik payı) girişi (varsayılan: 0.005)
   - **Kompakt görünüm:** Her dosya için tek tablo, tüm offsetler tek tabloda
   - Offset bilgisi her satırda gösterilir (Ofs kolonu)
   - Her IOU mum için: Offset, Seq değeri, Index, Timestamp (kısa format), OC, PrevOC, Prev Index
@@ -688,6 +699,50 @@ Non-DC Index 4 → 04:00 DC ATLA → 06:00 (Offset +4)
   - **Çoklu dosya yükleme:** 25 dosyaya kadar, kompakt tek tablo görünümü
 
 ## 🆕 Son Güncellemeler
+
+### 2025-01-10: 🔧 IOU Tolerance (Güvenlik Payı) Eklendi
+**Dosyalar:** `app321/main.py`, `app48/main.py`, `app72/counter.py`, `app80/counter.py`, `app120/iou/counter.py`, tüm web.py dosyaları  
+**Commit:** `a30296e` (critical fix), `9ef124a` (initial)
+
+**Değişiklik:** IOU analizine tolerance (güvenlik payı) parametresi eklendi.
+
+**Sorun:**
+- Limit değerine çok yakın OC/PrevOC değerleri (örn: 0.103, limit=0.1) güvenilmezdi
+- Bu mumlar IOU olarak kabul ediliyordu ama hata payı içindeydiler
+
+**Çözüm - 2 Ayrı Kontrol:**
+```python
+# 1. Temel limit kontrolü
+if abs(oc) < limit or abs(prev_oc) < limit:
+    continue  # Limit altı, IOU değil
+
+# 2. Tolerance kontrolü (YENİ!)
+if abs(abs(oc) - limit) < tolerance or abs(abs(prev_oc) - limit) < tolerance:
+    continue  # Limit'e çok yakın, güvenilmez
+```
+
+**Örnekler (Limit=0.1, Tolerance=0.005):**
+- OC = 0.006 → Kontrol 1: 0.006 < 0.1 → **ELEME** ❌
+- OC = 0.098 → Kontrol 1: 0.098 < 0.1 → **ELEME** ❌
+- OC = 0.103 → Kontrol 2: |0.103-0.1| = 0.003 < 0.005 → **ELEME** ❌
+- OC = 0.106 → Her iki kontrol geçiyor → **IOU!** ✅
+
+**Implementation:**
+- Tüm `analyze_iou()` fonksiyonlarına `tolerance` parametresi eklendi (default: 0.005)
+- Tüm IOU web formlarına tolerance input eklendi
+- CLI'larda `--tolerance` parametresi mevcut
+
+**Critical Bug Fix (commit a30296e):**
+- İlk implementasyonda yanlışlıkla temel limit kontrolü kaldırılmıştı
+- Sonuç: 4 IOU yerine 41 IOU çıkıyordu
+- Düzeltme: Her iki kontrol de artık aktif
+
+**Etki:**
+- IOU sonuçları daha güvenilir
+- XYZ küme analizi daha kararlı
+- Limit'e yakın belirsiz mumlar artık elenmiyor
+
+---
 
 ### 2025-10-07: 🔧 DC İstisna Kuralları Düzeltmeleri
 **Dosyalar:** `app321/main.py`, `app48/main.py`  
