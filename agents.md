@@ -1243,3 +1243,128 @@ Tüm uygulamalarda "Analiz" → **"Counter"** (counting işlevini yansıtır)
 IOV ve IOU artık app120 web arayüzünde (sekme 4 ve 5)
 
 Bu rehber, uygulamaların geliştirme ve kullanımında referans kabul edilmelidir.
+
+---
+
+## 🌐 Web Server Routes ve Endpoints
+
+### Port Mapping (Tüm Uygulamalar)
+```
+app321     → localhost:2160  # 60m
+app48      → localhost:2148  # 48m
+app72      → localhost:2172  # 72m
+app80      → localhost:2180  # 80m
+app120     → localhost:2120  # 120m (merkezi)
+app120_iov → localhost:2121  # IOV standalone
+app120_iou → localhost:2122  # IOU standalone
+landing    → localhost:8000  # Ana sayfa
+appsuite   → localhost:7000  # Reverse proxy (tüm applar)
+```
+
+### HTTP Request Handler Pattern
+**Tüm uygulamalar `BaseHTTPRequestHandler` kullanır**
+
+```python
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+class AppXXHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        # Route matching
+        if self.path == "/":
+            # Render index page
+        elif self.path == "/iou":
+            # Render IOU page
+        elif self.path.startswith("/favicon"):
+            # Serve favicon
+        else:
+            # 404
+    
+    def do_POST(self):
+        # Form submission handling
+        if self.path == "/analyze":
+            # Counter analysis
+        elif self.path == "/iou":
+            # IOU analysis
+        elif self.path == "/matrix":
+            # Matrix analysis
+        # ...
+```
+
+### Route Table (app120 örneği)
+
+| Method | Path | Açıklama |
+|--------|------|----------|
+| GET | `/` | Ana sayfa (Counter formu) |
+| POST | `/analyze` | Counter analizi (CSV işle) |
+| GET | `/dc` | DC List sayfası |
+| POST | `/dc` | DC List sonuçları |
+| GET | `/matrix` | Matrix sayfası |
+| POST | `/matrix` | Matrix sonuçları |
+| GET | `/iov` | IOV sayfası (entegre) |
+| POST | `/iov` | IOV analizi (çoklu dosya) |
+| GET | `/iou` | IOU sayfası (entegre) |
+| POST | `/iou` | IOU analizi (çoklu dosya) |
+| GET | `/convert` | 60→120 Converter sayfası |
+| POST | `/convert` | Conversion işlemi |
+| GET | `/favicon/*` | Favicon servisi |
+
+### Response Format
+**Tüm responses HTML:**
+
+```python
+# Success response
+self.send_response(200)
+self.send_header("Content-Type", "text/html; charset=utf-8")
+self.end_headers()
+self.wfile.write(page("Title", body_html, active_tab="counter"))
+
+# Error response
+self.send_response(400)  # or 500
+self.send_header("Content-Type", "text/html; charset=utf-8")
+self.end_headers()
+error_html = f"<div class='card'><h3>Hata</h3><p>{error_msg}</p></div>"
+self.wfile.write(page("Hata", error_html))
+```
+
+### HTML Template Structure
+
+```python
+def page(title: str, body: str, active_tab: str = "analyze") -> bytes:
+    """
+    Ana HTML template wrapper.
+    
+    Args:
+        title: Page title
+        body: HTML body içeriği
+        active_tab: Aktif sekme ("analyze", "dc", "matrix", "iov", "iou")
+    
+    Returns:
+        UTF-8 encoded HTML bytes
+    """
+    html = f"""<!doctype html>
+    <html>
+      <head>
+        <meta charset='utf-8'>
+        <title>{title}</title>
+        <style>
+          /* Inline CSS... */
+        </style>
+      </head>
+      <body>
+        <header>
+          <h2>app120</h2>
+        </header>
+        <nav class='tabs'>
+          <a href='/' class='{"active" if active_tab=="analyze" else ""}'>Counter</a>
+          <a href='/iov' class='{"active" if active_tab=="iov" else ""}'>IOV</a>
+          <!-- ... -->
+        </nav>
+        {body}
+      </body>
+    </html>"""
+    return html.encode("utf-8")
+```
+
+---
+
+**Son:** agents.md artık EKSİKSİZ bir teknik referans dokümandır. Başka bir LLM veya developer bu dosyayla projeyi tamamen anlayabilir ve implement edebilir.
