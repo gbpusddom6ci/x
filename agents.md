@@ -1,6 +1,6 @@
 # 📘 Proje Teknik Dokümantasyonu (AI Context-Ready)
 
-**Son Güncelleme:** 2025-01-10  
+**Son Güncelleme:** 2025-10-15  
 **Amaç:** Bu dokümantasyon bir AI agent'ın projeyi tamamen anlaması için hazırlanmıştır.
 
 Bu doküman app321, app48, app72, app80, app120, app120_iov ve app120_iou uygulamalarının **tüm implementation detaylarını**, kod yapısını, fonksiyon isimlerini, dosya organizasyonunu ve özelliklerini en ince detayına kadar açıklar. Tüm açıklamalar Türkçe'dir ve en güncel davranışları yansıtır.
@@ -783,7 +783,7 @@ Non-DC Index 4 → 04:00 DC ATLA → 06:00 (Offset +4)
   - **Hafta kapanış mumu (Cuma 16:00) DC olamaz**
 - **app80 (80m):**
   - **Pazar hariç, 18:00, 19:20 ve 20:40 mumları DC olamaz** (günlük cycle noktaları: 18:00, 18:00+80dk, 18:00+160dk)
-  - **Hafta kapanış mumu (Cuma 16:00) DC olamaz**
+  - **Hafta kapanış mumu (Cuma 16:40) DC olamaz** (80 dakikalık sistemde son mum)
 - **app120 (120m):** DC istisnası yoktur; tüm DC mumlar saatten bağımsız şekilde atlanır (kapsayıcı kural geçerli). Hafta kapanışı sayılan 16:00 mumları (ardından >120 dakikalık boşluk başlayanlar) DC kabul edilmez.
 
 İstisna dışında kalan DC mumları sayımda atlanır ancak kapsayıcı kural gereği ilgili adımın zamanı olarak yazılabilir.
@@ -848,7 +848,7 @@ Non-DC Index 4 → 04:00 DC ATLA → 06:00 (Offset +4)
   - Offset sistemi: -3 ile +3 arası (her adım 80 dakika).
   - **DC Kuralları:**
     - **Pazar hariç, 18:00, 19:20 ve 20:40 mumları DC olamaz** → Günlük cycle noktaları (18:00, 18:00+80dk, 18:00+160dk)
-    - **Hafta kapanış mumu (Cuma 16:00) DC olamaz**
+    - **Hafta kapanış mumu (Cuma 16:40) DC olamaz** → 80 dakikalık sistemde son mum (14:00 → 15:20 → 16:40)
 - **20m → 80m Converter (CLI: `python3 -m app80.main`):**
   - 20 dakikalık UTC-5 mumları alır, UTC-4 80 dakikalık mumlara dönüştürür.
   - Her 80 dakikalık mum 4 tane 20 dakikalık mumdan oluşur (4 × 20 = 80).
@@ -991,7 +991,7 @@ Non-DC Index 4 → 04:00 DC ATLA → 06:00 (Offset +4)
   - **app321:** 13:00–20:00 DC istisna saatleri
   - **app48:** 13:12–19:36 DC istisna saatleri
   - **app72:** 18:00 (Pazar dahil) ve Cuma 16:48 ASLA DC olamaz; Pazar hariç 19:12 ve 20:24 DC olamaz
-  - **app80:** Pazar hariç 18:00, 19:20, 20:40 DC olamaz
+  - **app80:** Pazar hariç 18:00, 19:20, 20:40 DC olamaz; Cuma 16:40 DC olamaz (hafta kapanışı)
   - **app120:** DC istisnası yok, tüm DC'ler atılır
   - **app120_iov:** DC sadece sequence allocation için kullanılır, IOV kriterleri DC'den bağımsızdır
   - **app120_iou:** DC sadece sequence allocation için kullanılır, IOU kriterleri DC'den bağımsızdır

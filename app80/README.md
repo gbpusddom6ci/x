@@ -104,17 +104,19 @@ Bir mum DC olarak işaretlenir eğer:
 2. Low ≥ prev.Low
 3. Close, prev mumun [Open, Close] aralığında
 4. **Pazar hariç, 18:00, 19:20 veya 20:40 mumu değilse** (günlük cycle noktaları)
-5. Hafta kapanış mumu (Cuma 16:00) değilse
+5. Hafta kapanış mumu (Cuma 16:40) değilse
 6. Önceki mum DC değilse
 
-**Önemli:** Pazartesi-Cumartesi günlerinde 18:00, 19:20 ve 20:40 mumları DC olamaz (günlük cycle başlangıç noktaları). Pazar günlerinde bu kısıtlama yoktur (hafta açılışı).
+**Önemli:** 
+- Pazartesi-Cumartesi günlerinde 18:00, 19:20 ve 20:40 mumları DC olamaz (günlük cycle başlangıç noktaları). Pazar günlerinde bu kısıtlama yoktur (hafta açılışı).
+- Cuma 16:40 mumu DC olamaz (hafta kapanışı - 80 dakikalık sistemde son mum).
 
 DC mumlar sayımda atlanır.
 
 ## Notlar
 
 - Başlangıç zamanı sabit: **18:00** (hafta açılışı, Pazar akşamı)
-- Hafta kapanışı: **Cuma 16:00**
+- Hafta kapanışı: **Cuma 16:40** (80 dakikalık sistemde)
 - Haftasonu mumları otomatik filtrelenir
 - Timezone: Girdi UTC-5 ise otomatik +1 saat eklenir → UTC-4
 

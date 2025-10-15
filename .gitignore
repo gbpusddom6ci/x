@@ -47,7 +47,6 @@ coverage.xml
 .pytest_cache/
 
 # Data files (CSV test/sample data)
-*.csv
 data/
 examples/*.csv
 *.xlsx
