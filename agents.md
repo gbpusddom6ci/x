@@ -512,9 +512,15 @@ Non-DC Index 4 → 04:00 DC ATLA → 06:00 (Offset +4)
   - Hafta sonu boşluğu: Cumartesi mumları atlanır, Pazar 18:00'dan önce mumlar göz ardı edilir.
 - **Web Arayüzü (`python3 -m app72.web`, port: 2172):**
   1. **Counter:** 72m sayım, sequence/offset seçimi, OC/PrevOC, DC gösterimi (önceden "Analiz" idi).
-  2. **DC List:** Tüm DC mumlarının listesi (2 haftalık veri kurallarına göre).
-  3. **Matrix:** Tüm offset'ler (-3..+3) için tek ekranda özet tablo.
-  4. **12→72 Converter:** 12m CSV yükle, 72m CSV indir.
+  2. **IOU:** IOU (Inverse OC - Uniform sign) analizi - aynı işaretli mumlar
+  3. **DC List:** Tüm DC mumlarının listesi (2 haftalık veri kurallarına göre).
+  4. **Matrix:** Tüm offset'ler (-3..+3) için tek ekranda özet tablo.
+  5. **12→72 Converter:** 12m CSV yükle, 72m CSV indir.
+- **IOU Özel XYZ Kuralı (app72):**
+  - **16:48, 18:00, 19:12, 20:24 mumları XYZ elemesinden MUAFtır**
+  - Bu saatler kritik cycle noktaları ve DC istisna saatleri
+  - Bu saatlerdeki IOU'lar **haber varmış gibi işaretlenir** (offset'i elemez)
+  - XYZ analizi: Bu saatlerde IOU varsa, haber olmasa bile offset elenmez
 
 ### app80
 - 80 dakikalık mumlar kullanılır; 18:00 başlangıç saati standart.
@@ -699,6 +705,42 @@ Non-DC Index 4 → 04:00 DC ATLA → 06:00 (Offset +4)
   - **Çoklu dosya yükleme:** 25 dosyaya kadar, kompakt tek tablo görünümü
 
 ## 🆕 Son Güncellemeler
+
+### 2025-01-10: 🎯 app72 IOU - Özel Saatler XYZ Elemesinden Muaf
+**Dosya:** `app72/web.py`  
+**Commit:** `86c60da`
+
+**Değişiklik:** app72 IOU için özel XYZ eleme kuralı eklendi.
+
+**Muaf Saatler:**
+- **16:48** - Cuma hafta kapanış mumu
+- **18:00** - Base mumu (asla DC olamaz)
+- **19:12** - DC istisna saati (cycle noktası)
+- **20:24** - DC istisna saati (cycle noktası)
+
+**Kural:**
+```python
+excluded_times = {time(hour=16, minute=48), time(hour=18, minute=0), 
+                 time(hour=19, minute=12), time(hour=20, minute=24)}
+
+# Bu saatler "haber varmış" gibi sayılır
+if has_news or is_excluded_time:
+    file_xyz_data[offset]["with_news"] += 1
+```
+
+**Örnek:**
+- Offset +2'de 19:12 saatinde IOU var, haber yok
+- **ESKI:** Haber yok → news_free → **Offset +2 ELENİR** ❌
+- **YENİ:** 19:12 özel saat → with_news → **Offset +2 XYZ'DE** ✅
+
+**Sebep:** Bu saatler app72'nin kritik cycle noktaları. Yapısal olarak önemli oldukları için habersiz bile olsa offset'i elememelidir.
+
+**Etki:**
+- XYZ analizi daha dengeli
+- Kritik saatlerdeki IOU'lar korunur
+- Offset eleme daha akıllı
+
+---
 
 ### 2025-01-10: 🔧 IOU Tolerance (Güvenlik Payı) Eklendi
 **Dosyalar:** `app321/main.py`, `app48/main.py`, `app72/counter.py`, `app80/counter.py`, `app120/iou/counter.py`, tüm web.py dosyaları  
