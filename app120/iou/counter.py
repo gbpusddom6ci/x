@@ -404,7 +404,10 @@ def analyze_iou(
             
             # Check IOU criteria
             # 1. Both |OC| and |PrevOC| must be >= limit
-            # Skip if too close to limit (within ±tolerance for safety)
+            if abs(oc) < limit or abs(prev_oc) < limit:
+                continue  # Below limit, not IOU
+            
+            # 2. Skip if too close to limit (within ±tolerance for safety)
             if abs(abs(oc) - limit) < tolerance or abs(abs(prev_oc) - limit) < tolerance:
                 continue  # Too close to limit, unreliable
             
