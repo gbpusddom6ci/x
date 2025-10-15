@@ -732,8 +732,9 @@ def analyze_iou(
             prev_oc = prev_candle.close - prev_candle.open
             
             # Check IOU criteria
-            # 1. Both |OC| and |PrevOC| must be >= limit
-            if abs(oc) < limit or abs(prev_oc) < limit:
+            # 1. Both |OC| and |PrevOC| must be >= limit (with ±0.005 tolerance)
+            TOLERANCE = 0.005
+            if abs(oc) < (limit - TOLERANCE) or abs(prev_oc) < (limit - TOLERANCE):
                 continue
             
             # 2. OC and PrevOC must have SAME signs (opposite of IOV)
