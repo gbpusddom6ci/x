@@ -849,6 +849,10 @@ Non-DC Index 4 → 04:00 DC ATLA → 06:00 (Offset +4)
   - **DC Kuralları:**
     - **Pazar hariç, 18:00, 19:20 ve 20:40 mumları DC olamaz** → Günlük cycle noktaları (18:00, 18:00+80dk, 18:00+160dk)
     - **Hafta kapanış mumu (Cuma 16:40) DC olamaz** → 80 dakikalık sistemde son mum (14:00 → 15:20 → 16:40)
+  - **Prediction Mantığı:**
+    - Cuma 16:40'dan sonraki mum → Pazar 18:00 (haftasonu boşluğu)
+    - `predict_next_candle_time` fonksiyonu haftasonu gap'i otomatik hesaplar
+    - 80 dakikalık sistemde Cuma 16:00 mumu yok, son mum 16:40
 - **20m → 80m Converter (CLI: `python3 -m app80.main`):**
   - 20 dakikalık UTC-5 mumları alır, UTC-4 80 dakikalık mumlara dönüştürür.
   - Her 80 dakikalık mum 4 tane 20 dakikalık mumdan oluşur (4 × 20 = 80).
