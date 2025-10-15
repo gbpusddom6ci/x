@@ -32,7 +32,7 @@ from .main import (
 )
 from email.parser import BytesParser
 from email.policy import default as email_default
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, time
 
 
 def load_candles_from_text(text: str, candle_cls: Type) -> List:
@@ -699,9 +699,16 @@ class App72Handler(BaseHTTPRequestHandler):
                                 non_holiday_events = [e for e in news_events if not is_holiday_event(e)]
                                 has_news = bool(non_holiday_events)
                                 
+                                # Special rule for app72: 16:48, 18:00, 19:12, 20:24 are ALWAYS excluded from XYZ elimination
+                                # These times are treated as "has news" regardless of actual news data
+                                excluded_times = {time(hour=16, minute=48), time(hour=18, minute=0), 
+                                                 time(hour=19, minute=12), time(hour=20, minute=24)}
+                                is_excluded_time = iou.timestamp.time() in excluded_times
+                                
                                 # Track for XYZ analysis (per file)
                                 if xyz_analysis:
-                                    if has_news:
+                                    # Excluded times always count as "with_news" (never eliminate offset)
+                                    if has_news or is_excluded_time:
                                         file_xyz_data[offset]["with_news"] += 1
                                     else:
                                         file_xyz_data[offset]["news_free"] += 1
