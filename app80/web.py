@@ -712,8 +712,14 @@ class App80Handler(BaseHTTPRequestHandler):
                                 non_holiday_events = [e for e in news_events if not is_holiday_event(e)]
                                 has_news = bool(non_holiday_events)
                                 
+                                # Special rule for app80: Ignore 18:00 candles (except Sunday) for XYZ analysis
+                                # Pazar hariç 18:00 mumları XYZ analizinde etkisiz (ne haberli ne habersiz sayılmaz)
+                                is_excluded_time = (iou.timestamp.weekday() != 6 and 
+                                                   iou.timestamp.hour == 18 and 
+                                                   iou.timestamp.minute == 0)
+                                
                                 # Track for XYZ analysis (per file)
-                                if xyz_analysis:
+                                if xyz_analysis and not is_excluded_time:
                                     if has_news:
                                         file_xyz_data[offset]["with_news"] += 1
                                     else:
