@@ -56,7 +56,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       }}
       .center-logo {{
         position: absolute;
-        top: 30%;
+        top: 20%;
         left: 50%;
         transform: translate(-50%, -50%);
         z-index: 10;
@@ -79,7 +79,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         transition: transform 0.3s ease;
       }}
       .orbital a:hover {{
-        transform: scale(1.1);
+        opacity: 0.9;
       }}
       .orbital a img {{
         width: auto;
@@ -88,12 +88,12 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         display: block;
       }}
       /* Position each orbital item - circular layout around center (6 items) */
-      .orbital a:nth-child(1) {{ top: 150px; left: 50%; transform: translateX(-50%); }}
-      .orbital a:nth-child(2) {{ top: 210px; right: 350px; }}
-      .orbital a:nth-child(3) {{ bottom: 420px; right: 350px; }}
-      .orbital a:nth-child(4) {{ bottom: 360px; left: 50%; transform: translateX(-50%); }}
-      .orbital a:nth-child(5) {{ bottom: 420px; left: 350px; }}
-      .orbital a:nth-child(6) {{ top: 210px; left: 350px; }}
+      .orbital a:nth-child(1) {{ top: 90px; left: 50%; transform: translateX(-50%); }}
+      .orbital a:nth-child(2) {{ top: 140px; right: 380px; }}
+      .orbital a:nth-child(3) {{ top: 240px; right: 380px; }}
+      .orbital a:nth-child(4) {{ bottom: 480px; left: 50%; transform: translateX(-50%); }}
+      .orbital a:nth-child(5) {{ top: 240px; left: 380px; }}
+      .orbital a:nth-child(6) {{ top: 140px; left: 380px; }}
       footer {{
         position: fixed;
         bottom: 20px;
