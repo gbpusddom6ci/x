@@ -662,7 +662,7 @@ def analyze_iou(
     for offset in range(-3, 4):
         iou_list: List[IOUResult] = []
         
-        start_idx, target_ts, offset_status = determine_offset_start(candles, base_idx, offset, MINUTES_PER_STEP)
+        start_idx, target_ts, offset_status = determine_offset_start(candles, base_idx, offset, MINUTES_PER_STEP, dc_flags)
         base_ts = candles[base_idx].ts.replace(second=0, microsecond=0)
         if target_ts is None:
             target_ts = base_ts + timedelta(minutes=MINUTES_PER_STEP * offset)
@@ -725,6 +725,10 @@ def analyze_iou(
             candle = candles[idx]
             prev_candle = candles[idx - 1]
             
+            # Exclude 18:00 IOU (Sunday included)
+            ts = candle.ts
+            if ts.hour == 18 and ts.minute == 0:
+                continue
             oc = candle.close - candle.open
             prev_oc = prev_candle.close - prev_candle.open
             
