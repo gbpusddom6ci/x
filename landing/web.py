@@ -7,85 +7,19 @@ from typing import Dict
 
 
 def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
-    import os, base64, math
-
-    def b64_image(filename: str) -> str:
-        photos_dir = os.path.join(os.path.dirname(__file__), "..", "photos")
-        path = os.path.join(photos_dir, filename)
-        try:
-            with open(path, "rb") as f:
-                data = f.read()
-            ext = filename.lower().rsplit(".", 1)[-1]
-            mime = "jpeg" if ext in {"jpg", "jpeg"} else "png"
-            return f"data:image/{mime};base64," + base64.b64encode(data).decode("ascii")
-        except Exception:
-            return ""
-
-    central_name = "lobotomy.jpg"
-    central_src = b64_image(central_name)
-
-    # Collect satellite images (any image except central)
-    photos_dir = os.path.join(os.path.dirname(__file__), "..", "photos")
-    candidates = []
-    try:
-        for fn in os.listdir(photos_dir):
-            ext = fn.lower().rsplit(".", 1)[-1]
-            if ext in {"jpg", "jpeg", "png"} and fn != central_name:
-                candidates.append(fn)
-    except Exception:
-        pass
-    candidates.sort()
-
-    app_items = list(app_links.items())
-    sat_files = candidates[: len(app_items)]
-
-    # Inline SVG tile to mimic Space Jam 1996 starfield
-    star_svg = """<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'>
-    <rect width='32' height='32' fill='#000'/>
-    <g stroke='#fff' stroke-width='0.8' opacity='0.9' stroke-linecap='round'>
-      <path d='M3 3 h4 M5 1 v4'/>
-      <path d='M17 9 h4 M19 7 v4'/>
-      <path d='M28 6 h3 M29.5 4 v4'/>
-      <path d='M8 21 h4 M10 19 v4'/>
-      <path d='M24 25 h4 M26 23 v4'/>
-      <path d='M2 18 h3 M3.5 16 v4'/>
-      <path d='M14 28 h3 M15.5 26 v4'/>
-    </g>
-    <g fill='#fff' opacity='0.8'>
-      <circle cx='12' cy='4' r='0.7'/>
-      <circle cx='6' cy='14' r='0.7'/>
-      <circle cx='20' cy='16' r='0.6'/>
-      <circle cx='4' cy='28' r='0.6'/>
-      <circle cx='28' cy='14' r='0.7'/>
-    </g>
-    </svg>"""
-    star_bg = "data:image/svg+xml;base64," + base64.b64encode(star_svg.encode("utf-8")).decode("ascii")
-
-    star_css = f"""
-      body{{margin:0;background:#000 url({star_bg}) 0 0 repeat;color:#fff;height:100vh;overflow:hidden;font-family: system-ui;background-size:64px 64px;}}
-      .universe{{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;}}
-      .planet{{position:absolute;width:200px;height:200px;border-radius:50%;box-shadow:0 0 12px rgba(255,255,255,.25);z-index:2;}} 
-      .sat{{position:absolute;width:90px;height:90px;border-radius:50%;box-shadow:0 0 6px rgba(255,255,255,.2);z-index:1;}}
-      a{{display:block;width:100%;height:100%;}}
-      img{{width:100%;height:100%;object-fit:cover;border-radius:50%;}}
-    """
-
-    # Arrange satellites around a circle
-    r = 260
-    pos_styles = []
-    n = len(sat_files) if len(sat_files) > 0 else 1
-    for i in range(n):
-        angle = (2 * math.pi * i) / n
-        x = int(r * math.cos(angle))
-        y = int(r * math.sin(angle))
-        pos_styles.append(f"style='transform: translate({x}px,{y}px);'")
-
-    sats_html = []
-    for (name, meta), fn, style in zip(app_items, sat_files, pos_styles):
+    cards = []
+    for key, meta in app_links.items():
+        title = meta.get("title", key)
         url = meta.get("url", "#")
-        src = b64_image(fn)
-        sats_html.append(
-            f"<div class='sat' {style}><a href='{html.escape(url)}' target='_blank' rel='noopener'><img src='{src}' alt=''/></a></div>"
+        description = meta.get("description", "")
+        cards.append(
+            f"""
+            <article class='card'>
+              <h2>{html.escape(title)}</h2>
+              <p>{html.escape(description)}</p>
+              <a class='button' href='{html.escape(url)}' target='_blank' rel='noopener'>Uygulamayı Aç</a>
+            </article>
+            """
         )
 
     page = f"""<!doctype html>
@@ -93,19 +27,110 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
   <head>
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <title>Landing</title>
-    <link rel='icon' type='image/png' sizes='32x32' href='/favicon/favicon-32x32.png?v=2'>
-    <link rel='icon' type='image/png' sizes='16x16' href='/favicon/favicon-16x16.png?v=2'>
-    <link rel='shortcut icon' href='/favicon/favicon.ico?v=2'>
-    <style>{star_css}</style>
+    <title>Trading Araçları | Landing Page</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png?v=2">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png?v=2">
+    <link rel="shortcut icon" href="/favicon/favicon.ico?v=2">
+    <style>
+      :root {{
+        color-scheme: light dark;
+        --bg: #f5f5f5;
+        --fg: #1f1f1f;
+        --card-bg: #ffffff;
+        --border: #d9d9d9;
+        --accent: #0f62fe;
+      }}
+      @media (prefers-color-scheme: dark) {{
+        :root {{
+          --bg: #121212;
+          --fg: #f3f3f3;
+          --card-bg: #1f1f1f;
+          --border: #333333;
+        }}
+      }}
+      * {{ box-sizing: border-box; }}
+      body {{
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 32px 16px;
+      }}
+      header {{
+        max-width: 1200px;
+        width: 100%;
+        text-align: center;
+        margin-bottom: 24px;
+      }}
+      header h1 {{ margin: 0 0 12px; font-size: 1.9rem; }}
+      header p {{ margin: 0; line-height: 1.6; }}
+      main {{
+        display: grid;
+        gap: 16px;
+        width: 100%;
+        max-width: 1200px;
+      }}
+      @media (min-width: 640px) {{
+        main {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
+      }}
+      @media (min-width: 1024px) {{
+        main {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }}
+      }}
+      @media (min-width: 1280px) {{
+        main {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }}
+      }}
+      @media (min-width: 1600px) {{
+        main {{ grid-template-columns: repeat(6, minmax(0, 1fr)); }}
+      }}
+      .card {{
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 12px;
+        box-shadow: 0 4px 14px rgba(15, 17, 26, 0.08);
+      }}
+      .card h2 {{ margin: 0; font-size: 1.3rem; }}
+      .card p {{ margin: 0; flex-grow: 1; line-height: 1.5; font-size: 0.95rem; }}
+      .button {{
+        align-self: flex-start;
+        background: var(--accent);
+        color: white;
+        padding: 10px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: filter 150ms ease-in-out, transform 150ms ease-in-out;
+      }}
+      .button:hover {{
+        filter: brightness(1.05);
+        transform: translateY(-1px);
+      }}
+      footer {{
+        margin-top: 32px;
+        font-size: 0.85rem;
+        opacity: 0.7;
+      }}
+    </style>
   </head>
   <body>
-    <div class='universe'>
-      <div class='planet' style='transform: translate(0px,0px);'>
-        <img src='{central_src}' alt='logo'/>
-      </div>
-      {''.join(sats_html)}
-    </div>
+    <header>
+      <h1>Trading Araçları</h1>
+      <p>app48, app72, app80, app120, app321 ve News Converter arayüzlerine tek yerden erişin. Her kart ilgili modülü yeni sekmede açar.</p>
+    </header>
+    <main>
+      {''.join(cards)}
+    </main>
+    <footer>
+      Uygulamaları açmadan önce ilgili web servislerini çalıştırmayı unutmayın.
+    </footer>
   </body>
 </html>"""
     return page.encode("utf-8")
@@ -193,8 +218,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--news-converter-url",
-        default="http://127.0.0.1:2199/",
-        help="news_converter web arayüzü için URL",
+        default="http://127.0.0.1:3000/",
+        help="News Converter web arayüzü için URL",
     )
     args = parser.parse_args(argv)
 
@@ -225,9 +250,9 @@ def main(argv: list[str] | None = None) -> int:
             "description": "60 dakikalık sayım araçları, DC listesi ve offset matrisi.",
         },
         "news_converter": {
-            "title": "News Converter",
+            "title": "📰 News Converter",
             "url": args.news_converter_url,
-            "description": "📰 ForexFactory MD formatını JSON'a dönüştürür (çoklu dosya, direkt indirme).",
+            "description": "Markdown formatından JSON'a haber verisi dönüştürücü. news_data/ klasörüne kayıt.",
         },
     }
 
