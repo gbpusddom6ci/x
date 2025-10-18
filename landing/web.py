@@ -158,6 +158,11 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
 
 
 def make_handler(html_bytes: bytes):
+    # Resolve paths at module level, not inside handler
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    photos_dir = os.path.join(base_dir, "..", "photos")
+    favicon_dir = os.path.join(base_dir, "..", "favicon")
+    
     class LandingHandler(BaseHTTPRequestHandler):
         def do_GET(self) -> None:  # noqa: N802
             if self.path in {"/", "/index", "/index.html"}:
@@ -172,7 +177,7 @@ def make_handler(html_bytes: bytes):
                 self.wfile.write(b"ok")
             elif self.path.startswith("/photos/"):
                 filename = self.path.split("/")[-1].split("?")[0]
-                photos_path = os.path.join(os.path.dirname(__file__), "..", "photos", filename)
+                photos_path = os.path.join(photos_dir, filename)
                 try:
                     with open(photos_path, "rb") as f:
                         content = f.read()
@@ -192,7 +197,7 @@ def make_handler(html_bytes: bytes):
                     self.send_error(404, "Photo not found")
             elif self.path.startswith("/favicon/"):
                 filename = self.path.split("/")[-1].split("?")[0]
-                favicon_path = os.path.join(os.path.dirname(__file__), "..", "favicon", filename)
+                favicon_path = os.path.join(favicon_dir, filename)
                 try:
                     with open(favicon_path, "rb") as f:
                         content = f.read()
