@@ -38,17 +38,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
     <style>
       * {{ margin: 0; padding: 0; box-sizing: border-box; }}
       body {{
-        background: #000;
-        background-image: 
-          radial-gradient(2px 2px at 20% 30%, white, transparent),
-          radial-gradient(2px 2px at 60% 70%, white, transparent),
-          radial-gradient(1px 1px at 50% 50%, white, transparent),
-          radial-gradient(1px 1px at 80% 10%, white, transparent),
-          radial-gradient(2px 2px at 90% 60%, white, transparent),
-          radial-gradient(1px 1px at 33% 80%, white, transparent),
-          radial-gradient(1px 1px at 15% 90%, white, transparent);
-        background-size: 200px 200px, 300px 300px, 250px 250px, 350px 350px, 280px 280px, 220px 220px, 320px 320px;
-        background-position: 0 0, 40px 60px, 130px 270px, 70px 100px, 200px 150px, 250px 300px, 100px 200px;
+        background: #000 url('/stars.gif') repeat;
         min-height: 100vh;
         display: flex;
         flex-direction: column;
@@ -74,8 +64,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       .center-logo img {{
         width: 280px;
         height: auto;
-        border-radius: 8px;
-        box-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
+        display: block;
       }}
       .orbital {{
         position: absolute;
@@ -90,26 +79,23 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         transition: transform 0.3s ease;
       }}
       .orbital a:hover {{
-        transform: scale(1.15);
-        filter: brightness(1.2);
+        transform: scale(1.1);
       }}
       .orbital a img {{
-        width: 100px;
-        height: 100px;
-        object-fit: cover;
-        border-radius: 50%;
-        border: 3px solid rgba(255, 255, 255, 0.5);
-        box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+        width: auto;
+        height: 80px;
+        max-width: 120px;
+        display: block;
       }}
-      /* Position each orbital item */
-      .orbital a:nth-child(1) {{ top: -50px; left: 50%; transform: translateX(-50%); }}
-      .orbital a:nth-child(2) {{ top: 80px; right: -20px; }}
-      .orbital a:nth-child(3) {{ top: 50%; right: -60px; transform: translateY(-50%); }}
-      .orbital a:nth-child(4) {{ bottom: 80px; right: -20px; }}
-      .orbital a:nth-child(5) {{ bottom: -50px; left: 50%; transform: translateX(-50%); }}
-      .orbital a:nth-child(6) {{ bottom: 80px; left: -20px; }}
-      .orbital a:nth-child(7) {{ top: 50%; left: -60px; transform: translateY(-50%); }}
-      .orbital a:nth-child(8) {{ top: 80px; left: -20px; }}
+      /* Position each orbital item - Space Jam style */
+      .orbital a:nth-child(1) {{ top: 20px; left: 50%; transform: translateX(-50%); }}
+      .orbital a:nth-child(2) {{ top: 100px; right: 80px; }}
+      .orbital a:nth-child(3) {{ top: 50%; right: 30px; transform: translateY(-50%); }}
+      .orbital a:nth-child(4) {{ bottom: 100px; right: 80px; }}
+      .orbital a:nth-child(5) {{ bottom: 20px; left: 50%; transform: translateX(-50%); }}
+      .orbital a:nth-child(6) {{ bottom: 100px; left: 80px; }}
+      .orbital a:nth-child(7) {{ top: 50%; left: 30px; transform: translateY(-50%); }}
+      .orbital a:nth-child(8) {{ top: 100px; left: 80px; }}
       footer {{
         position: fixed;
         bottom: 20px;
@@ -175,6 +161,19 @@ def make_handler(html_bytes: bytes):
                 self.send_header("Content-Type", "text/plain; charset=utf-8")
                 self.end_headers()
                 self.wfile.write(b"ok")
+            elif self.path == "/stars.gif":
+                stars_path = os.path.join(base_dir, "..", "stars.gif")
+                try:
+                    with open(stars_path, "rb") as f:
+                        content = f.read()
+                    self.send_response(200)
+                    self.send_header("Content-Type", "image/gif")
+                    self.send_header("Content-Length", str(len(content)))
+                    self.send_header("Cache-Control", "public, max-age=86400")
+                    self.end_headers()
+                    self.wfile.write(content)
+                except FileNotFoundError:
+                    self.send_error(404, "Stars.gif not found")
             elif self.path.startswith("/photos/"):
                 filename = self.path.split("/")[-1].split("?")[0]
                 photos_path = os.path.join(photos_dir, filename)

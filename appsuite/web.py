@@ -159,12 +159,30 @@ def make_handler(backends: List[Backend], landing_bytes: bytes):
             except FileNotFoundError:
                 self.send_error(404, "Photo not found")
 
+        def _serve_stars(self) -> None:
+            import os
+            stars_path = os.path.join(os.path.dirname(__file__), "..", "stars.gif")
+            try:
+                with open(stars_path, "rb") as f:
+                    content = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "image/gif")
+                self.send_header("Content-Length", str(len(content)))
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self.end_headers()
+                self.wfile.write(content)
+            except FileNotFoundError:
+                self.send_error(404, "Stars.gif not found")
+
         def do_GET(self) -> None:  # noqa: N802
             if self.path in {"/", "/index", "/index.html"}:
                 self._serve_landing()
                 return
             if self.path == "/health":
                 self._serve_health()
+                return
+            if self.path == "/stars.gif":
+                self._serve_stars()
                 return
             if self.path.startswith("/favicon/"):
                 filename = self.path.split("/")[-1].split("?")[0]
