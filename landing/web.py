@@ -56,13 +56,16 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       }}
       .center-logo {{
         position: absolute;
-        top: 20%;
+        top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
         z-index: 10;
+        border: 3px solid #4169E1;
+        padding: 25px 40px;
+        background: rgba(0, 0, 0, 0.3);
       }}
       .center-logo img {{
-        width: 140px;
+        width: 180px;
         height: auto;
         display: block;
       }}
@@ -76,45 +79,38 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       .orbital a {{
         position: absolute;
         display: block;
-        transition: transform 0.3s ease;
+        border: 2px solid #DC143C;
+        padding: 15px 20px;
+        background: rgba(0, 0, 0, 0.3);
+        transition: opacity 0.3s ease;
       }}
       .orbital a:hover {{
-        opacity: 0.9;
+        opacity: 0.8;
       }}
       .orbital a img {{
         width: auto;
-        height: 75px;
-        max-width: 110px;
+        height: 60px;
+        max-width: 90px;
         display: block;
       }}
       /* Position each orbital item - circular layout around center (6 items) */
-      .orbital a:nth-child(1) {{ top: 90px; left: 50%; transform: translateX(-50%); }}
-      .orbital a:nth-child(2) {{ top: 140px; right: 380px; }}
-      .orbital a:nth-child(3) {{ top: 240px; right: 380px; }}
-      .orbital a:nth-child(4) {{ bottom: 480px; left: 50%; transform: translateX(-50%); }}
-      .orbital a:nth-child(5) {{ top: 240px; left: 380px; }}
-      .orbital a:nth-child(6) {{ top: 140px; left: 380px; }}
+      .orbital a:nth-child(1) {{ top: 50px; left: 50%; transform: translateX(-50%); }}
+      .orbital a:nth-child(2) {{ top: 100px; right: 320px; }}
+      .orbital a:nth-child(3) {{ top: 50%; right: 150px; transform: translateY(-50%); }}
+      .orbital a:nth-child(4) {{ bottom: 200px; left: 180px; }}
+      .orbital a:nth-child(5) {{ top: 50%; left: 150px; transform: translateY(-50%); }}
+      .orbital a:nth-child(6) {{ top: 100px; left: 320px; }}
       footer {{
         position: fixed;
-        bottom: 20px;
+        bottom: 40px;
         left: 50%;
         transform: translateX(-50%);
         text-align: center;
         font-family: Arial, sans-serif;
-        font-size: 11px;
-        color: #ff0000;
-      }}
-      footer a {{
-        color: #ff0000;
-        text-decoration: none;
-        margin: 0 8px;
-      }}
-      footer a:hover {{
-        text-decoration: underline;
-      }}
-      .copyright {{
-        margin-top: 8px;
-        color: #ff0000;
+        font-size: 28px;
+        font-weight: normal;
+        letter-spacing: 2px;
+        color: #DC143C;
       }}
     </style>
   </head>
@@ -127,15 +123,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         {''.join(orbital_items)}
       </div>
     </div>
-    <footer>
-      <div>
-        <a href='#'>Privacy Policy</a>
-        <a href='#'>Terms</a>
-        <a href='#'>Accessibility</a>
-        <a href='#'>AdChoices</a>
-      </div>
-      <div class='copyright'>x1 Trading Platform. All rights reserved © 2025</div>
-    </footer>
+    <footer>marketmalware</footer>
   </body>
 </html>"""
     return page.encode("utf-8")
