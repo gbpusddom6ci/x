@@ -32,7 +32,7 @@ from .main import (
 )
 from email.parser import BytesParser
 from email.policy import default as email_default
-from datetime import timedelta, datetime, time
+from datetime import timedelta, datetime
 
 
 def load_candles_from_text(text: str, candle_cls: Type) -> List:
@@ -404,10 +404,6 @@ def render_iou_index() -> bytes:
             <input type='number' name='limit' value='0.1' step='0.01' min='0' style='width:80px' />
           </div>
           <div>
-            <label>Tolerance</label>
-            <input type='number' name='tolerance' value='0.005' step='0.001' min='0' style='width:80px' />
-          </div>
-          <div>
             <label>XYZ Küme Analizi</label>
             <input type='checkbox' name='xyz_analysis' />
           </div>
@@ -623,12 +619,6 @@ class App72Handler(BaseHTTPRequestHandler):
                 except:
                     limit = 0.1
                 
-                tolerance_str = (params.get("tolerance") or "0.005").strip()
-                try:
-                    tolerance = float(tolerance_str)
-                except:
-                    tolerance = 0.005
-                
                 xyz_analysis = "xyz_analysis" in params
                 
                 # Load news data from directory (auto-detects all JSON files)
@@ -667,7 +657,7 @@ class App72Handler(BaseHTTPRequestHandler):
                             continue
                         
                         # Analyze IOU
-                        results = analyze_iou(candles, sequence, limit, tolerance)
+                        results = analyze_iou(candles, sequence, limit)
                         total_iou = sum(len(v) for v in results.values())
                         
                         if total_iou == 0:
@@ -699,16 +689,9 @@ class App72Handler(BaseHTTPRequestHandler):
                                 non_holiday_events = [e for e in news_events if not is_holiday_event(e)]
                                 has_news = bool(non_holiday_events)
                                 
-                                # Special rule for app72: 16:48, 18:00, 19:12, 20:24 are ALWAYS excluded from XYZ elimination
-                                # These times are treated as "has news" regardless of actual news data
-                                excluded_times = {time(hour=16, minute=48), time(hour=18, minute=0), 
-                                                 time(hour=19, minute=12), time(hour=20, minute=24)}
-                                is_excluded_time = iou.timestamp.time() in excluded_times
-                                
                                 # Track for XYZ analysis (per file)
                                 if xyz_analysis:
-                                    # Excluded times always count as "with_news" (never eliminate offset)
-                                    if has_news or is_excluded_time:
+                                    if has_news:
                                         file_xyz_data[offset]["with_news"] += 1
                                     else:
                                         file_xyz_data[offset]["news_free"] += 1
