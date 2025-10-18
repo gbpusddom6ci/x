@@ -39,26 +39,39 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
     app_items = list(app_links.items())
     sat_files = candidates[: len(app_items)]
 
-    star_css = """
-      body{margin:0;background:#000;color:#fff;height:100vh;overflow:hidden;font-family: system-ui;}
-      .sky{position:fixed;inset:0;background:
-          radial-gradient(2px 2px at 20% 30%, #fff, rgba(255,255,255,0) 60%),
-          radial-gradient(1.5px 1.5px at 70% 80%, #fff, rgba(255,255,255,0) 60%),
-          radial-gradient(1.5px 1.5px at 40% 60%, #fff, rgba(255,255,255,0) 60%),
-          radial-gradient(1px 1px at 85% 20%, #fff, rgba(255,255,255,0) 60%),
-          radial-gradient(1px 1px at 10% 80%, #fff, rgba(255,255,255,0) 60%),
-          radial-gradient(1px 1px at 50% 10%, #fff, rgba(255,255,255,0) 60%);
-          background-color:#000;}
-      .universe{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
-      .planet{position:absolute;width:180px;height:180px;border-radius:50%;box-shadow:0 0 12px rgba(255,255,255,.25);} 
-      .sat{position:absolute;width:90px;height:90px;border-radius:50%;box-shadow:0 0 10px rgba(255,255,255,.2);}
-      .sat:hover{transform:scale(1.06);} 
-      a{display:block;width:100%;height:100%;}
-      img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+    # Inline SVG tile to mimic Space Jam 1996 starfield
+    star_svg = """<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'>
+    <rect width='32' height='32' fill='#000'/>
+    <g stroke='#fff' stroke-width='0.8' opacity='0.9' stroke-linecap='round'>
+      <path d='M3 3 h4 M5 1 v4'/>
+      <path d='M17 9 h4 M19 7 v4'/>
+      <path d='M28 6 h3 M29.5 4 v4'/>
+      <path d='M8 21 h4 M10 19 v4'/>
+      <path d='M24 25 h4 M26 23 v4'/>
+      <path d='M2 18 h3 M3.5 16 v4'/>
+      <path d='M14 28 h3 M15.5 26 v4'/>
+    </g>
+    <g fill='#fff' opacity='0.8'>
+      <circle cx='12' cy='4' r='0.7'/>
+      <circle cx='6' cy='14' r='0.7'/>
+      <circle cx='20' cy='16' r='0.6'/>
+      <circle cx='4' cy='28' r='0.6'/>
+      <circle cx='28' cy='14' r='0.7'/>
+    </g>
+    </svg>"""
+    star_bg = "data:image/svg+xml;base64," + base64.b64encode(star_svg.encode("utf-8")).decode("ascii")
+
+    star_css = f"""
+      body{{margin:0;background:#000 url({star_bg}) 0 0 repeat;color:#fff;height:100vh;overflow:hidden;font-family: system-ui;background-size:64px 64px;}}
+      .universe{{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;}}
+      .planet{{position:absolute;width:200px;height:200px;border-radius:50%;box-shadow:0 0 12px rgba(255,255,255,.25);z-index:2;}} 
+      .sat{{position:absolute;width:90px;height:90px;border-radius:50%;box-shadow:0 0 6px rgba(255,255,255,.2);z-index:1;}}
+      a{{display:block;width:100%;height:100%;}}
+      img{{width:100%;height:100%;object-fit:cover;border-radius:50%;}}
     """
 
     # Arrange satellites around a circle
-    r = 220
+    r = 260
     pos_styles = []
     n = len(sat_files) if len(sat_files) > 0 else 1
     for i in range(n):
@@ -87,7 +100,6 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
     <style>{star_css}</style>
   </head>
   <body>
-    <div class='sky'></div>
     <div class='universe'>
       <div class='planet' style='transform: translate(0px,0px);'>
         <img src='{central_src}' alt='logo'/>
