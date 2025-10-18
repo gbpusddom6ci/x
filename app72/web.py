@@ -702,6 +702,17 @@ class App72Handler(BaseHTTPRequestHandler):
                                 non_holiday_events = [e for e in news_events if not is_holiday_event(e)]
                                 has_news = bool(non_holiday_events)
                                 
+                                # Critical Rule: Check for "All Day" non-holiday events on this date
+                                # If an "All Day" event exists (e.g., OPEC-JMMC), ALL IOUs on that day count as "with news"
+                                if news_loaded and not has_news:
+                                    candle_date_str = iou.timestamp.strftime('%Y-%m-%d')
+                                    daily_events = events_by_date.get(candle_date_str, [])
+                                    for event in daily_events:
+                                        # All Day events have time_24h = null
+                                        if event.get('time_24h') is None and not is_holiday_event(event):
+                                            has_news = True
+                                            break
+                                
                                 # Track for XYZ analysis (per file)
                                 if xyz_analysis:
                                     if has_news:
