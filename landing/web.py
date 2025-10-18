@@ -83,8 +83,8 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       }}
       .orbital a img {{
         width: auto;
-        height: 72px;
-        max-width: 108px;
+        height: 108px;
+        max-width: 162px;
         display: block;
       }}
       /* Position each orbital item - circular layout around center (6 items) */
