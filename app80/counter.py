@@ -725,6 +725,10 @@ def analyze_iou(
             candle = candles[idx]
             prev_candle = candles[idx - 1]
             
+            # Exclude 18:00 IOU (except Sunday)
+            ts = candle.ts
+            if ts.weekday() != 6 and ts.hour == 18 and ts.minute == 0:
+                continue
             oc = candle.close - candle.open
             prev_oc = prev_candle.close - prev_candle.open
             
