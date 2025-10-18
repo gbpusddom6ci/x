@@ -402,6 +402,10 @@ def render_iou_index() -> bytes:
             <label>XYZ Küme Analizi</label>
             <input type='checkbox' name='xyz_analysis' />
           </div>
+          <div>
+            <label>XYZ Özet Tablosu</label>
+            <input type='checkbox' name='xyz_summary_table' />
+          </div>
         </div>
         <div style='margin-top:12px;'>
           <button type='submit'>Analiz Et</button>
@@ -607,6 +611,7 @@ class AppHandler(BaseHTTPRequestHandler):
                     tolerance = 0.005
                 
                 xyz_analysis = "xyz_analysis" in params
+                xyz_summary_table = "xyz_summary_table" in params
                 
                 # Load news data from directory (auto-detects all JSON files)
                 news_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'news_data')
@@ -626,10 +631,15 @@ class AppHandler(BaseHTTPRequestHandler):
                   <div><strong>Dosya Sayısı:</strong> {len(files)}</div>
                   <div><strong>Sequence:</strong> {html.escape(sequence)} (Filtered: {', '.join(map(str, SEQUENCES_FILTERED[sequence]))})</div>
                   <div><strong>Limit:</strong> {limit}</div>
+                  <div><strong>Tolerance:</strong> {tolerance}</div>
                   <div><strong>Haber Verisi:</strong> {f'✅ {json_files_count} JSON dosyası yüklendi ({len(events_by_date)} gün)' if news_loaded else '❌ news_data/ klasöründe JSON bulunamadı'}</div>
                   <div><strong>XYZ Analizi:</strong> {'✅ Aktif' if xyz_analysis else '❌ Pasif'}</div>
+                  <div><strong>XYZ Özet Tablosu:</strong> {'✅ Aktif' if xyz_summary_table else '❌ Pasif'}</div>
                 </div>
                 """
+                
+                # For summary table mode: collect all results first
+                summary_data = [] if xyz_summary_table else None
                 
                 # Process each file
                 for file_idx, file_obj in enumerate(files, 1):
@@ -640,7 +650,8 @@ class AppHandler(BaseHTTPRequestHandler):
                     try:
                         candles = load_candles_from_text(text)
                         if not candles:
-                            body += f"<div class='card' style='padding:10px;'><strong>❌ {html.escape(filename)}</strong> - Veri boş</div>"
+                            if not xyz_summary_table:
+                                body += f"<div class='card' style='padding:10px;'><strong>❌ {html.escape(filename)}</strong> - Veri boş</div>"
                             continue
                         
                         # Analyze IOU
@@ -648,27 +659,30 @@ class AppHandler(BaseHTTPRequestHandler):
                         total_iou = sum(len(v) for v in results.values())
                         
                         if total_iou == 0:
-                            body += f"<div class='card' style='padding:10px;'><strong>📄 {html.escape(filename)}</strong> - <span style='color:#888;'>IOU yok</span></div>"
+                            if not xyz_summary_table:
+                                body += f"<div class='card' style='padding:10px;'><strong>📄 {html.escape(filename)}</strong> - <span style='color:#888;'>IOU yok</span></div>"
                             continue
                         
                         # XYZ Analysis: Track news-free IOUs per offset for THIS file
                         file_xyz_data = {offset: {"news_free": 0, "with_news": 0} for offset in range(-3, 4)}
+                        eliminated_candles = {offset: [] for offset in range(-3, 4)}
                         
-                        # Compact table with all offsets
-                        body += f"""
-                        <div class='card' style='padding:10px;'>
-                          <strong>📄 {html.escape(filename)}</strong> - {len(candles)} mum, <strong>{total_iou} IOU</strong>
-                          <table style='margin-top:8px;'>
-                            <tr><th>Ofs</th><th>Seq</th><th>Idx</th><th>Timestamp</th><th>OC</th><th>PrevOC</th><th>PIdx</th><th>Haber</th></tr>
-                        """
+                        # Compact table with all offsets (only if NOT summary mode)
+                        if not xyz_summary_table:
+                            body += f"""
+                            <div class='card' style='padding:10px;'>
+                              <strong>📄 {html.escape(filename)}</strong> - {len(candles)} mum, <strong>{total_iou} IOU</strong>
+                              <table style='margin-top:8px;'>
+                                <tr><th>Ofs</th><th>Seq</th><th>Idx</th><th>Timestamp</th><th>OC</th><th>PrevOC</th><th>PIdx</th><th>Haber</th></tr>
+                            """
                         
                         for offset in range(-3, 4):
                             for iou in results[offset]:
                                 oc_fmt = format_pip(iou.oc)
                                 prev_oc_fmt = format_pip(iou.prev_oc)
                                 
-                                # Find news for this candle's timerange (321 minutes)
-                                news_events = find_news_in_timerange(events_by_date, iou.timestamp, 321) if news_loaded else []
+                                # Find news for this candle's timerange (60 minutes for app321)
+                                news_events = find_news_in_timerange(events_by_date, iou.timestamp, 60) if news_loaded else []
                                 news_text = format_news_events(news_events)
                                 
                                 # For XYZ analysis: only non-holiday events count as "news"
@@ -676,19 +690,34 @@ class AppHandler(BaseHTTPRequestHandler):
                                 non_holiday_events = [e for e in news_events if not is_holiday_event(e)]
                                 has_news = bool(non_holiday_events)
                                 
+                                # Critical Rule: Check for "All Day" non-holiday events on this date
+                                # If an "All Day" event exists (e.g., OPEC-JMMC), ALL IOUs on that day count as "with news"
+                                if news_loaded and not has_news:
+                                    candle_date_str = iou.timestamp.strftime('%Y-%m-%d')
+                                    daily_events = events_by_date.get(candle_date_str, [])
+                                    for event in daily_events:
+                                        # All Day events have time_24h = null
+                                        if event.get('time_24h') is None and not is_holiday_event(event):
+                                            has_news = True
+                                            break
+                                
                                 # Track for XYZ analysis (per file)
                                 if xyz_analysis:
                                     if has_news:
                                         file_xyz_data[offset]["with_news"] += 1
                                     else:
                                         file_xyz_data[offset]["news_free"] += 1
+                                        # Track the candle that eliminated this offset
+                                        eliminated_candles[offset].append(iou.timestamp.strftime('%m-%d %H:%M'))
                                 
-                                body += f"<tr><td>{offset:+d}</td><td>{iou.seq_value}</td><td>{iou.index}</td><td>{iou.timestamp.strftime('%m-%d %H:%M')}</td><td>{html.escape(oc_fmt)}</td><td>{html.escape(prev_oc_fmt)}</td><td>{iou.prev_index}</td><td style='font-size:11px;max-width:400px;'>{html.escape(news_text)}</td></tr>"
+                                if not xyz_summary_table:
+                                    body += f"<tr><td>{offset:+d}</td><td>{iou.seq_value}</td><td>{iou.index}</td><td>{iou.timestamp.strftime('%m-%d %H:%M')}</td><td>{html.escape(oc_fmt)}</td><td>{html.escape(prev_oc_fmt)}</td><td>{iou.prev_index}</td><td style='font-size:11px;max-width:400px;'>{html.escape(news_text)}</td></tr>"
                         
-                        body += "</table>"
+                        if not xyz_summary_table:
+                            body += "</table>"
                         
                         # Display XYZ Set Analysis Results for THIS file
-                        if xyz_analysis:
+                        if xyz_analysis and not xyz_summary_table:
                             xyz_set = []
                             eliminated = []
                             
@@ -725,10 +754,62 @@ class AppHandler(BaseHTTPRequestHandler):
                             </div>
                             """
                         
-                        body += "</div>"
+                        if not xyz_summary_table:
+                            body += "</div>"
+                        
+                        # Collect data for summary table
+                        if xyz_summary_table and xyz_analysis:
+                            xyz_set = []
+                            eliminated = []
+                            eliminated_details = []
+                            
+                            for offset in range(-3, 4):
+                                news_free_count = file_xyz_data[offset]["news_free"]
+                                if news_free_count > 0:
+                                    eliminated.append(offset)
+                                    # Get candle times for this offset
+                                    candle_times = ", ".join(eliminated_candles[offset][:3])  # Max 3 times
+                                    if len(eliminated_candles[offset]) > 3:
+                                        candle_times += "..."
+                                    eliminated_details.append(f"{offset:+d}: {candle_times}")
+                                else:
+                                    xyz_set.append(offset)
+                            
+                            xyz_set_str = ", ".join([f"{o:+d}" if o != 0 else "0" for o in xyz_set]) if xyz_set else "Ø"
+                            eliminated_str = " | ".join(eliminated_details) if eliminated_details else "Ø"
+                            
+                            summary_data.append({
+                                "filename": filename,
+                                "xyz_set": xyz_set_str,
+                                "eliminated": eliminated_str
+                            })
                         
                     except Exception as e:
-                        body += f"<div class='card' style='padding:10px;'><strong>❌ {html.escape(filename)}</strong> - <span style='color:red;'>Hata: {html.escape(str(e))}</span></div>"
+                        if not xyz_summary_table:
+                            body += f"<div class='card' style='padding:10px;'><strong>❌ {html.escape(filename)}</strong> - <span style='color:red;'>Hata: {html.escape(str(e))}</span></div>"
+                
+                # Render summary table if enabled
+                if xyz_summary_table and summary_data:
+                    body += """
+                    <div class='card' style='padding:10px;'>
+                      <h3>📊 XYZ Özet Tablosu</h3>
+                      <table style='margin-top:8px;'>
+                        <tr><th>Dosya Adı</th><th>XYZ Kümesi</th><th>Elenen Offsetler (Mum Saatleri)</th></tr>
+                    """
+                    
+                    for item in summary_data:
+                        body += f"""
+                        <tr>
+                          <td>{html.escape(item['filename'])}</td>
+                          <td><code>{html.escape(item['xyz_set'])}</code></td>
+                          <td style='font-size:11px;'>{html.escape(item['eliminated'])}</td>
+                        </tr>
+                        """
+                    
+                    body += """
+                      </table>
+                    </div>
+                    """
                 
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
