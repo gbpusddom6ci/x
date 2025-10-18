@@ -76,10 +76,6 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       .orbital a {{
         position: absolute;
         display: block;
-        transition: opacity 0.3s ease;
-      }}
-      .orbital a:hover {{
-        opacity: 0.8;
       }}
       .orbital a img {{
         width: auto;
