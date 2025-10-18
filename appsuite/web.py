@@ -138,6 +138,27 @@ def make_handler(backends: List[Backend], landing_bytes: bytes):
             except FileNotFoundError:
                 self.send_error(404, "Favicon not found")
 
+        def _serve_photo(self, filename: str) -> None:
+            import os
+            photo_path = os.path.join(os.path.dirname(__file__), "..", "photos", filename)
+            try:
+                with open(photo_path, "rb") as f:
+                    content = f.read()
+                if filename.endswith(".jpg") or filename.endswith(".jpeg"):
+                    content_type = "image/jpeg"
+                elif filename.endswith(".png"):
+                    content_type = "image/png"
+                else:
+                    content_type = "application/octet-stream"
+                self.send_response(200)
+                self.send_header("Content-Type", content_type)
+                self.send_header("Content-Length", str(len(content)))
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self.end_headers()
+                self.wfile.write(content)
+            except FileNotFoundError:
+                self.send_error(404, "Photo not found")
+
         def do_GET(self) -> None:  # noqa: N802
             if self.path in {"/", "/index", "/index.html"}:
                 self._serve_landing()
@@ -146,8 +167,12 @@ def make_handler(backends: List[Backend], landing_bytes: bytes):
                 self._serve_health()
                 return
             if self.path.startswith("/favicon/"):
-                filename = self.path.split("/")[-1].split("?")[0]  # Remove query params
+                filename = self.path.split("/")[-1].split("?")[0]
                 self._serve_favicon(filename)
+                return
+            if self.path.startswith("/photos/"):
+                filename = self.path.split("/")[-1].split("?")[0]
+                self._serve_photo(filename)
                 return
             for backend in backends:
                 matched, sub_path = backend.match(self.path)
