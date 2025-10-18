@@ -8,6 +8,47 @@ Bu doküman **gerçek kod implementasyonuna** dayanır ve varsayım içermez.
 
 ---
 
+## 📑 İçindekiler
+
+### Temel Bilgiler
+- [🎯 Proje Özeti](#-proje-özeti)
+- [📂 Proje Yapısı](#-proje-yapısı)
+- [📊 Veri Yapıları](#-veri-yapıları)
+- [🔑 Sequence Dizileri](#-sequence-dizileri)
+
+### Core Mantık
+- [🕐 Distorted Candle (DC) Kuralları](#-distorted-candle-dc-kuralları)
+  - [Temel DC Tanımı](#temel-dc-tanımı-tüm-uygulamalar)
+  - [Ardışık DC Yasağı](#ardışık-dc-yasağı-tüm-uygulamalar)
+  - [App-Specific DC İstisnaları](#app-specific-dc-i̇stisnaları)
+- [🎯 Offset Mantığı](#-offset-mantığı)
+- [📍 Sequence Allocation Mantığı](#-sequence-allocation-mantığı)
+
+### Özellikler
+- [🔍 IOU Analizi](#-iou-inverse-oc---uniform-sign-analizi)
+  - [IOU Kriterleri](#iou-kriterleri-5-şart)
+  - [Tolerance](#tolerance-güvenlik-payı)
+  - [XYZ Küme Analizi](#xyz-küme-analizi)
+  - [Haber Verisi](#haber-verisi-news_datajson)
+- [🔄 Converter'lar](#-converterlar)
+
+### Teknik Detaylar
+- [📝 CSV Format Desteği](#-csv-format-desteği)
+- [🎨 Web Arayüzü Detayları](#-web-arayüzü-detayları)
+- [🌐 Web Server Routes](#-web-server-routes)
+
+### Kullanım
+- [⚙️ CLI Kullanımı](#️-cli-kullanımı)
+- [🚀 Web Başlatma](#-web-başlatma)
+
+### Referans
+- [📌 Kritik İmplementasyon Notları](#-kritik-i̇mplementasyon-notları)
+- [🐛 Bilinen Limitasyonlar](#-bilinen-limitasyonlar)
+- [📚 Referans: Fonksiyon İmzaları](#-referans-fonksiyon-i̇mzaları)
+- [🎓 Örnek Kullanım Senaryoları](#-örnek-kullanım-senaryoları)
+
+---
+
 ## 🎯 Proje Özeti
 
 **x1:** Python-based forex/kripto mum analiz platformu.
