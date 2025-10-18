@@ -719,7 +719,7 @@ class App80Handler(BaseHTTPRequestHandler):
                                     else:
                                         file_xyz_data[offset]["news_free"] += 1
                                         # Track the candle that eliminated this offset
-                                        eliminated_candles[offset].append(iou.timestamp.strftime('%H:%M'))
+                                        eliminated_candles[offset].append(iou.timestamp.strftime('%m-%d %H:%M'))
                                 
                                 if not xyz_summary_table:
                                     body += f"<tr><td>{offset:+d}</td><td>{iou.seq_value}</td><td>{iou.index}</td><td>{iou.timestamp.strftime('%m-%d %H:%M')}</td><td>{html.escape(oc_fmt)}</td><td>{html.escape(prev_oc_fmt)}</td><td>{iou.prev_index}</td><td style='font-size:11px;max-width:400px;'>{html.escape(news_text)}</td></tr>"
