@@ -60,9 +60,6 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         left: 50%;
         transform: translate(-50%, -50%);
         z-index: 10;
-        border: 3px solid #4169E1;
-        padding: 25px 40px;
-        background: rgba(0, 0, 0, 0.3);
       }}
       .center-logo img {{
         width: 180px;
@@ -79,9 +76,6 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       .orbital a {{
         position: absolute;
         display: block;
-        border: 2px solid #DC143C;
-        padding: 15px 20px;
-        background: rgba(0, 0, 0, 0.3);
         transition: opacity 0.3s ease;
       }}
       .orbital a:hover {{
@@ -89,8 +83,8 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       }}
       .orbital a img {{
         width: auto;
-        height: 60px;
-        max-width: 90px;
+        height: 72px;
+        max-width: 108px;
         display: block;
       }}
       /* Position each orbital item - circular layout around center (6 items) */
@@ -106,10 +100,9 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         left: 50%;
         transform: translateX(-50%);
         text-align: center;
-        font-family: Arial, sans-serif;
-        font-size: 28px;
+        font-family: sans-serif;
+        font-size: 10px;
         font-weight: normal;
-        letter-spacing: 2px;
         color: #DC143C;
       }}
     </style>
