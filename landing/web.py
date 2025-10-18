@@ -2,134 +2,155 @@ from __future__ import annotations
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import argparse
-import html
+import os
 from typing import Dict
 
 
 def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
-    cards = []
+    # App to photo mapping
+    app_photos = {
+        "app48": "kan.jpeg",
+        "app72": "kits.jpg",
+        "app80": "penguins.jpg",
+        "app120": "romantizma.png",
+        "app321": "silkroad.jpg",
+        "news_converter": "suicide.png",
+    }
+
+    # Build orbital items
+    orbital_items = []
     for key, meta in app_links.items():
-        title = meta.get("title", key)
         url = meta.get("url", "#")
-        description = meta.get("description", "")
-        cards.append(
-            f"""
-            <article class='card'>
-              <h2>{html.escape(title)}</h2>
-              <p>{html.escape(description)}</p>
-              <a class='button' href='{html.escape(url)}' target='_blank' rel='noopener'>Uygulamayı Aç</a>
-            </article>
-            """
+        photo = app_photos.get(key, "")
+        orbital_items.append(
+            f"<a href='{url}' target='_blank' rel='noopener'><img src='/photos/{photo}' alt='{key}'></a>"
         )
 
     page = f"""<!doctype html>
-<html lang='tr'>
+<html>
   <head>
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <title>Trading Araçları | Landing Page</title>
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png?v=2">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png?v=2">
-    <link rel="shortcut icon" href="/favicon/favicon.ico?v=2">
+    <title>x1 Trading Platform</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+    <link rel="shortcut icon" href="/favicon/favicon.ico">
     <style>
-      :root {{
-        color-scheme: light dark;
-        --bg: #f5f5f5;
-        --fg: #1f1f1f;
-        --card-bg: #ffffff;
-        --border: #d9d9d9;
-        --accent: #0f62fe;
-      }}
-      @media (prefers-color-scheme: dark) {{
-        :root {{
-          --bg: #121212;
-          --fg: #f3f3f3;
-          --card-bg: #1f1f1f;
-          --border: #333333;
-        }}
-      }}
-      * {{ box-sizing: border-box; }}
+      * {{ margin: 0; padding: 0; box-sizing: border-box; }}
       body {{
-        margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        background: var(--bg);
-        color: var(--fg);
+        background: #000;
+        background-image: 
+          radial-gradient(2px 2px at 20% 30%, white, transparent),
+          radial-gradient(2px 2px at 60% 70%, white, transparent),
+          radial-gradient(1px 1px at 50% 50%, white, transparent),
+          radial-gradient(1px 1px at 80% 10%, white, transparent),
+          radial-gradient(2px 2px at 90% 60%, white, transparent),
+          radial-gradient(1px 1px at 33% 80%, white, transparent),
+          radial-gradient(1px 1px at 15% 90%, white, transparent);
+        background-size: 200px 200px, 300px 300px, 250px 250px, 350px 350px, 280px 280px, 220px 220px, 320px 320px;
+        background-position: 0 0, 40px 60px, 130px 270px, 70px 100px, 200px 150px, 250px 300px, 100px 200px;
         min-height: 100vh;
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 32px 16px;
+        justify-content: center;
+        overflow-x: hidden;
       }}
-      header {{
-        max-width: 1200px;
-        width: 100%;
-        text-align: center;
-        margin-bottom: 24px;
-      }}
-      header h1 {{ margin: 0 0 12px; font-size: 1.9rem; }}
-      header p {{ margin: 0; line-height: 1.6; }}
-      main {{
-        display: grid;
-        gap: 16px;
-        width: 100%;
-        max-width: 1200px;
-      }}
-      @media (min-width: 640px) {{
-        main {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
-      }}
-      @media (min-width: 1024px) {{
-        main {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }}
-      }}
-      @media (min-width: 1280px) {{
-        main {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }}
-      }}
-      @media (min-width: 1600px) {{
-        main {{ grid-template-columns: repeat(6, minmax(0, 1fr)); }}
-      }}
-      .card {{
-        background: var(--card-bg);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 20px;
+      .space-container {{
+        position: relative;
+        width: 800px;
+        height: 600px;
         display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        gap: 12px;
-        box-shadow: 0 4px 14px rgba(15, 17, 26, 0.08);
+        align-items: center;
+        justify-content: center;
       }}
-      .card h2 {{ margin: 0; font-size: 1.3rem; }}
-      .card p {{ margin: 0; flex-grow: 1; line-height: 1.5; font-size: 0.95rem; }}
-      .button {{
-        align-self: flex-start;
-        background: var(--accent);
-        color: white;
-        padding: 10px 16px;
+      .center-logo {{
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+      }}
+      .center-logo img {{
+        width: 280px;
+        height: auto;
         border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: filter 150ms ease-in-out, transform 150ms ease-in-out;
+        box-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
       }}
-      .button:hover {{
-        filter: brightness(1.05);
-        transform: translateY(-1px);
+      .orbital {{
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100%;
+        height: 100%;
       }}
+      .orbital a {{
+        position: absolute;
+        display: block;
+        transition: transform 0.3s ease;
+      }}
+      .orbital a:hover {{
+        transform: scale(1.15);
+        filter: brightness(1.2);
+      }}
+      .orbital a img {{
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 3px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+      }}
+      /* Position each orbital item */
+      .orbital a:nth-child(1) {{ top: -50px; left: 50%; transform: translateX(-50%); }}
+      .orbital a:nth-child(2) {{ top: 80px; right: -20px; }}
+      .orbital a:nth-child(3) {{ top: 50%; right: -60px; transform: translateY(-50%); }}
+      .orbital a:nth-child(4) {{ bottom: 80px; right: -20px; }}
+      .orbital a:nth-child(5) {{ bottom: -50px; left: 50%; transform: translateX(-50%); }}
+      .orbital a:nth-child(6) {{ bottom: 80px; left: -20px; }}
+      .orbital a:nth-child(7) {{ top: 50%; left: -60px; transform: translateY(-50%); }}
+      .orbital a:nth-child(8) {{ top: 80px; left: -20px; }}
       footer {{
-        margin-top: 32px;
-        font-size: 0.85rem;
-        opacity: 0.7;
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        font-family: Arial, sans-serif;
+        font-size: 11px;
+        color: #ff0000;
+      }}
+      footer a {{
+        color: #ff0000;
+        text-decoration: none;
+        margin: 0 8px;
+      }}
+      footer a:hover {{
+        text-decoration: underline;
+      }}
+      .copyright {{
+        margin-top: 8px;
+        color: #ff0000;
       }}
     </style>
   </head>
   <body>
-    <header>
-      <h1>Trading Araçları</h1>
-      <p>app48, app72, app80, app120, app321 ve News Converter arayüzlerine tek yerden erişin. Her kart ilgili modülü yeni sekmede açar.</p>
-    </header>
-    <main>
-      {''.join(cards)}
-    </main>
+    <div class='space-container'>
+      <div class='center-logo'>
+        <img src='/photos/lobotomy.jpg' alt='x1'>
+      </div>
+      <div class='orbital'>
+        {''.join(orbital_items)}
+      </div>
+    </div>
     <footer>
-      Uygulamaları açmadan önce ilgili web servislerini çalıştırmayı unutmayın.
+      <div>
+        <a href='#'>Privacy Policy</a>
+        <a href='#'>Terms</a>
+        <a href='#'>Accessibility</a>
+        <a href='#'>AdChoices</a>
+      </div>
+      <div class='copyright'>x1 Trading Platform. All rights reserved © 2025</div>
     </footer>
   </body>
 </html>"""
@@ -149,9 +170,28 @@ def make_handler(html_bytes: bytes):
                 self.send_header("Content-Type", "text/plain; charset=utf-8")
                 self.end_headers()
                 self.wfile.write(b"ok")
+            elif self.path.startswith("/photos/"):
+                filename = self.path.split("/")[-1].split("?")[0]
+                photos_path = os.path.join(os.path.dirname(__file__), "..", "photos", filename)
+                try:
+                    with open(photos_path, "rb") as f:
+                        content = f.read()
+                    if filename.endswith(".jpg") or filename.endswith(".jpeg"):
+                        content_type = "image/jpeg"
+                    elif filename.endswith(".png"):
+                        content_type = "image/png"
+                    else:
+                        content_type = "application/octet-stream"
+                    self.send_response(200)
+                    self.send_header("Content-Type", content_type)
+                    self.send_header("Content-Length", str(len(content)))
+                    self.send_header("Cache-Control", "public, max-age=86400")
+                    self.end_headers()
+                    self.wfile.write(content)
+                except FileNotFoundError:
+                    self.send_error(404, "Photo not found")
             elif self.path.startswith("/favicon/"):
-                import os
-                filename = self.path.split("/")[-1].split("?")[0]  # Remove query params
+                filename = self.path.split("/")[-1].split("?")[0]
                 favicon_path = os.path.join(os.path.dirname(__file__), "..", "favicon", filename)
                 try:
                     with open(favicon_path, "rb") as f:
