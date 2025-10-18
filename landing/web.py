@@ -56,13 +56,13 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       }}
       .center-logo {{
         position: absolute;
-        top: 40%;
+        top: 30%;
         left: 50%;
         transform: translate(-50%, -50%);
         z-index: 10;
       }}
       .center-logo img {{
-        width: 280px;
+        width: 140px;
         height: auto;
         display: block;
       }}
