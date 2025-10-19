@@ -85,11 +85,11 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       }}
       /* Position each orbital item - balanced asymmetric layout around center (6 items) */
       .orbital a:nth-child(1) {{ top: 150px; left: 50%; transform: translateX(-50%); }}
-      .orbital a:nth-child(2) {{ top: 280px; right: 200px; }}
-      .orbital a:nth-child(3) {{ top: 40%; right: 150px; transform: translateY(-50%); }}
-      .orbital a:nth-child(4) {{ top: 55%; left: 200px; }}
-      .orbital a:nth-child(5) {{ bottom: 150px; left: 450px; }}
-      .orbital a:nth-child(6) {{ bottom: 200px; right: 350px; }}
+      .orbital a:nth-child(2) {{ top: 250px; right: 250px; }}
+      .orbital a:nth-child(3) {{ top: 35%; right: 180px; transform: translateY(-50%); }}
+      .orbital a:nth-child(4) {{ top: 60%; left: 220px; }}
+      .orbital a:nth-child(5) {{ bottom: 180px; left: 480px; }}
+      .orbital a:nth-child(6) {{ bottom: 150px; right: 400px; }}
       footer {{
         position: fixed;
         bottom: 40px;
