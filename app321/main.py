@@ -151,6 +151,11 @@ def compute_dc_flags(candles: List[Candle]) -> List[Optional[bool]]:
         cur = candles[i]
         within = min(prev.open, prev.close) <= cur.close <= max(prev.open, prev.close)
         cond = cur.high <= prev.high and cur.low >= prev.low and within
+        
+        # Pazar HARİÇ, 20:00 mumu ASLA DC olamaz
+        if cur.ts.weekday() != 6 and cur.ts.hour == 20 and cur.ts.minute == 0:
+            cond = False
+        
         prev_flag = bool(flags[i - 1]) if flags[i - 1] is not None else False
         if prev_flag and cond:
             cond = False
@@ -657,6 +662,10 @@ def analyze_iou(
             
             candle = candles[idx]
             prev_candle = candles[idx - 1]
+            
+            # 18:00, 19:00 ve 20:00 mumları asla IOU olamaz
+            if candle.ts.hour in [18, 19, 20] and candle.ts.minute == 0:
+                continue  # IOU olamaz
             
             oc = candle.close - candle.open
             prev_oc = prev_candle.close - prev_candle.open

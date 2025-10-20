@@ -146,8 +146,14 @@ def compute_dc_flags(candles: List[Candle]) -> List[Optional[bool]]:
         cur = candles[i]
         within = min(prev.open, prev.close) <= cur.close <= max(prev.open, prev.close)
         cond = cur.high <= prev.high and cur.low >= prev.low and within
+        
+        # 18:00 mumu ASLA DC olamaz (Pazar dahil)
         if cur.ts.hour == DEFAULT_START_TOD.hour and cur.ts.minute == DEFAULT_START_TOD.minute:
             cond = False
+        # 2 Pazar (her iki Pazar) HARİÇ: 20:00 mumu DC olamaz
+        elif cur.ts.hour == 20 and cur.ts.minute == 0:
+            if cur.ts.weekday() != 6:  # Pazar değilse
+                cond = False
         else:
             is_week_close = False
             if cur.ts.hour == 16 and cur.ts.minute == 0:
