@@ -817,6 +817,11 @@ def analyze_iou(
             candle = candles[idx]
             prev_candle = candles[idx - 1]
             
+            # 18:00, 18:48 ve 19:36 mumları IOU olamaz
+            if (candle.ts.hour == 18 and candle.ts.minute in [0, 48]) or \
+               (candle.ts.hour == 19 and candle.ts.minute == 36):
+                continue  # IOU olamaz
+            
             oc = candle.close - candle.open
             prev_oc = prev_candle.close - prev_candle.open
             

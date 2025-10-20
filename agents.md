@@ -578,6 +578,18 @@ if not ((oc > 0 and prev_oc > 0) or (oc < 0 and prev_oc < 0)):
     continue  # Zıt işaret → IOU değil
 ```
 
+### App-Specific IOU İstisnaları
+
+**app48 (48m):**
+```python
+# 18:00, 18:48 ve 19:36 mumları IOU olamaz
+if (candle.ts.hour == 18 and candle.ts.minute in [0, 48]) or \
+   (candle.ts.hour == 19 and candle.ts.minute == 36):
+    continue  # IOU olamaz
+```
+
+**Diğer uygulamalar:** Saat bazlı istisna yok.
+
 ### Tolerance (Güvenlik Payı)
 
 **Varsayılan:** `0.005`
