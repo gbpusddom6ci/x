@@ -35,18 +35,19 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         speed_s = 28 + (i % 5) * 6  # seconds
         delay_s = - (angle / 360.0) * speed_s
         hue = (i * 53) % 360
-        orbital_items.append(
-            (
-                "<div class='orb' style="
-                f"--radius:{radius:.0f}px; --speed:{speed_s}s; animation-delay:{delay_s:.3f}s;">
-                "<div class='arm'>"
-                f"<a href='{url}' title='{title} — {desc}' target='_blank' rel='noopener'>"
-                f"<img style='filter:hue-rotate({hue}deg) saturate(1.2) contrast(1.1);' src='/photos/{photo}' alt='{key}'>"
-                "</a>"
-                "</div>"
-                "</div>"
-            )
+        item = (
+            f"<div class='orb' style=\"--radius:{radius:.0f}px; --speed:{speed_s}s; animation-delay:{delay_s:.3f}s;\">"
+            f"<div class='arm'>"
+            f"<a href='{url}' title='{title} — {desc}' target='_blank' rel='noopener'>"
+            f"<img style='filter:hue-rotate({hue}deg) saturate(1.2) contrast(1.1);' src='/photos/{photo}' alt='{key}'>"
+            f"</a>"
+            f"</div>"
+            f"</div>"
         )
+        orbital_items.append(item)
+
+    # Pre-render orbit HTML safely (avoid join type issues)
+    orbits_html = "".join(str(x) for x in orbital_items)
 
     page = f"""<!doctype html>
 <html>
@@ -172,7 +173,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
           <span>gateway</span>
         </div>
         <div class='galaxy'>
-          {''.join(orbital_items)}
+          {orbits_html}
         </div>
       </div>
     </div>
