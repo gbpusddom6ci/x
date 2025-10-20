@@ -152,12 +152,10 @@ def compute_dc_flags(candles: List[Candle]) -> List[Optional[bool]]:
         within = min(prev.open, prev.close) <= cur.close <= max(prev.open, prev.close)
         cond = cur.high <= prev.high and cur.low >= prev.low and within
         
-        # 18:00 mumu ASLA DC olamaz (hafta başlangıcı - Pazar dahil, 2. hafta için)
-        if cur.ts.hour == 18 and cur.ts.minute == 0:
-            cond = False
-        # Pazar hariç, 19:12 ve 20:24 mumları DC olamaz (günlük cycle noktaları)
-        elif cur.ts.weekday() != 6:  # Pazar değilse (6 = Sunday)
-            if (cur.ts.hour == 19 and cur.ts.minute == 12) or \
+        # Pazar HARİÇ: 18:00, 19:12 ve 20:24 mumları DC olamaz (günlük cycle noktaları)
+        if cur.ts.weekday() != 6:  # Pazar değilse (6 = Sunday)
+            if (cur.ts.hour == 18 and cur.ts.minute == 0) or \
+               (cur.ts.hour == 19 and cur.ts.minute == 12) or \
                (cur.ts.hour == 20 and cur.ts.minute == 24):
                 cond = False
         
