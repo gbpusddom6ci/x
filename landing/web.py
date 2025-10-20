@@ -97,21 +97,13 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       html, body {{ height: 100%; }}
       body {{
         font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-        background: #03030a;
+        background: #000;
         color: #eee;
         overflow: hidden;
       }}
 
-      /* Layered surreal background */
-      .bg {{
-        position: fixed; inset: 0; pointer-events: none; z-index: 0;
-        background:
-          radial-gradient(120% 120% at calc(10% + 20px*var(--mx)) calc(0% + 20px*var(--my)), rgba(0,229,255,0.10), transparent 45%),
-          radial-gradient(120% 120% at calc(100% - 40px*var(--mx)) calc(10% + 40px*var(--my)), rgba(56,189,248,0.08), transparent 50%),
-          radial-gradient(140% 140% at calc(0% + 40px*var(--mx)) calc(100% - 40px*var(--my)), rgba(167,139,250,0.07), transparent 55%),
-          linear-gradient(180deg, var(--void-0), var(--void-1) 55%, var(--void-2));
-        filter: saturate(1.25);
-      }}
+      /* Plain background container (no hue/gradients) */
+      .bg {{ position: fixed; inset: 0; pointer-events: none; z-index: 0; background: none; }}
 
       /* Stars overlay */
       .stars {{ position: fixed; inset: 0; background: url('/stars.gif') repeat; opacity: .35; mix-blend-mode: screen; pointer-events: none; z-index: 1; }}
