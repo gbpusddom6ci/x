@@ -7,7 +7,11 @@ from typing import Dict
 
 
 def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
-    # App to photo mapping
+    # Deliberately strange, surreal gateway UI built with pure HTML/CSS/JS.
+    # No external assets beyond photos/, favicon/, stars.gif.
+    import math
+
+    # App to photo mapping (kept from previous design)
     app_photos = {
         "app48": "kan.jpeg",
         "app72": "kits.jpg",
@@ -17,13 +21,31 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         "news_converter": "suicide.png",
     }
 
-    # Build orbital items
-    orbital_items = []
-    for key, meta in app_links.items():
+    # Build orbital items around a "wormhole" with individual speeds/offsets
+    n = max(1, len(app_links))
+    orbital_items: list[str] = []
+    for i, (key, meta) in enumerate(app_links.items()):
         url = meta.get("url", "#")
+        title = meta.get("title", key)
+        desc = meta.get("description", "")
         photo = app_photos.get(key, "")
+        # Spread angles evenly; vary radius and speed in a pseudo-organic way
+        angle = (360.0 * i) / n
+        radius = 280 + 80 * math.sin((i + 1) * 1.7)
+        speed_s = 28 + (i % 5) * 6  # seconds
+        delay_s = - (angle / 360.0) * speed_s
+        hue = (i * 53) % 360
         orbital_items.append(
-            f"<a href='{url}' target='_blank' rel='noopener'><img src='/photos/{photo}' alt='{key}'></a>"
+            (
+                "<div class='orb' style="
+                f"--radius:{radius:.0f}px; --speed:{speed_s}s; animation-delay:{delay_s:.3f}s;">
+                "<div class='arm'>"
+                f"<a href='{url}' title='{title} — {desc}' target='_blank' rel='noopener'>"
+                f"<img style='filter:hue-rotate({hue}deg) saturate(1.2) contrast(1.1);' src='/photos/{photo}' alt='{key}'>"
+                "</a>"
+                "</div>"
+                "</div>"
+            )
         )
 
     page = f"""<!doctype html>
@@ -31,88 +53,153 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
   <head>
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <title>x1 Trading Platform</title>
+    <title>x1 • Surreal Gateway</title>
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
     <link rel="shortcut icon" href="/favicon/favicon.ico">
     <style>
+      :root {{
+        --mx: 0; /* mouse -0.5..+0.5 */
+        --my: 0;
+        --twist: 18deg;
+        --glow: 0.6;
+        --portal-size: min(60vmin, 540px);
+        --portal-thick: 10vmin;
+        --accent: 312deg;
+      }}
       * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+      html, body {{ height: 100%; }}
       body {{
-        background: #000 url('/stars.gif') repeat;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        overflow-x: hidden;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        background: #03030a;
+        color: #eee;
+        overflow: hidden;
       }}
-      .space-container {{
-        position: relative;
-        width: 1200px;
-        height: 900px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+
+      /* Layered surreal background */
+      .bg {{
+        position: fixed; inset: 0; pointer-events: none; z-index: 0;
+        background:
+          radial-gradient(1200px 800px at calc(50% + 40px*var(--mx)) calc(50% + 40px*var(--my)), rgba(219,85,255,0.12), transparent 60%),
+          radial-gradient(800px 800px at calc(50% - 120px*var(--mx)) calc(50% - 120px*var(--my)), rgba(0,255,213,0.10), transparent 55%),
+          conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,0.05), transparent 25%, rgba(255,255,255,0.05) 35%, transparent 60%, rgba(255,255,255,0.05));
+        filter: saturate(1.3) hue-rotate(calc(var(--accent)));
+        animation: hue 18s linear infinite;
       }}
-      .center-logo {{
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 10;
+      @keyframes hue {{ to {{ filter: saturate(1.3) hue-rotate(calc(var(--accent) + 360deg)); }} }}
+
+      /* Stars overlay */
+      .stars {{ position: fixed; inset: 0; background: url('/stars.gif') repeat; opacity: .35; mix-blend-mode: screen; pointer-events: none; z-index: 1; }}
+
+      .scene {{ position: relative; z-index: 2; height: 100%; display: grid; place-items: center; }}
+
+      /* Central wormhole */
+      .portal {{
+        position: relative; width: var(--portal-size); height: var(--portal-size);
+        border-radius: 50%;
+        background:
+          radial-gradient(closest-side, rgba(255,255,255,0.12), rgba(0,0,0,0.0) 60%),
+          conic-gradient(from 0deg, rgba(255,0,102,0.3), rgba(0,255,204,0.25), rgba(90,0,255,0.3), rgba(255,0,102,0.3));
+        box-shadow:
+          0 0 60px 20px rgba(255,0,153,0.07) inset,
+          0 0 140px rgba(0,255,255,0.10);
+        filter: url(#wobble) blur(0.2px) contrast(1.1);
+        transform: perspective(900px) rotateX(calc(var(--my) * var(--twist))) rotateY(calc(var(--mx) * -1 * var(--twist)));
+        animation: swirl 30s linear infinite;
       }}
-      .center-logo img {{
-        width: 180px;
-        height: auto;
-        display: block;
+      @keyframes swirl {{ from {{ transform: perspective(900px) rotateX(calc(var(--my) * var(--twist))) rotateY(calc(var(--mx) * -1 * var(--twist))) rotate(0deg); }} to {{ transform: perspective(900px) rotateX(calc(var(--my) * var(--twist))) rotateY(calc(var(--mx) * -1 * var(--twist))) rotate(360deg); }} }}
+
+      .halo {{
+        position: absolute; inset: calc(var(--portal-thick) * -0.15);
+        border-radius: 50%;
+        background: conic-gradient(from 90deg, rgba(255,255,255,0.22), rgba(0,0,0,0));
+        filter: blur(16px) opacity(.8);
+        mix-blend-mode: screen;
+        pointer-events: none;
       }}
-      .orbital {{
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+
+      .glitch {{
+        position: absolute; inset: 0; display: grid; place-items: center; text-transform: uppercase;
+        font-size: clamp(28px, 7vmin, 92px); letter-spacing: .12em; font-weight: 800; color: #e7e7e7;
+        mix-blend-mode: difference; text-shadow: 0 0 10px rgba(255,255,255,0.2);
       }}
-      .orbital a {{
-        position: absolute;
-        display: block;
+      .glitch span {{ position: absolute; }}
+      .glitch span:nth-child(1) {{ transform: translate(-2px,-1px); color: rgba(255,0,128,.9); filter: blur(.2px); }}
+      .glitch span:nth-child(2) {{ transform: translate(2px,1px); color: rgba(0,255,230,.9); filter: blur(.2px); }}
+      .glitch span:nth-child(3) {{ position: relative; color: #fafafa; }}
+
+      /* Galaxy of orbits */
+      .galaxy {{ position: absolute; inset: -2%; }}
+      .orb {{
+        position: absolute; top: 50%; left: 50%;
+        transform: translate(-50%,-50%) rotate(0deg);
+        animation: revolve var(--speed) linear infinite;
+        will-change: transform;
       }}
-      .orbital a img {{
-        width: auto;
-        height: 96px;
-        max-width: 144px;
-        display: block;
+      .arm {{
+        transform: translateX(var(--radius));
+        filter: url(#wobble) saturate(1.05);
       }}
-      /* Position each orbital item - balanced asymmetric layout around center (6 items) */
-      .orbital a:nth-child(1) {{ top: 150px; left: 50%; transform: translateX(-50%); }}
-      .orbital a:nth-child(2) {{ top: 250px; right: 250px; }}
-      .orbital a:nth-child(3) {{ top: 35%; right: 180px; transform: translateY(-50%); }}
-      .orbital a:nth-child(4) {{ top: 60%; left: 220px; }}
-      .orbital a:nth-child(5) {{ bottom: 180px; left: 480px; }}
-      .orbital a:nth-child(6) {{ bottom: 150px; right: 400px; }}
+      .orb a {{ display: inline-block; transform: rotate(0deg); }}
+      .orb img {{
+        height: clamp(72px, 10vmin, 140px);
+        width: auto; display: block; border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06) inset;
+        mix-blend-mode: screen;
+        animation: bob 4s ease-in-out infinite alternate;
+      }}
+      @keyframes revolve {{ to {{ transform: translate(-50%,-50%) rotate(360deg); }} }}
+      @keyframes bob {{
+        0% {{ filter: drop-shadow(0 0 0 rgba(255,0,200,0.0)); transform: translateY(-4px) rotate(-1deg); }}
+        100% {{ filter: drop-shadow(0 0 16px rgba(0,255,240,0.16)); transform: translateY(4px) rotate(1deg); }}
+      }}
+
       footer {{
-        position: fixed;
-        bottom: 40px;
-        left: 50%;
-        transform: translateX(-50%);
-        text-align: center;
-        font-family: sans-serif;
-        font-size: 10px;
-        font-weight: normal;
-        color: #DC143C;
+        position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+        text-align: center; font-size: 11px; color: #DC143C; letter-spacing: .2em; z-index: 3;
       }}
     </style>
   </head>
   <body>
-    <div class='space-container'>
-      <div class='center-logo'>
-        <img src='/photos/lobotomy.jpg' alt='x1'>
-      </div>
-      <div class='orbital'>
-        {''.join(orbital_items)}
+    <div class='bg'></div>
+    <div class='stars'></div>
+    <div class='scene'>
+      <div class='portal'>
+        <div class='halo'></div>
+        <div class='glitch' aria-label='x1 gateway'>
+          <span>x1</span>
+          <span>x1</span>
+          <span>gateway</span>
+        </div>
+        <div class='galaxy'>
+          {''.join(orbital_items)}
+        </div>
       </div>
     </div>
     <footer>marketmalware</footer>
+
+    <!-- SVG filters for wobble/distortion (no external deps) -->
+    <svg width="0" height="0" style="position:absolute">
+      <filter id="wobble">
+        <feTurbulence type="fractalNoise" baseFrequency="0.98" numOctaves="1" seed="7" result="turb"/>
+        <feDisplacementMap in="SourceGraphic" in2="turb" scale="2" xChannelSelector="R" yChannelSelector="G">
+          <animate attributeName="scale" values="1;4;1" dur="8s" repeatCount="indefinite"/>
+        </feDisplacementMap>
+      </filter>
+    </svg>
+
+    <script>
+      // Subtle mouse parallax
+      (function() {{
+        const r = document.documentElement;
+        window.addEventListener('mousemove', (e) => {{
+          const x = (e.clientX / window.innerWidth) - 0.5;
+          const y = (e.clientY / window.innerHeight) - 0.5;
+          r.style.setProperty('--mx', x.toFixed(3));
+          r.style.setProperty('--my', y.toFixed(3));
+        }});
+      }})();
+    </script>
   </body>
 </html>"""
     return page.encode("utf-8")
