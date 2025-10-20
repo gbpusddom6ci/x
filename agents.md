@@ -229,16 +229,12 @@ Her uygulamanın **farklı** DC istisna kuralları vardır:
 #### app321 (60m)
 
 ```python
-# Pazar HARİÇ, 13:00 - 20:00 arası DC SAYILMAZ (20:00 dahil değil)
-if ts.weekday() != 6 and time(13, 0) <= ts.time() < time(20, 0):
-    return False  # DC değil (istisna)
+# Pazar HARİÇ, 20:00 mumu ASLA DC olamaz
+if cur.ts.weekday() != 6 and cur.ts.hour == 20 and cur.ts.minute == 0:
+    cond = False
 ```
 
-**Not:** `compute_sequence_allocations` içinde ayrıca:
-```python
-# while döngüsünde 13:00 - 20:00 kontrolü (20:00 dahil)
-dc_exception = (tod >= time(13, 0)) and (tod <= time(20, 0))
-```
+**Not:** `compute_sequence_allocations` içinde 13:00-20:00 DC exception kontrolü de vardır (sayımda).
 
 #### app48 (48m)
 
