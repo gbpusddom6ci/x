@@ -141,17 +141,6 @@ def find_start_index(candles: List[Candle], start_tod: dtime) -> Tuple[int, str]
 
 def compute_dc_flags(candles: List[Candle]) -> List[Optional[bool]]:
     flags: List[Optional[bool]] = [None] * len(candles)
-    
-    # Detect 2nd Sunday in data (2 weeks of data)
-    sundays = []
-    for c in candles:
-        if c.ts.weekday() == 6:  # Sunday
-            date = c.ts.date()
-            if date not in sundays:
-                sundays.append(date)
-    
-    second_sunday = sundays[1] if len(sundays) >= 2 else None
-    
     for i in range(1, len(candles)):
         prev = candles[i - 1]
         cur = candles[i]
@@ -161,9 +150,9 @@ def compute_dc_flags(candles: List[Candle]) -> List[Optional[bool]]:
         # 18:00 mumu ASLA DC olamaz (Pazar dahil)
         if cur.ts.hour == DEFAULT_START_TOD.hour and cur.ts.minute == DEFAULT_START_TOD.minute:
             cond = False
-        # 2 Pazar HARİÇ: 20:00 mumu DC olamaz
+        # 2 Pazar (her iki Pazar) HARİÇ: 20:00 mumu DC olamaz
         elif cur.ts.hour == 20 and cur.ts.minute == 0:
-            if not (second_sunday and cur.ts.date() == second_sunday):
+            if cur.ts.weekday() != 6:  # Pazar değilse
                 cond = False
         else:
             is_week_close = False

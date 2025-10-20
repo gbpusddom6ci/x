@@ -313,9 +313,9 @@ if is_week_close:
 if cur.ts.hour == 18 and cur.ts.minute == 0:
     cond = False
 
-# 2. 2 Pazar HARİÇ: 20:00 mumu DC olamaz
+# 2. 2 Pazar (her iki Pazar) HARİÇ: 20:00 mumu DC olamaz
 elif cur.ts.hour == 20 and cur.ts.minute == 0:
-    if not (second_sunday and cur.ts.date() == second_sunday):
+    if cur.ts.weekday() != 6:  # Pazar değilse
         cond = False
 
 # 3. Hafta kapanış mumu (16:00) DC olamaz (Cuma)
@@ -660,20 +660,9 @@ ts = candle.ts
 if ts.hour == 18 and ts.minute == 0:
     continue  # IOU olamaz
 
-# 2 Pazar HARİÇ: 20:00 mumu IOU olamaz
-# 2 haftalık veride 2. Pazar günü tespit edilir
-sundays = []
-for c in candles:
-    if c.ts.weekday() == 6:  # Sunday
-        date = c.ts.date()
-        if date not in sundays:
-            sundays.append(date)
-
-second_sunday = sundays[1] if len(sundays) >= 2 else None
-
-# IOU kontrolü sırasında
+# 2 Pazar (her iki Pazar) HARİÇ: 20:00 mumu IOU olamaz
 if ts.hour == 20 and ts.minute == 0:
-    if not (second_sunday and ts.date() == second_sunday):
+    if ts.weekday() != 6:  # Pazar değilse
         continue  # IOU olamaz
 
 # Cuma 16:00 mumu ASLA IOU olamaz (tüm Cumalar)
