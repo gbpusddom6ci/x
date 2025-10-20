@@ -253,14 +253,17 @@ if first_day and cur.ts.date() != first_day:
 #### app72 (72m)
 
 ```python
-# 1. Pazar HARİÇ: 18:00, 19:12 ve 20:24 mumları DC olamaz (günlük cycle noktaları)
-if cur.ts.weekday() != 6:
-    if (cur.ts.hour == 18 and cur.ts.minute == 0) or \
-       (cur.ts.hour == 19 and cur.ts.minute == 12) or \
+# 1. 18:00 mumu ASLA DC olamaz (Pazar dahil)
+if cur.ts.hour == 18 and cur.ts.minute == 0:
+    cond = False
+
+# 2. Pazar HARİÇ: 19:12 ve 20:24 DC olamaz (günlük cycle noktaları)
+elif cur.ts.weekday() != 6:
+    if (cur.ts.hour == 19 and cur.ts.minute == 12) or \
        (cur.ts.hour == 20 and cur.ts.minute == 24):
         cond = False
 
-# 2. Cuma 16:48 ASLA DC olamaz (1. hafta bitimindeki son mum)
+# 3. Cuma 16:48 ASLA DC olamaz (1. hafta bitimindeki son mum)
 if cur.ts.weekday() == 4 and cur.ts.hour == 16 and cur.ts.minute == 48:
     cond = False
 
