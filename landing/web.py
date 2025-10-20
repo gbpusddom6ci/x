@@ -52,6 +52,20 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
     # Pre-render orbit HTML safely (avoid join type issues)
     orbits_html = "".join(str(x) for x in orbital_items)
 
+    # Build floating DVD-style app items (anchors with images)
+    dvd_items: list[str] = []
+    for key, meta in app_links.items():
+        url = meta.get("url", "#")
+        title = meta.get("title", key)
+        desc = meta.get("description", "")
+        photo = app_photos.get(key, "")
+        dvd_items.append(
+            f"<a class='dvd' href='{url}' title='{title} — {desc}' target='_blank' rel='noopener'>"
+            f"<img src='/photos/{photo}' alt='{key}'>"
+            f"</a>"
+        )
+    dvds_html = "".join(dvd_items)
+
     page = f"""<!doctype html>
 <html>
   <head>
@@ -100,9 +114,14 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       }}
 
       /* Stars overlay */
-      .stars {{ position: fixed; inset: 0; background: url('/stars.gif') repeat; opacity: .35; mix-blend-mode: screen; pointer-events: none; z-index: 1; }}
+      .stars { position: fixed; inset: 0; background: url('/stars.gif') repeat; opacity: .35; mix-blend-mode: screen; pointer-events: none; z-index: 1; }
 
-      .scene {{ position: relative; z-index: 2; height: 100%; display: grid; place-items: center; }}
+      /* DVD screensaver stage */
+      .stage { position: fixed; inset: 0; overflow: hidden; z-index: 2; }
+      .dvd { position: absolute; display: block; will-change: transform; }
+      .dvd img { height: 96px; width: auto; display: block; filter: drop-shadow(0 8px 18px rgba(0,0,0,0.45)) drop-shadow(0 0 10px rgba(255,255,255,0.07)); }
+
+      .scene { position: relative; z-index: 2; height: 100%; display: grid; place-items: stretch; }
 
       /* Central wormhole */
       .portal {{
@@ -186,24 +205,12 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
     <div class='bg'></div>
     <div class='stars'></div>
     <div class='scene'>
-      <div class='portal'>
-        <div class='halo'></div>
-        <div class='rings'>
-          <div class='ring r1'></div>
-          <div class='ring r2'></div>
-          <div class='ring r3'></div>
-          <div class='ring r4'></div>
-        </div>
-        <div class='glitch' aria-label='malw'>
-          <span>malw</span>
-          <span>malw</span>
-          <span>malw</span>
-          <span>malw</span>
-        </div>
-        <div class='galaxy'>
-          {orbits_html}
-        </div>
+      <!-- DVD-style floating apps -->
+      <div id='stage' class='stage'>
+        {dvds_html}
       </div>
+      <!-- Hide old portal content entirely -->
+      <div class='portal' style='display:none'></div>
     </div>
     <footer>marketmalware</footer>
 
@@ -218,7 +225,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
     </svg>
 
     <script>
-      // Subtle mouse parallax
+      // Subtle mouse parallax (keeps the stars reactive)
       (function() {{
         const r = document.documentElement;
         window.addEventListener('mousemove', (e) => {{
@@ -227,6 +234,53 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
           r.style.setProperty('--mx', x.toFixed(3));
           r.style.setProperty('--my', y.toFixed(3));
         }});
+      }})();
+
+      // DVD screensaver-like bouncing for app icons
+      (function() {{
+        const stage = document.getElementById('stage');
+        if (!stage) return;
+        const nodes = Array.from(stage.querySelectorAll('.dvd'));
+        // Ensure predictable size for measurement
+        function sizeOf(el) {{ return {{ w: el.offsetWidth || 100, h: el.offsetHeight || 80 }}; }}
+        let W = stage.clientWidth, H = stage.clientHeight;
+        const items = nodes.map((el, i) => {{
+          const s = sizeOf(el);
+          const ang = Math.random() * Math.PI * 2;
+          const speed = 90 + Math.random() * 110; // px/s
+          return {{ el, x: Math.random() * Math.max(1, W - s.w), y: Math.random() * Math.max(1, H - s.h), w: s.w, h: s.h, vx: Math.cos(ang) * speed, vy: Math.sin(ang) * speed }};
+        }});
+
+        function layout() {{
+          W = stage.clientWidth; H = stage.clientHeight;
+          // If any item has zero size (images not loaded yet), update sizes
+          items.forEach(it => {{
+            const s = sizeOf(it.el);
+            if (s.w && s.h) {{ it.w = s.w; it.h = s.h; }}
+            it.x = Math.max(0, Math.min(it.x, Math.max(0, W - it.w)));
+            it.y = Math.max(0, Math.min(it.y, Math.max(0, H - it.h)));
+          }});
+        }}
+        window.addEventListener('resize', layout);
+        layout();
+
+        let last = performance.now();
+        function tick(now) {{
+          const dt = Math.min(0.05, (now - last) / 1000); // clamp 50ms
+          last = now;
+          for (const it of items) {{
+            it.x += it.vx * dt; it.y += it.vy * dt;
+            // Bounce X
+            if (it.x <= 0 && it.vx < 0) {{ it.x = 0; it.vx = -it.vx; }}
+            if (it.x + it.w >= W && it.vx > 0) {{ it.x = W - it.w; it.vx = -it.vx; }}
+            // Bounce Y
+            if (it.y <= 0 && it.vy < 0) {{ it.y = 0; it.vy = -it.vy; }}
+            if (it.y + it.h >= H && it.vy > 0) {{ it.y = H - it.h; it.vy = -it.vy; }}
+            it.el.style.transform = `translate3d(${it.x}px, ${it.y}px, 0)`;
+          }}
+          requestAnimationFrame(tick);
+        }}
+        requestAnimationFrame(tick);
       }})();
     </script>
   </body>
