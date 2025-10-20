@@ -107,7 +107,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       /* DVD screensaver stage */
       .stage {{ position: fixed; inset: 0; overflow: hidden; z-index: 2; }}
       .dvd {{ position: absolute; display: block; will-change: transform; }}
-      .dvd img {{ height: 96px; width: auto; display: block; transform-origin: 50% 50%; will-change: transform; animation: spin 16s linear infinite; }}
+      .dvd img {{ height: 96px; width: auto; display: block; transform-origin: 50% 50%; will-change: transform; animation: spin 8s linear infinite; }}
       @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
 
       .scene {{ position: relative; z-index: 2; height: 100%; display: grid; place-items: stretch; }}
