@@ -584,7 +584,14 @@ if (candle.ts.hour == 18 and candle.ts.minute in [0, 48]) or \
     continue  # IOU olamaz
 ```
 
-**Diğer uygulamalar:** Saat bazlı istisna yok.
+**app321 (60m):**
+```python
+# 18:00, 19:00 ve 20:00 mumları asla IOU olamaz
+if candle.ts.hour in [18, 19, 20] and candle.ts.minute == 0:
+    continue  # IOU olamaz
+```
+
+**Diğer uygulamalar (app72, app80, app120):** Saat bazlı IOU istisnası yok.
 
 ### Tolerance (Güvenlik Payı)
 
