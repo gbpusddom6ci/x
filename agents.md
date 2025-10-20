@@ -309,11 +309,16 @@ if is_week_close:
 #### app120 (120m)
 
 ```python
-# 1. 18:00 mumu DC olamaz
+# 1. 18:00 mumu ASLA DC olamaz (Pazar dahil)
 if cur.ts.hour == 18 and cur.ts.minute == 0:
     cond = False
 
-# 2. Hafta kapanış mumu (16:00) DC olamaz
+# 2. 2 Pazar HARİÇ: 20:00 mumu DC olamaz
+elif cur.ts.hour == 20 and cur.ts.minute == 0:
+    if not (second_sunday and cur.ts.date() == second_sunday):
+        cond = False
+
+# 3. Hafta kapanış mumu (16:00) DC olamaz (Cuma)
 # Bir sonraki mumla arasında >120dk gap varsa kapanış sayılır
 if cur.ts.hour == 16 and cur.ts.minute == 0:
     if i + 1 >= len(candles):
@@ -648,7 +653,33 @@ if ts.weekday() == 4 and ts.hour == 16 and ts.minute == 40:
     continue  # IOU olamaz
 ```
 
-**Diğer uygulamalar (app120):** Saat bazlı IOU istisnası yok.
+**app120 (120m):**
+```python
+# 18:00 mumu ASLA IOU olamaz (Pazar dahil)
+ts = candle.ts
+if ts.hour == 18 and ts.minute == 0:
+    continue  # IOU olamaz
+
+# 2 Pazar HARİÇ: 20:00 mumu IOU olamaz
+# 2 haftalık veride 2. Pazar günü tespit edilir
+sundays = []
+for c in candles:
+    if c.ts.weekday() == 6:  # Sunday
+        date = c.ts.date()
+        if date not in sundays:
+            sundays.append(date)
+
+second_sunday = sundays[1] if len(sundays) >= 2 else None
+
+# IOU kontrolü sırasında
+if ts.hour == 20 and ts.minute == 0:
+    if not (second_sunday and ts.date() == second_sunday):
+        continue  # IOU olamaz
+
+# Cuma 16:00 mumu ASLA IOU olamaz (tüm Cumalar)
+if ts.weekday() == 4 and ts.hour == 16 and ts.minute == 0:
+    continue  # IOU olamaz
+```
 
 ### Tolerance (Güvenlik Payı)
 

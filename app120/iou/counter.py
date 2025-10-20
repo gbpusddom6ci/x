@@ -329,6 +329,16 @@ def analyze_iou(
     base_idx, _ = find_start_index(candles, start_tod)
     dc_flags = compute_dc_flags(candles)
     
+    # Detect 2nd Sunday in data (2 weeks of data)
+    sundays = []
+    for c in candles:
+        if c.ts.weekday() == 6:  # Sunday
+            date = c.ts.date()
+            if date not in sundays:
+                sundays.append(date)
+    
+    second_sunday = sundays[1] if len(sundays) >= 2 else None
+    
     # Use FULL sequence for allocation, then filter for IOU analysis
     seq_values_full = SEQUENCES_FULL[sequence]
     seq_values_filtered = SEQUENCES_FILTERED[sequence]
@@ -398,6 +408,20 @@ def analyze_iou(
             
             candle = candles[idx]
             prev_candle = candles[idx - 1]
+            
+            # IOU restriction: 18:00 cannot be IOU (all days)
+            ts = candle.ts
+            if ts.hour == 18 and ts.minute == 0:
+                continue  # Cannot be IOU
+            
+            # IOU restriction: 20:00 cannot be IOU (except 2nd Sunday)
+            if ts.hour == 20 and ts.minute == 0:
+                if not (second_sunday and ts.date() == second_sunday):
+                    continue  # Cannot be IOU
+            
+            # IOU restriction: Friday 16:00 cannot be IOU (all Fridays)
+            if ts.weekday() == 4 and ts.hour == 16 and ts.minute == 0:
+                continue  # Cannot be IOU
             
             oc = candle.close - candle.open
             prev_oc = prev_candle.close - prev_candle.open
