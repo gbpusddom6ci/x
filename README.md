@@ -1,169 +1,136 @@
 # X1 Trading Platform
 
-Forex piyasalarında çoklu zaman dilimi (multi-timeframe) analizi için geliştirilmiş kapsamlı bir trading araç seti. Proje, standart olmayan zaman dilimlerinde mum analizi yaparak piyasa davranışlarını farklı açılardan inceleme imkanı sunuyor.
+Bu proje, forex piyasalarında multi-timeframe analizi için tasarlanmış kapsamlı bir araç seti. Standart trading platformlarının ötesine geçerek, alışılmadık zaman dilimlerini kullanarak piyasa davranışlarını derinlemesine inceliyoruz. Özellikle 48, 72, 80 ve 120 dakikalık mumlar üzerinden yapılan analizler, büyük oyuncuların ve market maker'ların standart dışı pattern'lerini yakalamayı hedefliyor.
 
-## Proje Hakkında
+## Projenin Amacı ve Yaklaşımı
 
-Çoğu trading platformu standart zaman dilimlerini (5m, 15m, 1H, 4H vs.) kullanırken, X1 farklı bir yaklaşım benimsiyor. 48, 72, 80 ve 120 dakikalık özel zaman dilimlerinde analiz yaparak, klasik göstergelerin yakalayamadığı pattern'leri ortaya çıkarıyor. 
+Geleneksel trading araçları genellikle 5 dakika, 15 dakika, 1 saat gibi standart timefram'lara odaklanır. Ancak X1, bu yaklaşımdan farklı olarak, piyasa dinamiklerini daha ince bir şekilde yakalamak için özel timefram'lar geliştiriyor. Temel hipotez, kurumsal yatırımcıların ve büyük sermayeli oyuncuların, standart timefram'ların dışında, matematiksel olarak anlamlı olan özel periyotlarda hareket ettiği yönünde.
 
-Bu yaklaşımın temelinde, piyasa maker'ların ve büyük oyuncuların standart dışı zaman dilimlerinde hareket ettiği hipotezi yatıyor. Özellikle Doji mum formasyonlarının (DC - Doji Candle) bu zaman dilimlerindeki dağılımı, potansiyel dönüş noktalarını işaret edebiliyor.
+Örneğin, Doji Candle (DC) formasyonları bu timefram'larda incelendiğinde, klasik analizlerde gözden kaçan dönüş noktaları ve destek/direnç seviyeleri ortaya çıkıyor. Proje, Elliott Wave teorisi, Fibonacci oranları ve custom sequence'ler gibi unsurları entegre ederek, hem manuel hem de otomatik analiz imkanı sağlıyor.
 
-## Kurulum ve Çalıştırma
+Bu araçlar, özellikle EURUSD, GBPUSD gibi major pair'lerde ve commodity currencies (AUD, NZD, CAD) için optimize edilmiş. Amacımız, trader'lara piyasa mikroyapısını anlamaları ve daha isabetli kararlar almaları için güçlü bir temel sunmak.
 
-### Gereksinimler
+## Kurulum ve Başlangıç
 
-- Python 3.8+
-- Flask web framework
-- CSV işleme kütüphaneleri
+### Sistem Gereksinimleri
+- Python 3.8 veya üstü
+- Flask (web framework için)
+- Pandas ve NumPy (veri işleme için)
+- Diğer bağımlılıklar requirements.txt'te listelenmiş
 
-### Hızlı Kurulum
+### Adım Adım Kurulum
+1. Projeyi klonlayın veya indirin.
+2. Sanal ortam oluşturun: `python -m venv venv`
+3. Aktifleştirin: `source venv/bin/activate` (macOS/Linux) veya `venv\Scripts\activate` (Windows)
+4. Bağımlılıkları yükleyin: `pip install -r requirements.txt`
+5. Ana landing page'i başlatın: `python -m landing.web`
 
-```bash
-# Bağımlılıkları yükle
-pip install -r requirements.txt
+Tarayıcınızda `http://localhost:2000` adresine giderek tüm modüllere erişebilirsiniz. Her modül kendi port'unda çalışır ve landing page üzerinden linklenir.
 
-# Ana sayfayı başlat
-python3 -m landing.web
-```
+## Modüllerin Detaylı Açıklaması
 
-Tarayıcınızda `http://localhost:2000` adresine giderek tüm araçlara erişebilirsiniz.
+Proje, modüler bir yapıya sahip. Her modül, belirli bir timefram'a odaklanıyor ve bağımsız olarak çalıştırılabilir. Veri girişi olarak CSV formatında OHLC (Open, High, Low, Close) verileri kullanılıyor – MetaTrader, TradingView veya benzeri platformlardan export edilebilir.
 
-## Uygulama Detayları
+### app48: 48 Dakikalık Analiz (Port: 2020)
+48 dakika, 1 saatlik mumların %80'ine denk gelen bir periyot. Bu, 5-dalga Elliott pattern'inde 4. dalgayı temsil ediyor gibi düşünülebilir. Sistem, 12 dakikalık ham veriyi 4'lü gruplar halinde birleştirerek 48 dakikalık mumlar oluşturur.
 
-### app48 - 48 Dakikalık Analiz
-**Port:** 2020
+Ana özellikler:
+- Doji Candle tespiti: Gövde boyutu, toplam mum range'inin %10'undan küçükse DC olarak işaretlenir.
+- S1 ve S2 sequence sayımı: Custom diziler (S1: 1,3,7,13,...; S2: 1,5,9,17,...) kullanılarak potansiyel reversal noktaları hesaplanır.
+- Offset matrisi: -3'ten +3'e kadar zaman kaydırmalarıyla pattern analizi. Bu, farklı session geçişlerindeki (Asya-Londra-NY) davranışları yakalar.
 
-48 dakikalık zaman dilimi, 1 saatlik (60m) mumların %80'ine denk geliyor. Bu oran, piyasadaki 5-dalga Elliott yapısının 4. dalgasına karşılık geliyor. Uygulama, 12 dakikalık veriyi 48 dakikalık mumlara dönüştürüyor (4x12=48). 
+EURUSD ve GBPUSD için ideal; DC kümelenmeleri güçlü destek seviyelerini gösterir.
 
-Özellikle EURUSD ve GBPUSD gibi majör paritlerde, 48 dakikalık DC (Doji Candle) oluşumları önemli destek/direnç seviyelerini gösteriyor. S1 ve S2 sequence'larında sayım yaparak, Fibonacci benzeri bir yaklaşımla gelecek muhtemel dönüş noktalarını tahmin ediyor.
+### app72: 72 Dakikalık Analiz (Port: 2172)
+72 dakika, günün (1440 dakika) tam 20'de biri. Matematiksel simetri sağladığı için intraday cycles'ı yakalamada etkili. 12 dakikalık veriden 6'lı gruplar oluşturur.
 
-### app72 - 72 Dakikalık Analiz  
-**Port:** 2172
+Özellikler:
+- Offset tabanlı DC tarama: Her offset'te farklı piyasa döngüleri belirir.
+- Session-aware analiz: Londra açılışı gibi kritik zamanlarda pattern'ler ön plana çıkar.
+- Görselleştirme: Matris tabanlı heatmap'ler ile DC dağılımı gösterilir.
 
-72 dakika, günün tam 20'de birine denk geliyor (1440/72=20). Bu matematiksel uyum, gün içi döngülerin yakalanmasını sağlıyor. Sistem, 12 dakikalık veriden 6'lı gruplar halinde 72 dakikalık mumlar oluşturuyor.
+Bu timefram, trend continuation'ları doğrulamak için birebir.
 
-DC analizi ve offset matrisi sayesinde, -3'ten +3'e kadar olan zaman kaymalarında pattern arayışı yapıyor. Her offset'te farklı bir piyasa döngüsü ortaya çıkıyor. Özellikle Asya-Londra-New York session geçişlerinde bu offsetler kritik öneme sahip.
+### app80: 80 Dakikalık Analiz (Port: 2180)
+80 dakika (1 saat 20 dakika), Fibonacci sayılarının (8x10) bir türevi. 20 dakikalık verilerden 4'lü gruplar halinde mumlar üretilir.
 
-### app80 - 80 Dakikalık Analiz
-**Port:** 2180
+Uygulama alanı:
+- Commodity pair'ler (AUDUSD, NZDUSD, USDCAD) için optimize.
+- Emtia piyasalarının Asya session etkisini yakalar.
+- DC istisnaları: Standart Doji kriterlerini aşan ama benzer davranış gösteren mumlar dahil edilir.
 
-80 dakika = 1 saat 20 dakika. Bu zaman dilimi, Fibonacci sayılarından 8 ve 10'un çarpımı. 20 dakikalık verilerden 4'lü gruplar halinde dönüştürme yapıyor. 
+80 dakikalık döngüler, volatility spike'larını öngörmede yardımcı olur.
 
-Bu zaman dilimi özellikle commodity para birimlerinde (AUD, NZD, CAD) daha anlamlı sonuçlar veriyor. Çünkü bu paritelerde emtia piyasaları ve Asya seansının etkisi 80 dakikalık döngülerde kendini gösteriyor.
+### app120: 120 Dakikalık (2 Saatlik) Analiz (Port: 2120)
+Standart 2 saatlik timefram ama X1'in gelişmiş algoritmalarıyla zenginleştirilmiş. 60 dakikalık veriden 2'li gruplar oluşturur.
 
-### app120 - 2 Saatlik Analiz
-**Port:** 2120
+Ana yenilikler:
+- Gelişmiş DC tanımı: Davranışsal Doji'ler (body < 0.1 * range).
+- Offset sistemi: Economic news etkilerini farklı kaymalarda analiz eder.
+- Sequence entegrasyonu: S1/S2 ile future projection'lar.
 
-Klasik 2 saatlik (120 dakika) analiz ama farklı bir bakış açısıyla. DC istisnası sistemi, standart Doji tanımının dışına çıkan ama davranışsal olarak Doji karakteri gösteren mumları yakalıyor. 
+Kısa-orta vadeli swing trade'ler için mükemmel.
 
-60 dakikalık veriden 2'li gruplar oluşturuyor. Offset sistemi sayesinde, major ekonomik veri açıklamalarının etkisini farklı zaman dilimlerinde gözlemleyebiliyorsunuz.
+### app120_iov: IOV (Inverse OC Value) Analizi (Port: 2121)
+Projenin en yenilikçi modülü. Inverse OC Value, bir mumun OC farkının (Open-Close), önceki mumun OC'sinin tersi yönde ve belirli bir threshold'un (örneğin 25 pip) üzerinde olması durumunu tanımlar.
 
-### app120_iov - IOV Mum Analizi
-**Port:** 2121
+Örnek:
+- Önceki mum: OC = +20 pip (bullish)
+- Mevcut mum: OC = -30 pip (bearish, threshold >25)
 
-IOV (Inverse OC Value) analizi, bu projenin en özgün özelliklerinden biri. Bir mumun açılış-kapanış farkının (OC), bir önceki mumun OC değeriyle ters yönde ve belirli bir limitin üzerinde olması durumunu arıyor.
+Bu formasyonlar, momentum reversal'larını işaret eder. 2 haftalık veri setleri üzerinde çalışır ve trade fırsatlarını listeler.
 
-Örneğin:
-- Önceki mum: Açılış 1.1000, Kapanış 1.1020 (OC = +20 pip)
-- Mevcut mum: Açılış 1.1020, Kapanış 1.0990 (OC = -30 pip)
+### app321: 60 Dakikalık Klasik Analiz (Port: 2019)
+Standart 1 saatlik timefram için referans modül. X1 sequence'leri ve offset matrisiyle entegre, diğer timefram'larla karşılaştırma sağlar.
 
-Eğer limit 25 pip ise, bu bir IOV mumu oluyor. Bu formasyonlar genelde güçlü momentum değişimlerini işaret ediyor. 2 haftalık veri üzerinde çalışarak, kısa-orta vadeli trade fırsatlarını yakalıyor.
+### news_converter: Haber Verisi Dönüştürücü (Port: 2199)
+ForexFactory'den Markdown formatındaki economic calendar verilerini JSON'a dönüştürür.
 
-### app321 - 60 Dakikalık Klasik Analiz
-**Port:** 2019
+Özellikler:
+- Multi-file upload (1-10 dosya).
+- Otomatik tarih/year detection ve timezone conversion.
+- Zip export için hazır JSON output.
+- Haber bazlı filtering: High-impact events için.
 
-Standart 1 saatlik analiz ama X1'in özel sayım algoritmasıyla. DC listesi ve offset matrisi, klasik timeframe'de bile farklı pattern'ler ortaya çıkarıyor. Diğer özel timeframe'lerle karşılaştırma yapabilmek için eklendi.
+Bu modül, news trading stratejilerini destekler; diğer app'lerle entegre edilebilir.
 
-### news_converter - Haber Verisi Dönüştürücü
-**Port:** 2199
+### landing: Ana Dashboard (Port: 2000)
+Tüm modüllere erişim sağlayan central hub. Tema: Uzay ve eğlenceli grafikler (penguenler, kediler). Her app'in status'unu gösterir ve direct link'ler sağlar.
 
-ForexFactory'den alınan ekonomik takvim verilerini (Markdown formatında) JSON'a dönüştürüyor. Birden fazla dosyayı aynı anda işleyebiliyor ve zip olarak indirme imkanı sunuyor.
+## Teknik Mimari
 
-Özellikleri:
-- Otomatik yıl tespiti (geçmiş/gelecek tarihler)
-- Çoklu dosya desteği (1-10 dosya)
-- Temiz JSON çıktısı
-- Timezone dönüşümleri
+### Veri İşleme
+- CSV parsing: Farklı formatlar (comma, semicolon, tab) ve column varyasyonları (Time/Date, O/H/L/C) otomatik detect edilir.
+- Mum aggregation: Ham tick/lower timeframe verilerinden custom mumlar oluşturulur.
+- Sequence Sistemi: S1 (trend continuation: 1,3,7,13,21,31,43,57,73,91,111,133,157) ve S2 (reversal: 1,5,9,17,25,37,49,65,81,101,121,145,169). Bu diziler, Fibonacci-inspired pattern'lerden türetilmiş.
+- Offset Mekanizması: Zaman kaydırmalarıyla alternatif senaryolar test edilir; trader timezone'larını simüle eder.
 
-Bu veriyi diğer uygulamalarla entegre ederek, haber bazlı trading stratejileri geliştirilebiliyor.
-
-### landing - Ana Kontrol Paneli
-**Port:** 2000
-
-Tüm uygulamalara tek noktadan erişim sağlayan ana sayfa. Uzay temalı, interaktif bir arayüzle tüm araçları listiyor. Her uygulamanın kendi görsel teması var (penguenler, kediler, manzaralar vs.) - biraz eğlenceli bir dokunuş.
-
-## Teknik Detaylar
-
-### Sequence Sistemi
-
-Projede iki temel sequence kullanılıyor:
-
-**S1:** 1, 3, 7, 13, 21, 31, 43, 57, 73, 91, 111, 133, 157  
-**S2:** 1, 5, 9, 17, 25, 37, 49, 65, 81, 101, 121, 145, 169
-
-Bu sayılar rastgele değil - her biri belirli bir matematiksel pattern'i takip ediyor. S1 genelde trend devamı, S2 ise dönüş noktaları için kullanılıyor.
-
-### Offset Sistemi
-
--3'ten +3'e kadar olan offset değerleri, zaman kaydırması anlamına geliyor. Örneğin:
-- Offset 0: Normal sayım
-- Offset +1: Bir mum ileri kaydırılmış sayım  
-- Offset -2: İki mum geri kaydırılmış sayım
-
-Bu sistem, farklı timezone'lardaki trader'ların davranışlarını yakalamaya yarıyor.
-
-### DC (Doji Candle) Tanımı
-
-Bir mumun Doji sayılması için:
+### DC (Doji Candle) Kriterleri
 - |Open - Close| < (High - Low) * 0.1
-- Yani gövde, toplam mum boyutunun %10'undan küçük olmalı
+- Bu, indecision mumlarını tanımlar ve reversal potansiyelini gösterir.
 
-Bu mumlar kararsızlığı ve potansiyel dönüş noktalarını gösteriyor.
+### Web Framework
+Flask tabanlı, her app lightweight server olarak çalışır. Templates: Jinja2 ile dynamic charts (Matplotlib/Plotly entegrasyonu).
 
-### CSV Format Esnekliği
+## Deployment ve Ölçekleme
+- Docker: Multi-stage build ile production-ready image.
+- Railway/Render/Heroku: Config dosyaları hazır (railway.toml, render.yaml, Procfile).
+- Veri kaynakları: Local CSV'ler veya external feeds (gelecekte websocket support).
 
-Sistem, farklı broker'lardan gelen CSV formatlarını otomatik olarak tanıyor:
-- Time, Timestamp, Date, DateTime
-- Open, O, Open (First)
-- High, H
-- Low, L
-- Close, C, Close (Last), Last
+Örnek veriler: `apr13.csv`, `ornek80.csv` – test için kullanın.
 
-Virgül, noktalı virgül veya tab ile ayrılmış dosyaları okuyabiliyor.
+## Geliştirme ve Gelecek Planlar
+Proje, piyasa microstructure'ını anlamaya odaklanıyor. Modüller arası entegrasyonla, comprehensive backtesting mümkün.
 
-## Deployment
+Yakın gelecek:
+- ML-based pattern recognition (LSTM/ clustering ile DC prediction).
+- Real-time data feeds (WebSocket via broker APIs).
+- Automated signal generation ve alert sistemi.
+- Advanced backtesting suite ile strategy validation.
 
-Proje Railway, Render ve Docker üzerinde çalışacak şekilde yapılandırılmış:
+Bu araçlar, disiplinli trading'i teşvik eder – her zaman risk management'ı unutmayın.
 
-- **Dockerfile:** Multi-stage build ile optimize edilmiş container
-- **railway.toml:** Railway.app deployment config
-- **render.yaml:** Render.com deployment config  
-- **Procfile:** Heroku-style deployment
+## Lisans ve Katkı
+Private repo, ticari kullanım için iletişime geçin. Açık kaynak katkılarını değerlendirebiliriz.
 
-Landing page otomatik olarak diğer servislere yönlendirme yapıyor.
-
-## Veri Kaynakları
-
-- **CSV Verileri:** MetaTrader, TradingView veya diğer platformlardan export edilmiş OHLC verisi
-- **Haber Verileri:** ForexFactory ekonomik takvimi (MD formatında)
-- Örnek veri dosyaları: `apr13.csv`, `ornek80.csv`
-
-## Geliştirme Notları
-
-Bu proje, klasik teknik analiz yaklaşımlarının ötesinde, piyasa mikroyapısını anlamaya odaklanıyor. Standart olmayan zaman dilimleri kullanarak, kurumsal oyuncuların gözden kaçırdığı veya kasıtlı olarak gizlediği pattern'leri ortaya çıkarmayı hedefliyor.
-
-Her uygulama modüler yapıda - kendi web sunucusu, veri işleme ve analiz katmanları var. Bu sayede bağımsız olarak geliştirilebilir ve ölçeklenebilirler.
-
-Gelecek planlar:
-- Makine öğrenmesi entegrasyonu (pattern recognition)
-- Gerçek zamanlı veri akışı
-- Otomatik trading sinyalleri
-- Backtesting modülü
-
-## Lisans ve İletişim
-
-Proje şu anda private repository'de geliştiriliyor. Ticari kullanım için iletişime geçin.
-
----
-
-*"Piyasalar kaotik görünür ama kendi içinde bir düzeni vardır. O düzeni standart araçlarla bulamazsınız."*
+*"Piyasalar karmaşık, ama doğru araçlarla desenler belirginleşir."*
