@@ -797,12 +797,14 @@ class App80Handler(BaseHTTPRequestHandler):
                                 )
                                 news_text = format_news_events(news_events)
 
-                                # For XYZ analysis: only non-holiday events count as "news"
-                                # Holidays and All Day events are shown but don't affect XYZ filtering
-                                non_holiday_events = [
-                                    e for e in news_events if not is_holiday_event(e)
+                                # For XYZ analysis: only NORMAL category events count as "news"
+                                # HOLIDAY, SPEECH, ALLDAY events are shown but don't affect XYZ filtering
+                                normal_events = [
+                                    e
+                                    for e in news_events
+                                    if categorize_news_event(e) == "NORMAL"
                                 ]
-                                has_news = bool(non_holiday_events)
+                                has_news = bool(normal_events)
 
                                 # Special rule for app80: Ignore 18:00 candles (except Sunday) for XYZ analysis
                                 # Pazar hariç 18:00 mumları XYZ analizinde etkisiz (ne haberli ne habersiz sayılmaz)
