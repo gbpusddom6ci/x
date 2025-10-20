@@ -97,16 +97,12 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       html, body {{ height: 100%; }}
       body {{
         font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-        background: transparent;
+        background: url('/stars.gif') repeat;
         color: #eee;
         overflow: hidden;
       }}
 
-      /* Plain background container (no hue/gradients) */
-      .bg {{ position: fixed; inset: 0; pointer-events: none; z-index: 0; background: none; }}
 
-      /* Stars overlay */
-      .stars {{ position: fixed; inset: 0; background: url('/stars.gif') repeat; opacity: .35; pointer-events: none; z-index: 1; }}
 
       /* DVD screensaver stage */
       .stage {{ position: fixed; inset: 0; overflow: hidden; z-index: 2; }}
@@ -194,8 +190,6 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
     </style>
   </head>
   <body>
-    <div class='bg'></div>
-    <div class='stars'></div>
     <div class='scene'>
       <!-- DVD-style floating apps -->
       <div id='stage' class='stage'>
