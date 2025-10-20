@@ -591,7 +591,28 @@ if candle.ts.hour in [18, 19, 20] and candle.ts.minute == 0:
     continue  # IOU olamaz
 ```
 
-**Diğer uygulamalar (app72, app80, app120):** Saat bazlı IOU istisnası yok.
+**app72 (72m):**
+```python
+# 2. Pazar günü HARİÇ: 18:00, 19:12 ve 20:24 mumları IOU olamaz
+# 2 haftalık veride 2. Pazar günü tespit edilir
+sundays = []
+for c in candles:
+    if c.ts.weekday() == 6:  # Sunday
+        date = c.ts.date()
+        if date not in sundays:
+            sundays.append(date)
+
+second_sunday = sundays[1] if len(sundays) >= 2 else None
+
+# IOU kontrolü sırasında
+if (candle.ts.hour == 18 and candle.ts.minute == 0) or \
+   (candle.ts.hour == 19 and candle.ts.minute == 12) or \
+   (candle.ts.hour == 20 and candle.ts.minute == 24):
+    if not (second_sunday and candle.ts.date() == second_sunday):
+        continue  # IOU olamaz
+```
+
+**Diğer uygulamalar (app80, app120):** Saat bazlı IOU istisnası yok.
 
 ### Tolerance (Güvenlik Payı)
 
