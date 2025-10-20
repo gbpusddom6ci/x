@@ -183,11 +183,6 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         0% {{ filter: drop-shadow(0 0 0 rgba(255,0,200,0.0)); transform: translateY(-4px) rotate(-1deg); }}
         100% {{ filter: drop-shadow(0 0 16px rgba(0,255,240,0.16)); transform: translateY(4px) rotate(1deg); }}
       }}
-
-      footer {{
-        position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-        text-align: center; font-size: 11px; color: #DC143C; letter-spacing: .2em; z-index: 3;
-      }}
     </style>
   </head>
   <body>
@@ -199,7 +194,6 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       <!-- Hide old portal content entirely -->
       <div class='portal' style='display:none'></div>
     </div>
-    <footer>marketmalware</footer>
 
     <!-- SVG filters for wobble/distortion (no external deps) -->
     <svg width="0" height="0" style="position:absolute">
