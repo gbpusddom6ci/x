@@ -114,14 +114,14 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       }}
 
       /* Stars overlay */
-      .stars { position: fixed; inset: 0; background: url('/stars.gif') repeat; opacity: .35; mix-blend-mode: screen; pointer-events: none; z-index: 1; }
+      .stars {{ position: fixed; inset: 0; background: url('/stars.gif') repeat; opacity: .35; mix-blend-mode: screen; pointer-events: none; z-index: 1; }}
 
       /* DVD screensaver stage */
-      .stage { position: fixed; inset: 0; overflow: hidden; z-index: 2; }
-      .dvd { position: absolute; display: block; will-change: transform; }
-      .dvd img { height: 96px; width: auto; display: block; filter: drop-shadow(0 8px 18px rgba(0,0,0,0.45)) drop-shadow(0 0 10px rgba(255,255,255,0.07)); }
+      .stage {{ position: fixed; inset: 0; overflow: hidden; z-index: 2; }}
+      .dvd {{ position: absolute; display: block; will-change: transform; }}
+      .dvd img {{ height: 96px; width: auto; display: block; filter: drop-shadow(0 8px 18px rgba(0,0,0,0.45)) drop-shadow(0 0 10px rgba(255,255,255,0.07)); }}
 
-      .scene { position: relative; z-index: 2; height: 100%; display: grid; place-items: stretch; }
+      .scene {{ position: relative; z-index: 2; height: 100%; display: grid; place-items: stretch; }}
 
       /* Central wormhole */
       .portal {{
@@ -276,7 +276,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
             // Bounce Y
             if (it.y <= 0 && it.vy < 0) {{ it.y = 0; it.vy = -it.vy; }}
             if (it.y + it.h >= H && it.vy > 0) {{ it.y = H - it.h; it.vy = -it.vy; }}
-            it.el.style.transform = `translate3d(${it.x}px, ${it.y}px, 0)`;
+            it.el.style.transform = `translate3d(${{it.x}}px, ${{it.y}}px, 0)`;
           }}
           requestAnimationFrame(tick);
         }}
