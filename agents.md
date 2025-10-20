@@ -610,6 +610,10 @@ if (candle.ts.hour == 18 and candle.ts.minute == 0) or \
    (candle.ts.hour == 20 and candle.ts.minute == 24):
     if not (second_sunday and candle.ts.date() == second_sunday):
         continue  # IOU olamaz
+
+# Cuma 16:48 mumu ASLA IOU olamaz (tüm Cumalar)
+if candle.ts.weekday() == 4 and candle.ts.hour == 16 and candle.ts.minute == 48:
+    continue  # IOU olamaz
 ```
 
 **Diğer uygulamalar (app80, app120):** Saat bazlı IOU istisnası yok.
