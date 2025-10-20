@@ -243,9 +243,15 @@ dc_exception = (tod >= time(13, 0)) and (tod <= time(20, 0))
 #### app48 (48m)
 
 ```python
-# Pazar HARİÇ, 13:12 - 19:36 arası DC SAYILMAZ (19:36 dahil değil)
-if ts.weekday() != 6 and time(13, 12) <= ts.time() < time(19, 36):
-    return False  # DC değil (istisna)
+# İlk gün (Pazar) HARİÇ, 18:00, 18:48 ve 19:36 mumları DC olamaz
+# İlk gün = verinin başladığı gün (input data'nın ilk tarihi)
+first_day = candles[0].ts.date() if candles else None
+
+if first_day and cur.ts.date() != first_day:
+    if (cur.ts.hour == 18 and cur.ts.minute == 0) or \
+       (cur.ts.hour == 18 and cur.ts.minute == 48) or \
+       (cur.ts.hour == 19 and cur.ts.minute == 36):
+        cond = False  # DC olamaz (istisna)
 ```
 
 #### app72 (72m)

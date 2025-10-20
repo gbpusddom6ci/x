@@ -191,11 +191,23 @@ def find_start_index(candles: List[Candle], start_tod: dtime) -> Tuple[int, str]
 
 def compute_dc_flags(candles: List[Candle]) -> List[Optional[bool]]:
     flags: List[Optional[bool]] = [None] * len(candles)
+    
+    # İlk günü tespit et (Pazar)
+    first_day = candles[0].ts.date() if candles else None
+    
     for i in range(1, len(candles)):
         prev = candles[i - 1]
         cur = candles[i]
         within = min(prev.open, prev.close) <= cur.close <= max(prev.open, prev.close)
         cond = cur.high <= prev.high and cur.low >= prev.low and within
+        
+        # İlk gün (Pazar) HARİÇ, 18:00, 18:48 ve 19:36 mumları DC olamaz
+        if first_day and cur.ts.date() != first_day:
+            if (cur.ts.hour == 18 and cur.ts.minute == 0) or \
+               (cur.ts.hour == 18 and cur.ts.minute == 48) or \
+               (cur.ts.hour == 19 and cur.ts.minute == 36):
+                cond = False
+        
         prev_flag = bool(flags[i - 1]) if flags[i - 1] is not None else False
         if prev_flag and cond:
             cond = False
