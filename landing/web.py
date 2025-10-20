@@ -35,11 +35,14 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         speed_s = 28 + (i % 5) * 6  # seconds
         delay_s = - (angle / 360.0) * speed_s
         hue = (i * 53) % 360
+        # Aurora Void accent color per item
+        aurora_colors = ["#00E5FF", "#38BDF8", "#A78BFA", "#06B6D4"]
+        color = aurora_colors[i % len(aurora_colors)]
         item = (
-            f"<div class='orb' style=\"--radius:{radius:.0f}px; --speed:{speed_s}s; animation-delay:{delay_s:.3f}s;\">"
+            f"<div class='orb' style=\"--radius:{radius:.0f}px; --speed:{speed_s}s; animation-delay:{delay_s:.3f}s; --c:{color};\">"
             f"<div class='arm'>"
             f"<a href='{url}' title='{title} — {desc}' target='_blank' rel='noopener'>"
-            f"<img style='filter:hue-rotate({hue}deg) saturate(1.2) contrast(1.1);' src='/photos/{photo}' alt='{key}'>"
+            f"<img src='/photos/{photo}' alt='{key}'>"
             f"</a>"
             f"</div>"
             f"</div>"
@@ -54,7 +57,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
   <head>
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <title>x1 • Surreal Gateway</title>
+    <title>malw • Aurora Void</title>
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
     <link rel="shortcut icon" href="/favicon/favicon.ico">
@@ -66,7 +69,15 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         --glow: 0.6;
         --portal-size: min(60vmin, 540px);
         --portal-thick: 10vmin;
-        --accent: 312deg;
+        /* Aurora Void palette */
+        --a1: #00E5FF;
+        --a2: #38BDF8;
+        --a3: #A78BFA;
+        --a4: #06B6D4;
+        --void-0: #030314;
+        --void-1: #0A0F1F;
+        --void-2: #121A2E;
+        --text: #E6F3FF;
       }}
       * {{ margin: 0; padding: 0; box-sizing: border-box; }}
       html, body {{ height: 100%; }}
@@ -81,13 +92,12 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       .bg {{
         position: fixed; inset: 0; pointer-events: none; z-index: 0;
         background:
-          radial-gradient(1200px 800px at calc(50% + 40px*var(--mx)) calc(50% + 40px*var(--my)), rgba(219,85,255,0.12), transparent 60%),
-          radial-gradient(800px 800px at calc(50% - 120px*var(--mx)) calc(50% - 120px*var(--my)), rgba(0,255,213,0.10), transparent 55%),
-          conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,0.05), transparent 25%, rgba(255,255,255,0.05) 35%, transparent 60%, rgba(255,255,255,0.05));
-        filter: saturate(1.3) hue-rotate(calc(var(--accent)));
-        animation: hue 18s linear infinite;
+          radial-gradient(120% 120% at calc(10% + 20px*var(--mx)) calc(0% + 20px*var(--my)), rgba(0,229,255,0.10), transparent 45%),
+          radial-gradient(120% 120% at calc(100% - 40px*var(--mx)) calc(10% + 40px*var(--my)), rgba(56,189,248,0.08), transparent 50%),
+          radial-gradient(140% 140% at calc(0% + 40px*var(--mx)) calc(100% - 40px*var(--my)), rgba(167,139,250,0.07), transparent 55%),
+          linear-gradient(180deg, var(--void-0), var(--void-1) 55%, var(--void-2));
+        filter: saturate(1.25);
       }}
-      @keyframes hue {{ to {{ filter: saturate(1.3) hue-rotate(calc(var(--accent) + 360deg)); }} }}
 
       /* Stars overlay */
       .stars {{ position: fixed; inset: 0; background: url('/stars.gif') repeat; opacity: .35; mix-blend-mode: screen; pointer-events: none; z-index: 1; }}
@@ -100,7 +110,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         border-radius: 50%;
         background:
           radial-gradient(closest-side, rgba(255,255,255,0.12), rgba(0,0,0,0.0) 60%),
-          conic-gradient(from 0deg, rgba(255,0,102,0.3), rgba(0,255,204,0.25), rgba(90,0,255,0.3), rgba(255,0,102,0.3));
+          conic-gradient(from 0deg, color-mix(in srgb, var(--a1) 60%, transparent), color-mix(in srgb, var(--a2) 50%, transparent), color-mix(in srgb, var(--a3) 60%, transparent), color-mix(in srgb, var(--a4) 50%, transparent));
         box-shadow:
           0 0 60px 20px rgba(255,0,153,0.07) inset,
           0 0 140px rgba(0,255,255,0.10);
@@ -119,15 +129,25 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         pointer-events: none;
       }}
 
+      /* Static luminous rings (4 layers) */
+      .rings {{ position: absolute; inset: 6%; pointer-events: none; z-index: 0; }}
+      .ring {{ position: absolute; inset: 0; border-radius: 50%; opacity: .9; mix-blend-mode: screen; }}
+      .ring::before {{ content: ""; position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 0 24px rgba(255,255,255,0.06) inset; }}
+      .r1 {{ transform: scale(.58); filter: drop-shadow(0 0 10px var(--a1)); }}
+      .r2 {{ transform: scale(.90); filter: drop-shadow(0 0 12px var(--a2)); }}
+      .r3 {{ transform: scale(1.22); filter: drop-shadow(0 0 14px var(--a3)); }}
+      .r4 {{ transform: scale(1.48); filter: drop-shadow(0 0 16px var(--a4)); }}
+
       .glitch {{
         position: absolute; inset: 0; display: grid; place-items: center; text-transform: uppercase;
         font-size: clamp(28px, 7vmin, 92px); letter-spacing: .12em; font-weight: 800; color: #e7e7e7;
         mix-blend-mode: difference; text-shadow: 0 0 10px rgba(255,255,255,0.2);
       }}
       .glitch span {{ position: absolute; }}
-      .glitch span:nth-child(1) {{ transform: translate(-2px,-1px); color: rgba(255,0,128,.9); filter: blur(.2px); }}
-      .glitch span:nth-child(2) {{ transform: translate(2px,1px); color: rgba(0,255,230,.9); filter: blur(.2px); }}
+      .glitch span:nth-child(1) {{ transform: translate(-2px,-1px); color: var(--a4); filter: blur(.2px); }}
+      .glitch span:nth-child(2) {{ transform: translate(2px,1px); color: var(--a3); filter: blur(.2px); }}
       .glitch span:nth-child(3) {{ position: relative; color: #fafafa; }}
+      .glitch span:nth-child(4) {{ transform: translate(-3px,2px); color: var(--a1); filter: blur(.2px); mix-blend-mode: screen; }}
 
       /* Galaxy of orbits */
       .galaxy {{ position: absolute; inset: -2%; }}
@@ -146,6 +166,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         height: clamp(72px, 10vmin, 140px);
         width: auto; display: block; border-radius: 12px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06) inset;
+        filter: drop-shadow(0 0 18px var(--c)) drop-shadow(0 0 6px rgba(255,255,255,0.06));
         mix-blend-mode: screen;
         animation: bob 4s ease-in-out infinite alternate;
       }}
@@ -167,10 +188,17 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
     <div class='scene'>
       <div class='portal'>
         <div class='halo'></div>
-        <div class='glitch' aria-label='x1 gateway'>
-          <span>x1</span>
-          <span>x1</span>
-          <span>gateway</span>
+        <div class='rings'>
+          <div class='ring r1'></div>
+          <div class='ring r2'></div>
+          <div class='ring r3'></div>
+          <div class='ring r4'></div>
+        </div>
+        <div class='glitch' aria-label='malw'>
+          <span>malw</span>
+          <span>malw</span>
+          <span>malw</span>
+          <span>malw</span>
         </div>
         <div class='galaxy'>
           {orbits_html}
