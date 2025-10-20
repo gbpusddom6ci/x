@@ -152,10 +152,12 @@ def compute_dc_flags(candles: List[Candle]) -> List[Optional[bool]]:
         within = min(prev.open, prev.close) <= cur.close <= max(prev.open, prev.close)
         cond = cur.high <= prev.high and cur.low >= prev.low and within
         
-        # Pazar hariç, 18:00, 19:20, 20:40 mumları DC olamaz (günlük cycle noktaları)
-        if cur.ts.weekday() != 6:  # Pazar değilse (6 = Sunday)
-            if (cur.ts.hour == 18 and cur.ts.minute == 0) or \
-               (cur.ts.hour == 19 and cur.ts.minute == 20) or \
+        # 18:00 mumu ASLA DC olamaz (Pazar dahil)
+        if cur.ts.hour == 18 and cur.ts.minute == 0:
+            cond = False
+        # Pazar HARİÇ: 19:20 ve 20:40 DC olamaz (günlük cycle noktaları)
+        elif cur.ts.weekday() != 6:  # Pazar değilse (6 = Sunday)
+            if (cur.ts.hour == 19 and cur.ts.minute == 20) or \
                (cur.ts.hour == 20 and cur.ts.minute == 40):
                 cond = False
         
@@ -655,6 +657,16 @@ def analyze_iou(
     base_idx, _ = find_start_index(candles, DEFAULT_START_TOD)
     dc_flags = compute_dc_flags(candles)
     
+    # Detect 2nd Sunday in data (2 weeks of data)
+    sundays = []
+    for c in candles:
+        if c.ts.weekday() == 6:  # Sunday
+            date = c.ts.date()
+            if date not in sundays:
+                sundays.append(date)
+    
+    second_sunday = sundays[1] if len(sundays) >= 2 else None
+    
     # Use FULL sequence for allocation, FILTERED for IOU check
     seq_values_full = SEQUENCES[sequence]
     seq_values_filtered = SEQUENCES_FILTERED[sequence]
@@ -729,6 +741,17 @@ def analyze_iou(
             ts = candle.ts
             if ts.hour == 18 and ts.minute == 0:
                 continue
+            
+            # IOU restriction: 19:20, 20:40 cannot be IOU (except 2nd Sunday)
+            if (ts.hour == 19 and ts.minute == 20) or \
+               (ts.hour == 20 and ts.minute == 40):
+                if not (second_sunday and ts.date() == second_sunday):
+                    continue  # Cannot be IOU
+            
+            # IOU restriction: Friday 16:40 cannot be IOU (all Fridays)
+            if ts.weekday() == 4 and ts.hour == 16 and ts.minute == 40:
+                continue  # Cannot be IOU
+            
             oc = candle.close - candle.open
             prev_oc = prev_candle.close - prev_candle.open
             
