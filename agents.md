@@ -229,23 +229,25 @@ Her uygulamanın **farklı** DC istisna kuralları vardır:
 #### app321 (60m)
 
 ```python
-# Pazar HARİÇ, 13:00 - 20:00 arası DC SAYILMAZ (20:00 dahil değil)
-if ts.weekday() != 6 and time(13, 0) <= ts.time() < time(20, 0):
-    return False  # DC değil (istisna)
+# Pazar HARİÇ, 20:00 mumu ASLA DC olamaz
+if cur.ts.weekday() != 6 and cur.ts.hour == 20 and cur.ts.minute == 0:
+    cond = False
 ```
 
-**Not:** `compute_sequence_allocations` içinde ayrıca:
-```python
-# while döngüsünde 13:00 - 20:00 kontrolü (20:00 dahil)
-dc_exception = (tod >= time(13, 0)) and (tod <= time(20, 0))
-```
+**Not:** `compute_sequence_allocations` içinde 13:00-20:00 DC exception kontrolü de vardır (sayımda).
 
 #### app48 (48m)
 
 ```python
-# Pazar HARİÇ, 13:12 - 19:36 arası DC SAYILMAZ (19:36 dahil değil)
-if ts.weekday() != 6 and time(13, 12) <= ts.time() < time(19, 36):
-    return False  # DC değil (istisna)
+# İlk gün (Pazar) HARİÇ, 18:00, 18:48 ve 19:36 mumları DC olamaz
+# İlk gün = verinin başladığı gün (input data'nın ilk tarihi)
+first_day = candles[0].ts.date() if candles else None
+
+if first_day and cur.ts.date() != first_day:
+    if (cur.ts.hour == 18 and cur.ts.minute == 0) or \
+       (cur.ts.hour == 18 and cur.ts.minute == 48) or \
+       (cur.ts.hour == 19 and cur.ts.minute == 36):
+        cond = False  # DC olamaz (istisna)
 ```
 
 #### app72 (72m)
@@ -281,14 +283,17 @@ if is_week_close:
 #### app80 (80m)
 
 ```python
-# 1. Pazar HARİÇ: 18:00, 19:20, 20:40 DC olamaz (günlük cycle noktaları)
-if cur.ts.weekday() != 6:
-    if (cur.ts.hour == 18 and cur.ts.minute == 0) or \
-       (cur.ts.hour == 19 and cur.ts.minute == 20) or \
+# 1. 18:00 mumu ASLA DC olamaz (Pazar dahil)
+if cur.ts.hour == 18 and cur.ts.minute == 0:
+    cond = False
+
+# 2. Pazar HARİÇ: 19:20 ve 20:40 DC olamaz (günlük cycle noktaları)
+elif cur.ts.weekday() != 6:
+    if (cur.ts.hour == 19 and cur.ts.minute == 20) or \
        (cur.ts.hour == 20 and cur.ts.minute == 40):
         cond = False
 
-# 2. Cuma 16:40 DC olamaz (hafta kapanışı)
+# 3. Cuma 16:40 DC olamaz (hafta kapanışı)
 # 80 dakikalık sistemde Cuma son mum 16:40 (14:00 → 15:20 → 16:40)
 if cur.ts.weekday() == 4 and cur.ts.hour == 16 and cur.ts.minute == 40:
     if i + 1 >= len(candles):
@@ -304,11 +309,16 @@ if is_week_close:
 #### app120 (120m)
 
 ```python
-# 1. 18:00 mumu DC olamaz
+# 1. 18:00 mumu ASLA DC olamaz (Pazar dahil)
 if cur.ts.hour == 18 and cur.ts.minute == 0:
     cond = False
 
-# 2. Hafta kapanış mumu (16:00) DC olamaz
+# 2. 2 Pazar (her iki Pazar) HARİÇ: 20:00 mumu DC olamaz
+elif cur.ts.hour == 20 and cur.ts.minute == 0:
+    if cur.ts.weekday() != 6:  # Pazar değilse
+        cond = False
+
+# 3. Hafta kapanış mumu (16:00) DC olamaz (Cuma)
 # Bir sonraki mumla arasında >120dk gap varsa kapanış sayılır
 if cur.ts.hour == 16 and cur.ts.minute == 0:
     if i + 1 >= len(candles):
@@ -570,6 +580,94 @@ if abs(abs(prev_oc) - limit) < tolerance:
 # 5. Aynı işaret kontrolü (++ veya --)
 if not ((oc > 0 and prev_oc > 0) or (oc < 0 and prev_oc < 0)):
     continue  # Zıt işaret → IOU değil
+```
+
+### App-Specific IOU İstisnaları
+
+**app48 (48m):**
+```python
+# 18:00, 18:48 ve 19:36 mumları IOU olamaz
+if (candle.ts.hour == 18 and candle.ts.minute in [0, 48]) or \
+   (candle.ts.hour == 19 and candle.ts.minute == 36):
+    continue  # IOU olamaz
+```
+
+**app321 (60m):**
+```python
+# 18:00, 19:00 ve 20:00 mumları asla IOU olamaz
+if candle.ts.hour in [18, 19, 20] and candle.ts.minute == 0:
+    continue  # IOU olamaz
+```
+
+**app72 (72m):**
+```python
+# 2. Pazar günü HARİÇ: 18:00, 19:12 ve 20:24 mumları IOU olamaz
+# 2 haftalık veride 2. Pazar günü tespit edilir
+sundays = []
+for c in candles:
+    if c.ts.weekday() == 6:  # Sunday
+        date = c.ts.date()
+        if date not in sundays:
+            sundays.append(date)
+
+second_sunday = sundays[1] if len(sundays) >= 2 else None
+
+# IOU kontrolü sırasında
+if (candle.ts.hour == 18 and candle.ts.minute == 0) or \
+   (candle.ts.hour == 19 and candle.ts.minute == 12) or \
+   (candle.ts.hour == 20 and candle.ts.minute == 24):
+    if not (second_sunday and candle.ts.date() == second_sunday):
+        continue  # IOU olamaz
+
+# Cuma 16:48 mumu ASLA IOU olamaz (tüm Cumalar)
+if candle.ts.weekday() == 4 and candle.ts.hour == 16 and candle.ts.minute == 48:
+    continue  # IOU olamaz
+```
+
+**app80 (80m):**
+```python
+# 18:00 mumu ASLA IOU olamaz (Pazar dahil)
+ts = candle.ts
+if ts.hour == 18 and ts.minute == 0:
+    continue  # IOU olamaz
+
+# 2. Pazar günü HARİÇ: 19:20 ve 20:40 mumları IOU olamaz
+# 2 haftalık veride 2. Pazar günü tespit edilir
+sundays = []
+for c in candles:
+    if c.ts.weekday() == 6:  # Sunday
+        date = c.ts.date()
+        if date not in sundays:
+            sundays.append(date)
+
+second_sunday = sundays[1] if len(sundays) >= 2 else None
+
+# IOU kontrolü sırasında
+if (ts.hour == 19 and ts.minute == 20) or \
+   (ts.hour == 20 and ts.minute == 40):
+    if not (second_sunday and ts.date() == second_sunday):
+        continue  # IOU olamaz
+
+# Cuma 16:40 mumu ASLA IOU olamaz (tüm Cumalar)
+if ts.weekday() == 4 and ts.hour == 16 and ts.minute == 40:
+    continue  # IOU olamaz
+```
+
+**app120 (120m):**
+```python
+# 18:00 mumu ASLA IOU olamaz (Pazar dahil)
+ts = candle.ts
+if ts.hour == 18 and ts.minute == 0:
+    continue  # IOU olamaz
+
+# 2 Pazar (her iki Pazar) HARİÇ: 20:00 mumu IOU olamaz
+if ts.hour == 20 and ts.minute == 0:
+    if ts.weekday() != 6:  # Pazar değilse
+        continue  # IOU olamaz
+
+# Cuma 16:00 mumu ASLA IOU olamaz (tüm Cumalar)
+if ts.weekday() == 4 and ts.hour == 16 and ts.minute == 0:
+    continue  # IOU olamaz
 ```
 
 ### Tolerance (Güvenlik Payı)
