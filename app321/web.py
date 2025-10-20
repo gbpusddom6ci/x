@@ -210,22 +210,13 @@ def find_news_in_timerange(
     return matching
 
 
-def is_holiday_event(event: Dict[str, Any]) -> bool:
-    """
-    Check if an event is a holiday (should not affect XYZ analysis).
-    Holidays are identified by title containing 'Holiday' or 'Bank Holiday'.
-    """
-    title = event.get("title", "").lower()
-    return "holiday" in title
-
-
 def categorize_news_event(event: Dict[str, Any]) -> str:
     """
     Categorize news event into one of four types:
     - HOLIDAY: title contains 'holiday' + All Day + null values
     - SPEECH: has time_24h + null values (speeches, statements)
     - ALLDAY: All Day + null values (but not holiday)
-    - NORMAL: has time_24h + has values (actual/forecast/previous)
+    - NORMAL: has values (actual/forecast/previous) - regardless of time
 
     Returns category string: 'HOLIDAY', 'SPEECH', 'ALLDAY', 'NORMAL', or 'UNKNOWN'
     """
@@ -245,12 +236,13 @@ def categorize_news_event(event: Dict[str, Any]) -> str:
     # Category decision tree
     if "holiday" in title and is_all_day and is_null:
         return "HOLIDAY"
+    elif has_values:
+        # If event has values, it's NORMAL (affects XYZ) - regardless of having time or being All Day
+        return "NORMAL"
     elif time_24h and is_null:
         return "SPEECH"
     elif is_all_day and is_null:
         return "ALLDAY"
-    elif time_24h and has_values:
-        return "NORMAL"
 
     return "UNKNOWN"
 
