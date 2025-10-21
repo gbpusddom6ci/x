@@ -15,6 +15,7 @@ from landing.web import build_html
 from app48.web import run as run_app48
 from app72.web import run as run_app72
 from app80.web import run as run_app80
+from app96.web import run as run_app96
 from app120.web import run as run_app120
 from app321.web import run as run_app321
 from news_converter.web import run as run_news_converter
@@ -266,11 +267,12 @@ def start_backend_thread(name: str, target, host: str, port: int) -> threading.T
     return thread
 
 
-def run(host: str, port: int, backend_host: str, app48_port: int, app72_port: int, app80_port: int, app120_port: int, app321_port: int, news_converter_port: int) -> None:
+def run(host: str, port: int, backend_host: str, app48_port: int, app72_port: int, app80_port: int, app96_port: int, app120_port: int, app321_port: int, news_converter_port: int) -> None:
     backends = [
         Backend(name="app48", host=backend_host, port=app48_port, prefix="/app48", description="48 dakikalık mum sayımı ve dönüştürücü"),
         Backend(name="app72", host=backend_host, port=app72_port, prefix="/app72", description="72 dakikalık sayım ve 12→72 dönüştürücü (7x12m)"),
         Backend(name="app80", host=backend_host, port=app80_port, prefix="/app80", description="80 dakikalık sayım ve 20→80 dönüştürücü (4x20m)"),
+        Backend(name="app96", host=backend_host, port=app96_port, prefix="/app96", description="96 dakikalık sayım, IOU analizi ve 12→96 dönüştürücü"),
         Backend(name="app120", host=backend_host, port=app120_port, prefix="/app120", description="120 dakikalık analiz, IOV/IOU analizi ve dönüştürücü"),
         Backend(name="app321", host=backend_host, port=app321_port, prefix="/app321", description="60 dakikalık sayım araçları"),
         Backend(name="news_converter", host=backend_host, port=news_converter_port, prefix="/news", description="📰 Haber formatı dönüştürücü (MD→JSON)"),
@@ -279,6 +281,7 @@ def run(host: str, port: int, backend_host: str, app48_port: int, app72_port: in
     start_backend_thread("app48", run_app48, backend_host, app48_port)
     start_backend_thread("app72", run_app72, backend_host, app72_port)
     start_backend_thread("app80", run_app80, backend_host, app80_port)
+    start_backend_thread("app96", run_app96, backend_host, app96_port)
     start_backend_thread("app120", run_app120, backend_host, app120_port)
     start_backend_thread("app321", run_app321, backend_host, app321_port)
     start_backend_thread("news_converter", run_news_converter, backend_host, news_converter_port)
@@ -307,12 +310,13 @@ def main(argv: List[str] | None = None) -> int:
     parser.add_argument("--app48-port", type=int, default=9200, help="app48 iç portu")
     parser.add_argument("--app72-port", type=int, default=9201, help="app72 iç portu")
     parser.add_argument("--app80-port", type=int, default=9202, help="app80 iç portu")
+    parser.add_argument("--app96-port", type=int, default=9206, help="app96 iç portu")
     parser.add_argument("--app120-port", type=int, default=9203, help="app120 iç portu")
     parser.add_argument("--app321-port", type=int, default=9204, help="app321 iç portu")
     parser.add_argument("--news-converter-port", type=int, default=9205, help="news_converter iç portu")
     args = parser.parse_args(argv)
 
-    run(args.host, args.port, args.backend_host, args.app48_port, args.app72_port, args.app80_port, args.app120_port, args.app321_port, args.news_converter_port)
+    run(args.host, args.port, args.backend_host, args.app48_port, args.app72_port, args.app80_port, args.app96_port, args.app120_port, args.app321_port, args.news_converter_port)
     return 0
 
 

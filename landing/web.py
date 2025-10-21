@@ -16,6 +16,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         "app48": "kan.jpeg",
         "app72": "kits.jpg",
         "app80": "penguins.jpg",
+        "app96": "lobotomy.jpg",
         "app120": "romantizma.png",
         "app321": "silkroad.jpg",
         "news_converter": "suicide.png",
@@ -374,6 +375,11 @@ def main(argv: list[str] | None = None) -> int:
         help="app80 web arayüzü için URL",
     )
     parser.add_argument(
+        "--app96-url",
+        default="http://127.0.0.1:2196/",
+        help="app96 web arayüzü için URL",
+    )
+    parser.add_argument(
         "--app120-url",
         default="http://127.0.0.1:2120/",
         help="app120 web arayüzü için URL",
@@ -400,6 +406,11 @@ def main(argv: list[str] | None = None) -> int:
             "title": "app80",
             "url": args.app80_url,
             "description": "80 dakikalık sayım, DC analizi ve 20→80 dönüştürücü (4x20m).",
+        },
+        "app96": {
+            "title": "app96",
+            "url": args.app96_url,
+            "description": "96 dakikalık sayım, IOU analizi ve 12→96 dönüştürücü.",
         },
         "app120": {
             "title": "app120",
