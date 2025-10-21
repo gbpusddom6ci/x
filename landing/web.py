@@ -102,6 +102,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       .stage {{ position: fixed; inset: 0; overflow: hidden; z-index: 2; }}
       .dvd {{ position: absolute; display: block; will-change: transform; }}
       .dvd img {{ height: 96px; width: auto; display: block; transform-origin: 50% 50%; will-change: transform; animation: spin 8s linear infinite; }}
+      .dvd img[alt='app96'] {{ height: 115px; }}
       @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
 
       .scene {{ position: relative; z-index: 2; height: 100%; display: grid; place-items: stretch; }}
@@ -187,7 +188,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       </div>
       <!-- Center logo -->
       <div style='position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 999;'>
-        <img src='/photos/lobotomy.jpg' alt='logo' style='height: clamp(135px, 18.75vmin, 262px); width: auto;'>
+        <img src='/photos/lobotomy.jpg' alt='logo' style='height: clamp(90px, 12.5vmin, 175px); width: auto;'>
       </div>
       <!-- Hide old portal content entirely -->
       <div class='portal' style='display:none'></div>
