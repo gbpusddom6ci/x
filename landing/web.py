@@ -83,15 +83,6 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         --glow: 0.6;
         --portal-size: min(60vmin, 540px);
         --portal-thick: 10vmin;
-        /* Aurora Void palette */
-        --a1: #00E5FF;
-        --a2: #38BDF8;
-        --a3: #A78BFA;
-        --a4: #06B6D4;
-        --void-0: #030314;
-        --void-1: #0A0F1F;
-        --void-2: #121A2E;
-        --text: #E6F3FF;
       }}
       * {{ margin: 0; padding: 0; box-sizing: border-box; }}
       html, body {{ height: 100%; }}
