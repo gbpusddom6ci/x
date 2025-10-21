@@ -288,7 +288,7 @@ def make_handler(html_bytes: bytes):
                 self.end_headers()
                 self.wfile.write(b"ok")
             elif self.path == "/stars.gif":
-                stars_path = os.path.join(base_dir, "..", "stars.gif")
+                stars_path = os.path.join(base_dir, "..", "photos", "stars.gif")
                 try:
                     with open(stars_path, "rb") as f:
                         content = f.read()
