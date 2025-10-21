@@ -185,8 +185,10 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       <div id='stage' class='stage'>
         {dvds_html}
       </div>
-      <!-- Flash logo -->
-      <img id='flashLogo' src='/photos/lobotomy.jpg' alt='logo' style='position: fixed; height: clamp(90px, 12.5vmin, 175px); width: auto; z-index: 999; opacity: 0; pointer-events: none;'>
+      <!-- Center logo -->
+      <div style='position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 999;'>
+        <img src='/photos/lobotomy.jpg' alt='logo' style='height: clamp(90px, 12.5vmin, 175px); width: auto;'>
+      </div>
       <!-- Hide old portal content entirely -->
       <div class='portal' style='display:none'></div>
     </div>
@@ -258,26 +260,6 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
           requestAnimationFrame(tick);
         }}
         requestAnimationFrame(tick);
-      }})();
-
-      // Flash logo at random positions every 3 seconds for 0.2s
-      (function() {{
-        const logo = document.getElementById('flashLogo');
-        if (!logo) return;
-        
-        function flash() {{
-          const x = Math.random() * (window.innerWidth - logo.offsetWidth);
-          const y = Math.random() * (window.innerHeight - logo.offsetHeight);
-          logo.style.left = x + 'px';
-          logo.style.top = y + 'px';
-          logo.style.opacity = '1';
-          
-          setTimeout(() => {{
-            logo.style.opacity = '0';
-          }}, 1);
-        }}
-        
-        setInterval(flash, 3000);
       }})();
     </script>
   </body>
