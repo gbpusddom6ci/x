@@ -101,7 +101,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       /* DVD screensaver stage */
       .stage {{ position: fixed; inset: 0; overflow: hidden; z-index: 2; }}
       .dvd {{ position: absolute; display: block; will-change: transform; }}
-      .dvd img {{ height: 96px; width: auto; display: block; transform-origin: 50% 50%; will-change: transform; animation: spin 8s linear infinite; }}
+      .dvd img {{ height: 96px; width: auto; display: block; transform-origin: 50% 50%; will-change: transform; }}
       @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
       @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
 
@@ -225,38 +225,45 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         // Wait for images to load, then get real sizes
         let W = stage.clientWidth, H = stage.clientHeight;
         const items = nodes.map((el, i) => {{
-          const ang = Math.random() * Math.PI * 2;
+          const dir = Math.random() * Math.PI * 2;
           const speed = 90 + Math.random() * 110; // px/s
-          return {{ 
-            el, 
-            x: Math.random() * Math.max(1, W - 100), 
-            y: Math.random() * Math.max(1, H - 100), 
-            w: 100, 
-            h: 100, 
-            vx: Math.cos(ang) * speed, 
-            vy: Math.sin(ang) * speed 
+          return {{
+            el,
+            cx: Math.random() * Math.max(1, W - 200) + 100,
+            cy: Math.random() * Math.max(1, H - 200) + 100,
+            bw: 100,
+            bh: 100,
+            vx: Math.cos(dir) * speed,
+            vy: Math.sin(dir) * speed,
+            ang: Math.random() * Math.PI * 2,
+            spin: (Math.random() < 0.5 ? 1 : -1) * (2*Math.PI/8),
           }};
         }});
 
         function updateSizes() {{
           items.forEach(it => {{
             const img = it.el.querySelector('img');
-            if (img && img.complete) {{
-              it.w = img.offsetWidth || it.w;
-              it.h = img.offsetHeight || it.h;
-            }} else {{
-              it.w = it.el.offsetWidth || it.w;
-              it.h = it.el.offsetHeight || it.h;
-            }}
+            const w = (img && img.complete ? img.offsetWidth : it.el.offsetWidth) || it.bw;
+            const h = (img && img.complete ? img.offsetHeight : it.el.offsetHeight) || it.bh;
+            it.bw = w;
+            it.bh = h;
           }});
+        }}
+
+        function halfExtents(it) {{
+          const c = Math.cos(it.ang), s = Math.sin(it.ang);
+          const hw = 0.5 * (Math.abs(it.bw * c) + Math.abs(it.bh * s));
+          const hh = 0.5 * (Math.abs(it.bw * s) + Math.abs(it.bh * c));
+          return {{ hw, hh }};
         }}
 
         function layout() {{
           W = stage.clientWidth; H = stage.clientHeight;
           updateSizes();
           items.forEach(it => {{
-            it.x = Math.max(0, Math.min(it.x, Math.max(0, W - it.w)));
-            it.y = Math.max(0, Math.min(it.y, Math.max(0, H - it.h)));
+            const e = halfExtents(it);
+            it.cx = Math.min(Math.max(it.cx, e.hw), Math.max(e.hw, W - e.hw));
+            it.cy = Math.min(Math.max(it.cy, e.hh), Math.max(e.hh, H - e.hh));
           }});
         }}
         window.addEventListener('resize', layout);
@@ -270,23 +277,20 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
 
         // Minimal Translation Vector (AABB) resolver
         function resolveAABBCollision(a, b) {{
-          const acx = a.x + a.w / 2;
-          const acy = a.y + a.h / 2;
-          const bcx = b.x + b.w / 2;
-          const bcy = b.y + b.h / 2;
-          const dx = acx - bcx;
-          const dy = acy - bcy;
-          const px = (a.w / 2 + b.w / 2) - Math.abs(dx);
-          const py = (a.h / 2 + b.h / 2) - Math.abs(dy);
+          const ea = halfExtents(a), eb = halfExtents(b);
+          const dx = a.cx - b.cx;
+          const dy = a.cy - b.cy;
+          const px = (ea.hw + eb.hw) - Math.abs(dx);
+          const py = (ea.hh + eb.hh) - Math.abs(dy);
           if (px <= 0 || py <= 0) return;
           if (px < py) {{
             const sx = Math.sign(dx) || 1;
-            a.x += sx * px / 2; b.x -= sx * px / 2;
-            a.vx = -a.vx; b.vx = -b.vx;
+            a.cx += sx * px / 2; b.cx -= sx * px / 2;
+            const tvx = a.vx; a.vx = b.vx; b.vx = tvx;
           }} else {{
             const sy = Math.sign(dy) || 1;
-            a.y += sy * py / 2; b.y -= sy * py / 2;
-            a.vy = -a.vy; b.vy = -b.vy;
+            a.cy += sy * py / 2; b.cy -= sy * py / 2;
+            const tvy = a.vy; a.vy = b.vy; b.vy = tvy;
           }}
         }}
 
@@ -294,26 +298,31 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         function tick(now) {{
           const dt = Math.min(0.05, (now - last) / 1000); // clamp 50ms
           last = now;
-          // Re-measure exact sizes each frame for pixel-accurate boxes
           updateSizes();
+          // Integrate motion and spin
           for (const it of items) {{
-            it.x += it.vx * dt; it.y += it.vy * dt;
-            // Bounce X
-            if (it.x <= 0 && it.vx < 0) {{ it.x = 0; it.vx = -it.vx; }}
-            if (it.x + it.w >= W && it.vx > 0) {{ it.x = W - it.w; it.vx = -it.vx; }}
-            // Bounce Y
-            if (it.y <= 0 && it.vy < 0) {{ it.y = 0; it.vy = -it.vy; }}
-            if (it.y + it.h >= H && it.vy > 0) {{ it.y = H - it.h; it.vy = -it.vy; }}
+            it.ang += it.spin * dt;
+            const e = halfExtents(it);
+            it.cx += it.vx * dt; it.cy += it.vy * dt;
+            // Walls X
+            if (it.cx - e.hw <= 0 && it.vx < 0) {{ it.cx = e.hw; it.vx = -it.vx; }}
+            if (it.cx + e.hw >= W && it.vx > 0) {{ it.cx = W - e.hw; it.vx = -it.vx; }}
+            // Walls Y
+            if (it.cy - e.hh <= 0 && it.vy < 0) {{ it.cy = e.hh; it.vy = -it.vy; }}
+            if (it.cy + e.hh >= H && it.vy > 0) {{ it.cy = H - e.hh; it.vy = -it.vy; }}
           }}
-          // Pairwise collision resolution
-          for (let i = 0; i < items.length; i++) {{
-            for (let j = i + 1; j < items.length; j++) {{
-              resolveAABBCollision(items[i], items[j]);
+          // Multiple passes for stability
+          for (let pass = 0; pass < 2; pass++) {{
+            for (let i = 0; i < items.length; i++) {{
+              for (let j = i + 1; j < items.length; j++) {{
+                resolveAABBCollision(items[i], items[j]);
+              }}
             }}
           }}
           // Apply transforms
           for (const it of items) {{
-            it.el.style.transform = `translate3d(${{it.x}}px, ${{it.y}}px, 0)`;
+            const deg = (it.ang * 180 / Math.PI).toFixed(3);
+            it.el.style.transform = `translate3d(${{it.cx}}px, ${{it.cy}}px, 0) translate(-50%, -50%) rotate(${{deg}}deg)`;
           }}
           requestAnimationFrame(tick);
         }}
