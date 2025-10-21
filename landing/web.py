@@ -101,8 +101,8 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       /* DVD screensaver stage */
       .stage {{ position: fixed; inset: 0; overflow: hidden; z-index: 2; }}
       .dvd {{ position: absolute; display: block; will-change: transform; }}
-      .dvd img {{ height: 96px; width: auto; display: block; transform-origin: 50% 50%; will-change: transform; animation: spin 8s linear infinite; }}
-      .dvd img[alt='app96'] {{ height: 115px; }}
+      .dvd img {{ height: 96px; width: auto; display: block; transform-origin: 50% 50%; will-change: transform; }}
+      @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
       @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
 
       .scene {{ position: relative; z-index: 2; height: 100%; display: grid; place-items: stretch; }}
@@ -268,73 +268,55 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
           return !(a.x + a.w < b.x || b.x + b.w < a.x || a.y + a.h < b.y || b.y + b.h < a.y);
         }}
 
+        // Minimal Translation Vector (AABB) resolver
+        function resolveAABBCollision(a, b) {
+          const acx = a.x + a.w / 2;
+          const acy = a.y + a.h / 2;
+          const bcx = b.x + b.w / 2;
+          const bcy = b.y + b.h / 2;
+          const dx = acx - bcx;
+          const dy = acy - bcy;
+          const px = (a.w / 2 + b.w / 2) - Math.abs(dx);
+          const py = (a.h / 2 + b.h / 2) - Math.abs(dy);
+          if (px <= 0 || py <= 0) return;
+          if (px < py) {
+            const sx = Math.sign(dx) || 1;
+            a.x += sx * px / 2; b.x -= sx * px / 2;
+            a.vx = -a.vx; b.vx = -b.vx;
+          } else {
+            const sy = Math.sign(dy) || 1;
+            a.y += sy * py / 2; b.y -= sy * py / 2;
+            a.vy = -a.vy; b.vy = -b.vy;
+          }
+        }
+
         let last = performance.now();
-        function tick(now) {{
+        function tick(now) {
           const dt = Math.min(0.05, (now - last) / 1000); // clamp 50ms
           last = now;
-          for (const it of items) {{
+          // Re-measure exact sizes each frame for pixel-accurate boxes
+          updateSizes();
+          for (const it of items) {
             it.x += it.vx * dt; it.y += it.vy * dt;
             // Bounce X
-            if (it.x <= 0 && it.vx < 0) {{ it.x = 0; it.vx = -it.vx; }}
-            if (it.x + it.w >= W && it.vx > 0) {{ it.x = W - it.w; it.vx = -it.vx; }}
+            if (it.x <= 0 && it.vx < 0) { it.x = 0; it.vx = -it.vx; }
+            if (it.x + it.w >= W && it.vx > 0) { it.x = W - it.w; it.vx = -it.vx; }
             // Bounce Y
-            if (it.y <= 0 && it.vy < 0) {{ it.y = 0; it.vy = -it.vy; }}
-            if (it.y + it.h >= H && it.vy > 0) {{ it.y = H - it.h; it.vy = -it.vy; }}
-          }}
-          
-          // Check collisions between items
-          for (let i = 0; i < items.length; i++) {{
-            for (let j = i + 1; j < items.length; j++) {{
-              const a = items[i];
-              const b = items[j];
-              if (checkCollision(a, b)) {{
-                // Calculate center points
-                const acx = a.x + a.w / 2;
-                const acy = a.y + a.h / 2;
-                const bcx = b.x + b.w / 2;
-                const bcy = b.y + b.h / 2;
-                
-                // Collision normal (from a to b)
-                const dx = bcx - acx;
-                const dy = bcy - acy;
-                const dist = Math.sqrt(dx*dx + dy*dy) || 1;
-                const nx = dx / dist;
-                const ny = dy / dist;
-                
-                // Relative velocity
-                const dvx = a.vx - b.vx;
-                const dvy = a.vy - b.vy;
-                const dvn = dvx * nx + dvy * ny;
-                
-                // Only collide if approaching
-                if (dvn > 0) {{
-                  // Elastic collision (equal mass)
-                  a.vx -= dvn * nx;
-                  a.vy -= dvn * ny;
-                  b.vx += dvn * nx;
-                  b.vy += dvn * ny;
-                  
-                  // Aggressive separation to prevent overlap (use max dimension)
-                  const minSep = Math.max(a.w, a.h, b.w, b.h) / 2;
-                  const targetDist = minSep + 5; // 5px safety margin
-                  const overlap = targetDist - dist;
-                  if (overlap > 0) {{
-                    a.x -= nx * overlap * 0.52;
-                    a.y -= ny * overlap * 0.52;
-                    b.x += nx * overlap * 0.52;
-                    b.y += ny * overlap * 0.52;
-                  }}
-                }}
-              }}
-            }}
-          }}
-          
-          // Update positions
-          for (const it of items) {{
-            it.el.style.transform = `translate3d(${{it.x}}px, ${{it.y}}px, 0)`;
-          }}
+            if (it.y <= 0 && it.vy < 0) { it.y = 0; it.vy = -it.vy; }
+            if (it.y + it.h >= H && it.vy > 0) { it.y = H - it.h; it.vy = -it.vy; }
+          }
+          // Pairwise collision resolution
+          for (let i = 0; i < items.length; i++) {
+            for (let j = i + 1; j < items.length; j++) {
+              resolveAABBCollision(items[i], items[j]);
+            }
+          }
+          // Apply transforms
+          for (const it of items) {
+            it.el.style.transform = `translate3d(${it.x}px, ${it.y}px, 0)`;
+          }
           requestAnimationFrame(tick);
-        }}
+        }
         requestAnimationFrame(tick);
       }})();
     </script>
