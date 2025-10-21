@@ -95,12 +95,13 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       }}
       * {{ margin: 0; padding: 0; box-sizing: border-box; }}
       html, body {{ height: 100%; }}
-      body {{
+      body {
         font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-        background: url('/stars.gif') repeat;
+        background: #000 url('/stars.gif') repeat;
+        background-size: auto;
         color: #eee;
         overflow: hidden;
-      }}
+      }
 
 
 
