@@ -269,7 +269,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         }}
 
         // Minimal Translation Vector (AABB) resolver
-        function resolveAABBCollision(a, b) {
+        function resolveAABBCollision(a, b) {{
           const acx = a.x + a.w / 2;
           const acy = a.y + a.h / 2;
           const bcx = b.x + b.w / 2;
@@ -279,44 +279,44 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
           const px = (a.w / 2 + b.w / 2) - Math.abs(dx);
           const py = (a.h / 2 + b.h / 2) - Math.abs(dy);
           if (px <= 0 || py <= 0) return;
-          if (px < py) {
+          if (px < py) {{
             const sx = Math.sign(dx) || 1;
             a.x += sx * px / 2; b.x -= sx * px / 2;
             a.vx = -a.vx; b.vx = -b.vx;
-          } else {
+          }} else {{
             const sy = Math.sign(dy) || 1;
             a.y += sy * py / 2; b.y -= sy * py / 2;
             a.vy = -a.vy; b.vy = -b.vy;
-          }
-        }
+          }}
+        }}
 
         let last = performance.now();
-        function tick(now) {
+        function tick(now) {{
           const dt = Math.min(0.05, (now - last) / 1000); // clamp 50ms
           last = now;
           // Re-measure exact sizes each frame for pixel-accurate boxes
           updateSizes();
-          for (const it of items) {
+          for (const it of items) {{
             it.x += it.vx * dt; it.y += it.vy * dt;
             // Bounce X
-            if (it.x <= 0 && it.vx < 0) { it.x = 0; it.vx = -it.vx; }
-            if (it.x + it.w >= W && it.vx > 0) { it.x = W - it.w; it.vx = -it.vx; }
+            if (it.x <= 0 && it.vx < 0) {{ it.x = 0; it.vx = -it.vx; }}
+            if (it.x + it.w >= W && it.vx > 0) {{ it.x = W - it.w; it.vx = -it.vx; }}
             // Bounce Y
-            if (it.y <= 0 && it.vy < 0) { it.y = 0; it.vy = -it.vy; }
-            if (it.y + it.h >= H && it.vy > 0) { it.y = H - it.h; it.vy = -it.vy; }
-          }
+            if (it.y <= 0 && it.vy < 0) {{ it.y = 0; it.vy = -it.vy; }}
+            if (it.y + it.h >= H && it.vy > 0) {{ it.y = H - it.h; it.vy = -it.vy; }}
+          }}
           // Pairwise collision resolution
-          for (let i = 0; i < items.length; i++) {
-            for (let j = i + 1; j < items.length; j++) {
+          for (let i = 0; i < items.length; i++) {{
+            for (let j = i + 1; j < items.length; j++) {{
               resolveAABBCollision(items[i], items[j]);
-            }
-          }
+            }}
+          }}
           // Apply transforms
-          for (const it of items) {
-            it.el.style.transform = `translate3d(${it.x}px, ${it.y}px, 0)`;
-          }
+          for (const it of items) {{
+            it.el.style.transform = `translate3d(${{it.x}}px, ${{it.y}}px, 0)`;
+          }}
           requestAnimationFrame(tick);
-        }
+        }}
         requestAnimationFrame(tick);
       }})();
     </script>
