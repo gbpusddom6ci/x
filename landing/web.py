@@ -18,7 +18,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         "app80": "penguins.jpg",
         "app90": "pussy.png",
         "app96": "chud.jpeg",
-        "app120": "romantizma.png",
+        "app120": "umt.jpg",
         "app321": "silkroad.jpg",
         "news_converter": "suicide.png",
     }
