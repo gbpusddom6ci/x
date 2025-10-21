@@ -274,7 +274,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
           
           setTimeout(() => {{
             logo.style.opacity = '0';
-          }}, 5);
+          }}, 2.5);
         }}
         
         setInterval(flash, 3000);
