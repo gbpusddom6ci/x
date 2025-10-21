@@ -275,28 +275,56 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
           return !(a.x + a.w < b.x || b.x + b.w < a.x || a.y + a.h < b.y || b.y + b.h < a.y);
         }}
 
-        // Minimal Translation Vector (AABB) resolver
-        function resolveAABBCollision(a, b) {{
-          const ea = halfExtents(a), eb = halfExtents(b);
-          const dx = a.cx - b.cx;
-          const dy = a.cy - b.cy;
-          const px = (ea.hw + eb.hw) - Math.abs(dx);
-          const py = (ea.hh + eb.hh) - Math.abs(dy);
-          if (px <= 0 || py <= 0) return;
-          if (px < py) {{
-            const sx = Math.sign(dx) || 1;
-            a.cx += sx * px / 2; b.cx -= sx * px / 2;
-            const tvx = a.vx; a.vx = b.vx; b.vx = tvx;
-          }} else {{
-            const sy = Math.sign(dy) || 1;
-            a.cy += sy * py / 2; b.cy -= sy * py / 2;
-            const tvy = a.vy; a.vy = b.vy; b.vy = tvy;
+        // OBB-SAT collision helpers (exact rectangle edges)
+        function axesOf(it) {{
+          const c = Math.cos(it.ang), s = Math.sin(it.ang);
+          return {{ ux: {{x:c, y:s}}, uy: {{x:-s, y:c}} }};
+        }}
+        function projRadius(it, axis) {{
+          const A = axesOf(it);
+          const hx = it.bw * 0.5, hy = it.bh * 0.5;
+          return hx * Math.abs(A.ux.x * axis.x + A.ux.y * axis.y) +
+                 hy * Math.abs(A.uy.x * axis.x + A.uy.y * axis.y);
+        }}
+        function satMTV(a, b) {{
+          const A = axesOf(a), B = axesOf(b);
+          const axes = [A.ux, A.uy, B.ux, B.uy];
+          let minPen = Infinity;
+          let best = null;
+          const d = {{ x: b.cx - a.cx, y: b.cy - a.cy }};
+          for (const ax of axes) {{
+            const ra = projRadius(a, ax);
+            const rb = projRadius(b, ax);
+            const dist = Math.abs(d.x * ax.x + d.y * ax.y);
+            const pen = ra + rb - dist;
+            if (pen <= 0) return null;
+            if (pen < minPen) {{
+              minPen = pen;
+              const sgn = (d.x * ax.x + d.y * ax.y) < 0 ? -1 : 1;
+              best = {{ overlap: pen, normal: {{ x: ax.x * sgn, y: ax.y * sgn }} }};
+            }}
           }}
+          return best;
+        }}
+        function resolveCollision(a, b) {{
+          const mtv = satMTV(a, b);
+          if (!mtv) return;
+          const n = mtv.normal;
+          const o = mtv.overlap + 0.5; // positional slop
+          a.cx -= n.x * o * 0.5; a.cy -= n.y * o * 0.5;
+          b.cx += n.x * o * 0.5; b.cy += n.y * o * 0.5;
+          // swap normal velocity components (equal mass)
+          const aN = a.vx * n.x + a.vy * n.y;
+          const bN = b.vx * n.x + b.vy * n.y;
+          const aTx = a.vx - aN * n.x, aTy = a.vy - aN * n.y;
+          const bTx = b.vx - bN * n.x, bTy = b.vy - bN * n.y;
+          a.vx = aTx + bN * n.x; a.vy = aTy + bN * n.y;
+          b.vx = bTx + aN * n.x; b.vy = bTy + aN * n.y;
         }}
 
         let last = performance.now();
         function tick(now) {{
-          const dt = Math.min(0.05, (now - last) / 1000); // clamp 50ms
+          const dt = Math.min(1/60, (now - last) / 1000); // clamp ~16ms
           last = now;
           updateSizes();
           // Integrate motion and spin
@@ -315,7 +343,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
           for (let pass = 0; pass < 2; pass++) {{
             for (let i = 0; i < items.length; i++) {{
               for (let j = i + 1; j < items.length; j++) {{
-                resolveAABBCollision(items[i], items[j]);
+                resolveCollision(items[i], items[j]);
               }}
             }}
           }}
