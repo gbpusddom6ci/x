@@ -221,27 +221,46 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         const stage = document.getElementById('stage');
         if (!stage) return;
         const nodes = Array.from(stage.querySelectorAll('.dvd'));
-        // Ensure predictable size for measurement
-        function sizeOf(el) {{ return {{ w: el.offsetWidth || 100, h: el.offsetHeight || 80 }}; }}
+        
+        // Wait for images to load, then get real sizes
         let W = stage.clientWidth, H = stage.clientHeight;
         const items = nodes.map((el, i) => {{
-          const s = sizeOf(el);
           const ang = Math.random() * Math.PI * 2;
           const speed = 90 + Math.random() * 110; // px/s
-          return {{ el, x: Math.random() * Math.max(1, W - s.w), y: Math.random() * Math.max(1, H - s.h), w: s.w, h: s.h, vx: Math.cos(ang) * speed, vy: Math.sin(ang) * speed }};
+          return {{ 
+            el, 
+            x: Math.random() * Math.max(1, W - 100), 
+            y: Math.random() * Math.max(1, H - 100), 
+            w: 100, 
+            h: 100, 
+            vx: Math.cos(ang) * speed, 
+            vy: Math.sin(ang) * speed 
+          }};
         }});
+
+        function updateSizes() {{
+          items.forEach(it => {{
+            const img = it.el.querySelector('img');
+            if (img && img.complete) {{
+              it.w = img.offsetWidth || it.w;
+              it.h = img.offsetHeight || it.h;
+            }} else {{
+              it.w = it.el.offsetWidth || it.w;
+              it.h = it.el.offsetHeight || it.h;
+            }}
+          }});
+        }}
 
         function layout() {{
           W = stage.clientWidth; H = stage.clientHeight;
-          // If any item has zero size (images not loaded yet), update sizes
+          updateSizes();
           items.forEach(it => {{
-            const s = sizeOf(it.el);
-            if (s.w && s.h) {{ it.w = s.w; it.h = s.h; }}
             it.x = Math.max(0, Math.min(it.x, Math.max(0, W - it.w)));
             it.y = Math.max(0, Math.min(it.y, Math.max(0, H - it.h)));
           }});
         }}
         window.addEventListener('resize', layout);
+        setTimeout(layout, 100); // Wait for images to load
         layout();
 
         // Check collision between two items
@@ -295,13 +314,15 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
                   b.vx += dvn * nx;
                   b.vy += dvn * ny;
                   
-                  // Separate overlapping items
-                  const overlap = (a.w + b.w) / 2 - dist + 2;
+                  // Aggressive separation to prevent overlap (use max dimension)
+                  const minSep = Math.max(a.w, a.h, b.w, b.h) / 2;
+                  const targetDist = minSep + 5; // 5px safety margin
+                  const overlap = targetDist - dist;
                   if (overlap > 0) {{
-                    a.x -= nx * overlap * 0.5;
-                    a.y -= ny * overlap * 0.5;
-                    b.x += nx * overlap * 0.5;
-                    b.y += ny * overlap * 0.5;
+                    a.x -= nx * overlap * 0.52;
+                    a.y -= ny * overlap * 0.52;
+                    b.x += nx * overlap * 0.52;
+                    b.y += ny * overlap * 0.52;
                   }}
                 }}
               }}
