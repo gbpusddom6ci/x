@@ -187,7 +187,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       </div>
       <!-- Center logo -->
       <div style='position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 999;'>
-        <img src='/photos/lobotomy.jpg' alt='logo' style='height: clamp(108px, 15vmin, 210px); width: auto;'>
+        <img src='/photos/lobotomy.jpg' alt='logo' style='height: clamp(135px, 18.75vmin, 262px); width: auto;'>
       </div>
       <!-- Hide old portal content entirely -->
       <div class='portal' style='display:none'></div>
