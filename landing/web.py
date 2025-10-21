@@ -7,7 +7,11 @@ from typing import Dict
 
 
 def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
-    # App to photo mapping
+    # Deliberately strange, surreal gateway UI built with pure HTML/CSS/JS.
+    # No external assets beyond photos/, favicon/, stars.gif.
+    import math
+
+    # App to photo mapping (kept from previous design)
     app_photos = {
         "app48": "kan.jpeg",
         "app72": "kits.jpg",
@@ -17,102 +21,241 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         "news_converter": "suicide.png",
     }
 
-    # Build orbital items
-    orbital_items = []
+    # Build orbital items around a "wormhole" with individual speeds/offsets
+    n = max(1, len(app_links))
+    orbital_items: list[str] = []
+    for i, (key, meta) in enumerate(app_links.items()):
+        url = meta.get("url", "#")
+        title = meta.get("title", key)
+        desc = meta.get("description", "")
+        photo = app_photos.get(key, "")
+        # Spread angles evenly; vary radius and speed in a pseudo-organic way
+        angle = (360.0 * i) / n
+        radius = 280 + 80 * math.sin((i + 1) * 1.7)
+        speed_s = 28 + (i % 5) * 6  # seconds
+        delay_s = - (angle / 360.0) * speed_s
+        hue = (i * 53) % 360
+        # Aurora Void accent color per item
+        aurora_colors = ["#00E5FF", "#38BDF8", "#A78BFA", "#06B6D4"]
+        color = aurora_colors[i % len(aurora_colors)]
+        item = (
+            f"<div class='orb' style=\"--radius:{radius:.0f}px; --speed:{speed_s}s; animation-delay:{delay_s:.3f}s; --c:{color};\">"
+            f"<div class='arm'>"
+            f"<a href='{url}' title='{title} — {desc}' target='_blank' rel='noopener'>"
+            f"<img src='/photos/{photo}' alt='{key}'>"
+            f"</a>"
+            f"</div>"
+            f"</div>"
+        )
+        orbital_items.append(item)
+
+    # Pre-render orbit HTML safely (avoid join type issues)
+    orbits_html = "".join(str(x) for x in orbital_items)
+
+    # Build floating DVD-style app items (anchors with images)
+    dvd_items: list[str] = []
     for key, meta in app_links.items():
         url = meta.get("url", "#")
+        title = meta.get("title", key)
+        desc = meta.get("description", "")
         photo = app_photos.get(key, "")
-        orbital_items.append(
-            f"<a href='{url}' target='_blank' rel='noopener'><img src='/photos/{photo}' alt='{key}'></a>"
+        dvd_items.append(
+            f"<a class='dvd' href='{url}' title='{title} — {desc}' target='_blank' rel='noopener'>"
+            f"<img src='/photos/{photo}' alt='{key}'>"
+            f"</a>"
         )
+    dvds_html = "".join(dvd_items)
 
     page = f"""<!doctype html>
 <html>
   <head>
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <title>x1 Trading Platform</title>
+    <title>malw.beer</title>
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
     <link rel="shortcut icon" href="/favicon/favicon.ico">
     <style>
+      :root {{
+        --mx: 0; /* mouse -0.5..+0.5 */
+        --my: 0;
+        --twist: 18deg;
+        --glow: 0.6;
+        --portal-size: min(60vmin, 540px);
+        --portal-thick: 10vmin;
+      }}
       * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+      html, body {{ height: 100%; }}
       body {{
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji", "Segoe UI Emoji";
         background: #000 url('/stars.gif') repeat;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        overflow-x: hidden;
+        background-size: auto;
+        color: #eee;
+        overflow: hidden;
       }}
-      .space-container {{
-        position: relative;
-        width: 1200px;
-        height: 900px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+
+
+
+      /* DVD screensaver stage */
+      .stage {{ position: fixed; inset: 0; overflow: hidden; z-index: 2; }}
+      .dvd {{ position: absolute; display: block; will-change: transform; }}
+      .dvd img {{ height: 96px; width: auto; display: block; transform-origin: 50% 50%; will-change: transform; animation: spin 8s linear infinite; }}
+      @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
+
+      .scene {{ position: relative; z-index: 2; height: 100%; display: grid; place-items: stretch; }}
+
+      /* Central wormhole */
+      .portal {{
+        position: relative; width: var(--portal-size); height: var(--portal-size);
+        border-radius: 50%;
+        background:
+          radial-gradient(closest-side, rgba(255,255,255,0.12), rgba(0,0,0,0.0) 60%),
+          conic-gradient(from 0deg, color-mix(in srgb, var(--a1) 60%, transparent), color-mix(in srgb, var(--a2) 50%, transparent), color-mix(in srgb, var(--a3) 60%, transparent), color-mix(in srgb, var(--a4) 50%, transparent));
+        box-shadow:
+          0 0 60px 20px rgba(255,0,153,0.07) inset,
+          0 0 140px rgba(0,255,255,0.10);
+        filter: url(#wobble) blur(0.2px) contrast(1.1);
+        transform: perspective(900px) rotateX(calc(var(--my) * var(--twist))) rotateY(calc(var(--mx) * -1 * var(--twist)));
+        animation: swirl 30s linear infinite;
       }}
-      .center-logo {{
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 10;
+      @keyframes swirl {{ from {{ transform: perspective(900px) rotateX(calc(var(--my) * var(--twist))) rotateY(calc(var(--mx) * -1 * var(--twist))) rotate(0deg); }} to {{ transform: perspective(900px) rotateX(calc(var(--my) * var(--twist))) rotateY(calc(var(--mx) * -1 * var(--twist))) rotate(360deg); }} }}
+
+      .halo {{
+        position: absolute; inset: calc(var(--portal-thick) * -0.15);
+        border-radius: 50%;
+        background: conic-gradient(from 90deg, rgba(255,255,255,0.22), rgba(0,0,0,0));
+        filter: blur(16px) opacity(.8);
+        mix-blend-mode: screen;
+        pointer-events: none;
       }}
-      .center-logo img {{
-        width: 180px;
-        height: auto;
-        display: block;
+
+      /* Static luminous rings (4 layers) */
+      .rings {{ position: absolute; inset: 6%; pointer-events: none; z-index: 0; }}
+      .ring {{ position: absolute; inset: 0; border-radius: 50%; opacity: .9; mix-blend-mode: screen; }}
+      .ring::before {{ content: ""; position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 0 24px rgba(255,255,255,0.06) inset; }}
+      .r1 {{ transform: scale(.58); filter: drop-shadow(0 0 10px var(--a1)); }}
+      .r2 {{ transform: scale(.90); filter: drop-shadow(0 0 12px var(--a2)); }}
+      .r3 {{ transform: scale(1.22); filter: drop-shadow(0 0 14px var(--a3)); }}
+      .r4 {{ transform: scale(1.48); filter: drop-shadow(0 0 16px var(--a4)); }}
+
+      .glitch {{
+        position: absolute; inset: 0; display: grid; place-items: center; text-transform: uppercase;
+        font-size: clamp(28px, 7vmin, 92px); letter-spacing: .12em; font-weight: 800; color: #e7e7e7;
+        mix-blend-mode: difference; text-shadow: 0 0 10px rgba(255,255,255,0.2);
       }}
-      .orbital {{
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+      .glitch span {{ position: absolute; }}
+      .glitch span:nth-child(1) {{ transform: translate(-2px,-1px); color: var(--a4); filter: blur(.2px); }}
+      .glitch span:nth-child(2) {{ transform: translate(2px,1px); color: var(--a3); filter: blur(.2px); }}
+      .glitch span:nth-child(3) {{ position: relative; color: #fafafa; }}
+      .glitch span:nth-child(4) {{ transform: translate(-3px,2px); color: var(--a1); filter: blur(.2px); mix-blend-mode: screen; }}
+
+      /* Galaxy of orbits */
+      .galaxy {{ position: absolute; inset: -2%; }}
+      .orb {{
+        position: absolute; top: 50%; left: 50%;
+        transform: translate(-50%,-50%) rotate(0deg);
+        animation: revolve var(--speed) linear infinite;
+        will-change: transform;
       }}
-      .orbital a {{
-        position: absolute;
-        display: block;
+      .arm {{
+        transform: translateX(var(--radius));
+        filter: url(#wobble) saturate(1.05);
       }}
-      .orbital a img {{
-        width: auto;
-        height: 96px;
-        max-width: 144px;
-        display: block;
+      .orb a {{ display: inline-block; transform: rotate(0deg); }}
+      .orb img {{
+        height: clamp(72px, 10vmin, 140px);
+        width: auto; display: block; border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06) inset;
+        filter: drop-shadow(0 0 18px var(--c)) drop-shadow(0 0 6px rgba(255,255,255,0.06));
+        mix-blend-mode: screen;
+        animation: bob 4s ease-in-out infinite alternate;
       }}
-      /* Position each orbital item - balanced asymmetric layout around center (6 items) */
-      .orbital a:nth-child(1) {{ top: 150px; left: 50%; transform: translateX(-50%); }}
-      .orbital a:nth-child(2) {{ top: 250px; right: 250px; }}
-      .orbital a:nth-child(3) {{ top: 35%; right: 180px; transform: translateY(-50%); }}
-      .orbital a:nth-child(4) {{ top: 60%; left: 220px; }}
-      .orbital a:nth-child(5) {{ bottom: 180px; left: 480px; }}
-      .orbital a:nth-child(6) {{ bottom: 150px; right: 400px; }}
-      footer {{
-        position: fixed;
-        bottom: 40px;
-        left: 50%;
-        transform: translateX(-50%);
-        text-align: center;
-        font-family: sans-serif;
-        font-size: 10px;
-        font-weight: normal;
-        color: #DC143C;
+      @keyframes revolve {{ to {{ transform: translate(-50%,-50%) rotate(360deg); }} }}
+      @keyframes bob {{
+        0% {{ filter: drop-shadow(0 0 0 rgba(255,0,200,0.0)); transform: translateY(-4px) rotate(-1deg); }}
+        100% {{ filter: drop-shadow(0 0 16px rgba(0,255,240,0.16)); transform: translateY(4px) rotate(1deg); }}
       }}
     </style>
   </head>
   <body>
-    <div class='space-container'>
-      <div class='center-logo'>
-        <img src='/photos/lobotomy.jpg' alt='x1'>
+    <div class='scene'>
+      <!-- DVD-style floating apps -->
+      <div id='stage' class='stage'>
+        {dvds_html}
       </div>
-      <div class='orbital'>
-        {''.join(orbital_items)}
-      </div>
+      <!-- Hide old portal content entirely -->
+      <div class='portal' style='display:none'></div>
     </div>
-    <footer>marketmalware</footer>
+
+    <!-- SVG filters for wobble/distortion (no external deps) -->
+    <svg width="0" height="0" style="position:absolute">
+      <filter id="wobble">
+        <feTurbulence type="fractalNoise" baseFrequency="0.98" numOctaves="1" seed="7" result="turb"/>
+        <feDisplacementMap in="SourceGraphic" in2="turb" scale="2" xChannelSelector="R" yChannelSelector="G">
+          <animate attributeName="scale" values="1;4;1" dur="8s" repeatCount="indefinite"/>
+        </feDisplacementMap>
+      </filter>
+    </svg>
+
+    <script>
+      // Subtle mouse parallax (keeps the stars reactive)
+      (function() {{
+        const r = document.documentElement;
+        window.addEventListener('mousemove', (e) => {{
+          const x = (e.clientX / window.innerWidth) - 0.5;
+          const y = (e.clientY / window.innerHeight) - 0.5;
+          r.style.setProperty('--mx', x.toFixed(3));
+          r.style.setProperty('--my', y.toFixed(3));
+        }});
+      }})();
+
+      // DVD screensaver-like bouncing for app icons
+      (function() {{
+        const stage = document.getElementById('stage');
+        if (!stage) return;
+        const nodes = Array.from(stage.querySelectorAll('.dvd'));
+        // Ensure predictable size for measurement
+        function sizeOf(el) {{ return {{ w: el.offsetWidth || 100, h: el.offsetHeight || 80 }}; }}
+        let W = stage.clientWidth, H = stage.clientHeight;
+        const items = nodes.map((el, i) => {{
+          const s = sizeOf(el);
+          const ang = Math.random() * Math.PI * 2;
+          const speed = 90 + Math.random() * 110; // px/s
+          return {{ el, x: Math.random() * Math.max(1, W - s.w), y: Math.random() * Math.max(1, H - s.h), w: s.w, h: s.h, vx: Math.cos(ang) * speed, vy: Math.sin(ang) * speed }};
+        }});
+
+        function layout() {{
+          W = stage.clientWidth; H = stage.clientHeight;
+          // If any item has zero size (images not loaded yet), update sizes
+          items.forEach(it => {{
+            const s = sizeOf(it.el);
+            if (s.w && s.h) {{ it.w = s.w; it.h = s.h; }}
+            it.x = Math.max(0, Math.min(it.x, Math.max(0, W - it.w)));
+            it.y = Math.max(0, Math.min(it.y, Math.max(0, H - it.h)));
+          }});
+        }}
+        window.addEventListener('resize', layout);
+        layout();
+
+        let last = performance.now();
+        function tick(now) {{
+          const dt = Math.min(0.05, (now - last) / 1000); // clamp 50ms
+          last = now;
+          for (const it of items) {{
+            it.x += it.vx * dt; it.y += it.vy * dt;
+            // Bounce X
+            if (it.x <= 0 && it.vx < 0) {{ it.x = 0; it.vx = -it.vx; }}
+            if (it.x + it.w >= W && it.vx > 0) {{ it.x = W - it.w; it.vx = -it.vx; }}
+            // Bounce Y
+            if (it.y <= 0 && it.vy < 0) {{ it.y = 0; it.vy = -it.vy; }}
+            if (it.y + it.h >= H && it.vy > 0) {{ it.y = H - it.h; it.vy = -it.vy; }}
+            it.el.style.transform = `translate3d(${{it.x}}px, ${{it.y}}px, 0)`;
+          }}
+          requestAnimationFrame(tick);
+        }}
+        requestAnimationFrame(tick);
+      }})();
+    </script>
   </body>
 </html>"""
     return page.encode("utf-8")
@@ -137,7 +280,7 @@ def make_handler(html_bytes: bytes):
                 self.end_headers()
                 self.wfile.write(b"ok")
             elif self.path == "/stars.gif":
-                stars_path = os.path.join(base_dir, "..", "stars.gif")
+                stars_path = os.path.join(base_dir, "..", "photos", "stars.gif")
                 try:
                     with open(stars_path, "rb") as f:
                         content = f.read()

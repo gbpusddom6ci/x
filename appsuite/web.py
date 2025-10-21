@@ -161,18 +161,28 @@ def make_handler(backends: List[Backend], landing_bytes: bytes):
 
         def _serve_stars(self) -> None:
             import os
-            stars_path = os.path.join(os.path.dirname(__file__), "..", "stars.gif")
-            try:
-                with open(stars_path, "rb") as f:
-                    content = f.read()
-                self.send_response(200)
-                self.send_header("Content-Type", "image/gif")
-                self.send_header("Content-Length", str(len(content)))
-                self.send_header("Cache-Control", "public, max-age=86400")
-                self.end_headers()
-                self.wfile.write(content)
-            except FileNotFoundError:
+            base = os.path.dirname(__file__)
+            candidates = [
+                os.path.join(base, "..", "photos", "stars.gif"),
+                os.path.join(base, "..", "stars.gif"),
+            ]
+            content = None
+            for path in candidates:
+                try:
+                    with open(path, "rb") as f:
+                        content = f.read()
+                        break
+                except FileNotFoundError:
+                    continue
+            if content is None:
                 self.send_error(404, "Stars.gif not found")
+                return
+            self.send_response(200)
+            self.send_header("Content-Type", "image/gif")
+            self.send_header("Content-Length", str(len(content)))
+            self.send_header("Cache-Control", "public, max-age=86400")
+            self.end_headers()
+            self.wfile.write(content)
 
         def do_GET(self) -> None:  # noqa: N802
             if self.path in {"/", "/index", "/index.html"}:
