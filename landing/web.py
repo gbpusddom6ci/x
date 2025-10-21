@@ -244,6 +244,11 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         window.addEventListener('resize', layout);
         layout();
 
+        // Check collision between two items
+        function checkCollision(a, b) {{
+          return !(a.x + a.w < b.x || b.x + b.w < a.x || a.y + a.h < b.y || b.y + b.h < a.y);
+        }}
+
         let last = performance.now();
         function tick(now) {{
           const dt = Math.min(0.05, (now - last) / 1000); // clamp 50ms
@@ -257,6 +262,37 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
             if (it.y <= 0 && it.vy < 0) {{ it.y = 0; it.vy = -it.vy; }}
             if (it.y + it.h >= H && it.vy > 0) {{ it.y = H - it.h; it.vy = -it.vy; }}
             it.el.style.transform = `translate3d(${{it.x}}px, ${{it.y}}px, 0)`;
+          }}
+          
+          // Check collisions between items
+          for (let i = 0; i < items.length; i++) {{
+            for (let j = i + 1; j < items.length; j++) {{
+              const a = items[i];
+              const b = items[j];
+              if (checkCollision(a, b)) {{
+                // Simple elastic collision - swap velocities
+                const tempVx = a.vx;
+                const tempVy = a.vy;
+                a.vx = b.vx;
+                a.vy = b.vy;
+                b.vx = tempVx;
+                b.vy = tempVy;
+                
+                // Separate items to prevent overlap
+                const dx = (a.x + a.w/2) - (b.x + b.w/2);
+                const dy = (a.y + a.h/2) - (b.y + b.h/2);
+                const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+                const overlap = (a.w + b.w) / 2 - dist;
+                if (overlap > 0) {{
+                  const nx = dx / dist;
+                  const ny = dy / dist;
+                  a.x += nx * overlap * 0.5;
+                  a.y += ny * overlap * 0.5;
+                  b.x -= nx * overlap * 0.5;
+                  b.y -= ny * overlap * 0.5;
+                }}
+              }}
+            }}
           }}
           requestAnimationFrame(tick);
         }}
