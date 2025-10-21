@@ -17,7 +17,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         "app72": "kits.jpg",
         "app80": "penguins.jpg",
         "app90": "pussy.png",
-        "app96": "lobotomy.jpg",
+        "app96": "chud.jpeg",
         "app120": "romantizma.png",
         "app321": "silkroad.jpg",
         "news_converter": "suicide.png",
@@ -184,6 +184,10 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       <!-- DVD-style floating apps -->
       <div id='stage' class='stage'>
         {dvds_html}
+      </div>
+      <!-- Center logo -->
+      <div style='position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 999;'>
+        <img src='/photos/lobotomy.jpg' alt='logo' style='max-width: min(60vw, 540px); max-height: min(60vh, 540px); width: auto; height: auto; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 80px rgba(255,255,255,0.15); filter: drop-shadow(0 0 30px rgba(255,255,255,0.2));'>
       </div>
       <!-- Hide old portal content entirely -->
       <div class='portal' style='display:none'></div>
