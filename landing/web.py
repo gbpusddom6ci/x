@@ -261,7 +261,6 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
             // Bounce Y
             if (it.y <= 0 && it.vy < 0) {{ it.y = 0; it.vy = -it.vy; }}
             if (it.y + it.h >= H && it.vy > 0) {{ it.y = H - it.h; it.vy = -it.vy; }}
-            it.el.style.transform = `translate3d(${{it.x}}px, ${{it.y}}px, 0)`;
           }}
           
           // Check collisions between items
@@ -270,29 +269,48 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
               const a = items[i];
               const b = items[j];
               if (checkCollision(a, b)) {{
-                // Simple elastic collision - swap velocities
-                const tempVx = a.vx;
-                const tempVy = a.vy;
-                a.vx = b.vx;
-                a.vy = b.vy;
-                b.vx = tempVx;
-                b.vy = tempVy;
+                // Calculate center points
+                const acx = a.x + a.w / 2;
+                const acy = a.y + a.h / 2;
+                const bcx = b.x + b.w / 2;
+                const bcy = b.y + b.h / 2;
                 
-                // Separate items to prevent overlap
-                const dx = (a.x + a.w/2) - (b.x + b.w/2);
-                const dy = (a.y + a.h/2) - (b.y + b.h/2);
+                // Collision normal (from a to b)
+                const dx = bcx - acx;
+                const dy = bcy - acy;
                 const dist = Math.sqrt(dx*dx + dy*dy) || 1;
-                const overlap = (a.w + b.w) / 2 - dist;
-                if (overlap > 0) {{
-                  const nx = dx / dist;
-                  const ny = dy / dist;
-                  a.x += nx * overlap * 0.5;
-                  a.y += ny * overlap * 0.5;
-                  b.x -= nx * overlap * 0.5;
-                  b.y -= ny * overlap * 0.5;
+                const nx = dx / dist;
+                const ny = dy / dist;
+                
+                // Relative velocity
+                const dvx = a.vx - b.vx;
+                const dvy = a.vy - b.vy;
+                const dvn = dvx * nx + dvy * ny;
+                
+                // Only collide if approaching
+                if (dvn > 0) {{
+                  // Elastic collision (equal mass)
+                  a.vx -= dvn * nx;
+                  a.vy -= dvn * ny;
+                  b.vx += dvn * nx;
+                  b.vy += dvn * ny;
+                  
+                  // Separate overlapping items
+                  const overlap = (a.w + b.w) / 2 - dist + 2;
+                  if (overlap > 0) {{
+                    a.x -= nx * overlap * 0.5;
+                    a.y -= ny * overlap * 0.5;
+                    b.x += nx * overlap * 0.5;
+                    b.y += ny * overlap * 0.5;
+                  }}
                 }}
               }}
             }}
+          }}
+          
+          // Update positions
+          for (const it of items) {{
+            it.el.style.transform = `translate3d(${{it.x}}px, ${{it.y}}px, 0)`;
           }}
           requestAnimationFrame(tick);
         }}
