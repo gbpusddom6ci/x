@@ -535,6 +535,10 @@ def parse_multipart(handler: BaseHTTPRequestHandler) -> Dict[str, Dict[str, Any]
     if not ctype or "multipart/form-data" not in ctype:
         raise ValueError("multipart/form-data bekleniyor")
     length = int(handler.headers.get("Content-Length", "0") or "0")
+    # File upload size limit: 50 MB
+    MAX_UPLOAD_SIZE = 50 * 1024 * 1024
+    if length > MAX_UPLOAD_SIZE:
+        raise ValueError(f"Dosya boyutu çok büyük (maksimum {MAX_UPLOAD_SIZE // (1024*1024)} MB)")
     form = BytesParser(policy=email_default).parsebytes(
         b"Content-Type: " + ctype.encode("utf-8") + b"\n\n" + handler.rfile.read(length)
     )
@@ -579,6 +583,10 @@ class App80Handler(BaseHTTPRequestHandler):
             length = int(self.headers.get("Content-Length", "0") or 0)
         except Exception:
             length = 0
+        # File upload size limit: 50 MB
+        MAX_UPLOAD_SIZE = 50 * 1024 * 1024
+        if length > MAX_UPLOAD_SIZE:
+            raise ValueError(f"Dosya boyutu çok büyük (maksimum {MAX_UPLOAD_SIZE // (1024*1024)} MB)")
         body = self.rfile.read(length)
         if not ct.lower().startswith("multipart/form-data"):
             raise ValueError("Yalnızca multipart/form-data desteklenir")
