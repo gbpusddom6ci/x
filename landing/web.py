@@ -14,7 +14,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
     # App to photo mapping (kept from previous design)
     app_photos = {
         "app48": "kan.jpeg",
-        "app72": "kits.jpg",
+        "app72": "ICT.jpg",
         "app80": "penguins.jpg",
         "app90": "pussy.png",
         "app96": "chud.jpeg",
