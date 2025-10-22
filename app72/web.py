@@ -628,6 +628,11 @@ class App72Handler(BaseHTTPRequestHandler):
             import os
 
             filename = self.path.split("/")[-1].split("?")[0]  # Remove query params
+            # Path traversal protection
+            filename = os.path.basename(filename)
+            if not filename or ".." in filename or "/" in filename:
+                self.send_error(400, "Invalid filename")
+                return
             favicon_path = os.path.join(
                 os.path.dirname(__file__), "..", "favicon", filename
             )

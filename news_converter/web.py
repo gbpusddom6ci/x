@@ -130,6 +130,11 @@ class NewsConverterHandler(BaseHTTPRequestHandler):
         # Serve favicon files
         if self.path.startswith("/favicon/"):
             filename = self.path.split("/")[-1].split("?")[0]
+            # Path traversal protection
+            filename = os.path.basename(filename)
+            if not filename or ".." in filename or "/" in filename:
+                self.send_error(400, "Invalid filename")
+                return
             favicon_path = os.path.join(os.path.dirname(__file__), "..", "favicon", filename)
             try:
                 with open(favicon_path, "rb") as f:

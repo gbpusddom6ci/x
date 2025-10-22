@@ -121,6 +121,11 @@ def make_handler(backends: List[Backend], landing_bytes: bytes):
 
         def _serve_favicon(self, filename: str) -> None:
             import os
+            # Path traversal protection
+            filename = os.path.basename(filename)
+            if not filename or ".." in filename or "/" in filename:
+                self.send_error(400, "Invalid filename")
+                return
             favicon_path = os.path.join(os.path.dirname(__file__), "..", "favicon", filename)
             try:
                 with open(favicon_path, "rb") as f:
@@ -142,6 +147,11 @@ def make_handler(backends: List[Backend], landing_bytes: bytes):
 
         def _serve_photo(self, filename: str) -> None:
             import os
+            # Path traversal protection
+            filename = os.path.basename(filename)
+            if not filename or ".." in filename or "/" in filename:
+                self.send_error(400, "Invalid filename")
+                return
             photo_path = os.path.join(os.path.dirname(__file__), "..", "photos", filename)
             try:
                 with open(photo_path, "rb") as f:

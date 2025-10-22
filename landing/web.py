@@ -396,6 +396,11 @@ def make_handler(html_bytes: bytes):
                     self.send_error(404, "Stars.gif not found")
             elif self.path.startswith("/photos/"):
                 filename = self.path.split("/")[-1].split("?")[0]
+                # Path traversal protection
+                filename = os.path.basename(filename)
+                if not filename or ".." in filename or "/" in filename:
+                    self.send_error(400, "Invalid filename")
+                    return
                 photos_path = os.path.join(photos_dir, filename)
                 try:
                     with open(photos_path, "rb") as f:
@@ -416,6 +421,11 @@ def make_handler(html_bytes: bytes):
                     self.send_error(404, "Photo not found")
             elif self.path.startswith("/favicon/"):
                 filename = self.path.split("/")[-1].split("?")[0]
+                # Path traversal protection
+                filename = os.path.basename(filename)
+                if not filename or ".." in filename or "/" in filename:
+                    self.send_error(400, "Invalid filename")
+                    return
                 favicon_path = os.path.join(favicon_dir, filename)
                 try:
                     with open(favicon_path, "rb") as f:
