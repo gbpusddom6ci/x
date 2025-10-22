@@ -147,20 +147,18 @@ def compute_dc_flags(candles: List[Candle]) -> List[Optional[bool]]:
         within = min(prev.open, prev.close) <= cur.close <= max(prev.open, prev.close)
         cond = cur.high <= prev.high and cur.low >= prev.low and within
         
-        # 18:00 mumu ASLA DC olamaz
+        # 18:00 mumları asla DC olamaz
         if cur.ts.hour == DEFAULT_START_TOD.hour and cur.ts.minute == DEFAULT_START_TOD.minute:
             cond = False
-        else:
-            # Hafta kapanış mumu (16:00) DC olamaz
-            is_week_close = False
-            if cur.ts.hour == 16 and cur.ts.minute == 0:
-                if i + 1 >= len(candles):
-                    is_week_close = True
-                else:
-                    gap_minutes = (candles[i + 1].ts - cur.ts).total_seconds() / 60
-                    if gap_minutes > MINUTES_PER_STEP:
-                        is_week_close = True
-            if is_week_close:
+        
+        # 19:36 mumları Pazar günleri hariç asla DC olamaz
+        if cur.ts.hour == 19 and cur.ts.minute == 36:
+            if cur.ts.weekday() != 6:  # 6 = Pazar
+                cond = False
+        
+        # Cuma günündeki 16:24 mumları asla DC olamaz
+        if cur.ts.hour == 16 and cur.ts.minute == 24:
+            if cur.ts.weekday() == 4:  # 4 = Cuma
                 cond = False
         prev_flag = bool(flags[i - 1]) if flags[i - 1] is not None else False
         if prev_flag and cond:
