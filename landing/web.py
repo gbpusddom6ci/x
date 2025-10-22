@@ -102,7 +102,7 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       .stage {{ position: fixed; inset: 0; overflow: hidden; z-index: 2; }}
       .dvd {{ position: absolute; display: block; will-change: transform; }}
       .dvd img {{ height: 120px; width: auto; display: block; transform-origin: 50% 50%; will-change: transform; }}
-      .dvd img[alt='app96'] {{ height: 144px; }}
+      .dvd img[alt='app96'] {{ height: 120px; }}
       @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
       @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
 
