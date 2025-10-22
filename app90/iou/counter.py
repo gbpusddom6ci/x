@@ -121,15 +121,19 @@ def analyze_iou(
             prev_candle = candles[idx - 1]
             
             ts = candle.ts
+            # 18:00 mumları asla IOU olamaz
             if ts.hour == 18 and ts.minute == 0:
                 continue
             
-            if ts.hour == 20 and ts.minute == 0:
-                if ts.weekday() != 6:
+            # 19:30 mumları Pazar günleri hariç asla IOU olamaz
+            if ts.hour == 19 and ts.minute == 30:
+                if ts.weekday() != 6:  # 6 = Pazar
                     continue
             
-            if ts.weekday() == 4 and ts.hour == 16 and ts.minute == 0:
-                continue
+            # Cuma günündeki 16:30 mumları asla IOU olamaz
+            if ts.hour == 16 and ts.minute == 30:
+                if ts.weekday() == 4:  # 4 = Cuma
+                    continue
             
             oc = candle.close - candle.open
             prev_oc = prev_candle.close - prev_candle.open
