@@ -1313,8 +1313,9 @@ class App96Handler(BaseHTTPRequestHandler):
                                 )
 
                             # Determine if this predicted cell is start-of-data or tail-of-data
-                            start_predicted_extra = (o < 0 and alignment.offset_status == "before-data")
-                            is_tail_pred = not (bool(use_target) or start_predicted_extra)
+                            # Start-of-data prediction is indicated by use_target=True (v <= missing_steps)
+                            # Tail-of-data prediction: use_target=False
+                            is_tail_pred = not bool(use_target)
                             style_attr = ""
                             if is_tail_pred and not first_tail_pred_marked[o]:
                                 style_attr = " style=\"background-color: rgba(46, 204, 113, 0.16)\""
