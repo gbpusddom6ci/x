@@ -1222,6 +1222,8 @@ class App96Handler(BaseHTTPRequestHandler):
                     f"<th>{'+' + str(o) if o > 0 else str(o)}</th>" for o in offsets
                 )
                 rows = []
+                # First tail-predicted cell highlight tracker per offset
+                first_tail_pred_marked = {o: False for o in offsets}
                 for vi, v in enumerate(seq_values):
                     cells = [f"<td>{v}</td>"]
                     for o in offsets:
@@ -1310,8 +1312,16 @@ class App96Handler(BaseHTTPRequestHandler):
                                     base_ts, delta_steps
                                 )
 
+                            # Determine if this predicted cell is start-of-data or tail-of-data
+                            start_predicted_extra = (o < 0 and alignment.offset_status == "before-data")
+                            is_tail_pred = not (bool(use_target) or start_predicted_extra)
+                            style_attr = ""
+                            if is_tail_pred and not first_tail_pred_marked[o]:
+                                style_attr = " style=\"background-color: rgba(46, 204, 113, 0.16)\""
+                                first_tail_pred_marked[o] = True
+
                             cells.append(
-                                f"<td>{html.escape(ts_pred.strftime('%Y-%m-%d %H:%M:%S'))} (pred, OC -, PrevOC -)</td>"
+                                f"<td{style_attr}>{html.escape(ts_pred.strftime('%Y-%m-%d %H:%M:%S'))} (pred, OC -, PrevOC -)</td>"
                             )
                     rows.append(f"<tr>{''.join(cells)}</tr>")
 

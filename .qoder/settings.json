@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "ask": [
+      "Read(!/Users/malware/x1/**)",
+      "Edit(!/Users/malware/x1/**)"
+    ],
+    "allow": [
+      "Read(/Users/malware/x1/**)",
+      "Edit(/Users/malware/x1/**)"
+    ]
+  },
+  "memoryImport": {},
+  "monitoring": {}
+}
