@@ -1,10 +1,10 @@
 # 📘 x1 Proje Teknik Dokümantasyonu
 
-**Son Güncelleme:** 2025-01-18  
-**Versiyon:** 2.0  
+**Son Güncelleme:** 2025-10-23  
+**Versiyon:** 2.1  
 **Amaç:** Bu dokümantasyon AI agent'ların projeyi eksiksiz anlaması için hazırlanmıştır.
 
-Bu doküman **gerçek kod implementasyonuna** dayanır ve varsayım içermez.
+Bu doküman gerçek kod implementasyonuna dayanır ve varsayım içermez. Bu sürüm, repo’daki güncel uygulamaları (app90, app96 dâhil), yeni ofset (Non-DC sayımı) mantığını ve WARP.md’de tanımlı port/çalıştırma düzenini yansıtır.
 
 ---
 
@@ -53,12 +53,14 @@ Bu doküman **gerçek kod implementasyonuna** dayanır ve varsayım içermez.
 
 **x1:** Python-based forex/kripto mum analiz platformu.
 
-**5 Ana Uygulama:**
-- `app321` → 60 dakika (60m)
-- `app48` → 48 dakika (48m)
-- `app72` → 72 dakika (72m)
-- `app80` → 80 dakika (80m)
+**Uygulamalar (Timeframe):**
+- `app48`  → 48 dakika (48m)
+- `app72`  → 72 dakika (72m)
+- `app80`  → 80 dakika (80m)
+- `app90`  → 90 dakika (90m)
+- `app96`  → 96 dakika (96m)
 - `app120` → 120 dakika (120m)
+- `app321` → 60 dakika (60m)
 
 **Teknoloji Stack:**
 - Pure Python 3.x
@@ -68,15 +70,19 @@ Bu doküman **gerçek kod implementasyonuna** dayanır ve varsayım içermez.
 - `dataclasses`
 - No external dependencies
 
-**Port Mapping:**
+**Port Mapping (varsayılanlar, WARP.md ile uyumlu):**
 ```
-app321  → localhost:2160
-app48   → localhost:2148
-app72   → localhost:2172
-app80   → localhost:2180
-app120  → localhost:2120
-landing → localhost:8000
+appsuite → 0.0.0.0:2000  (hepsi tek kapıda)
+landing  → 127.0.0.1:2000
+app48    → 127.0.0.1:2020
+app72    → 127.0.0.1:2172
+app80    → 127.0.0.1:2180
+app90    → 127.0.0.1:2190
+app96    → 127.0.0.1:2196
+app120   → 127.0.0.1:2120
+app321   → 127.0.0.1:2019
 ```
+appsuite, içte 127.0.0.1:9200–9207 portlarında backend’leri ayağa kaldırıp `/app48`, `/app72`, `/app80`, `/app90`, `/app96`, `/app120`, `/app321`, `/news` altında reverse proxy eder.
 
 ---
 
@@ -84,40 +90,44 @@ landing → localhost:8000
 
 ```
 x1/
-├── app321/          # 60m uygulama
-│   ├── main.py      # CLI + IOU + sayım mantığı
-│   └── web.py       # Web arayüzü (Counter, DC, Matrix, IOU)
-│
-├── app48/           # 48m uygulama
-│   ├── main.py      # CLI + 12m→48m converter + IOU
-│   └── web.py       # Web (Counter, DC, Matrix, IOU, 12→48 Converter)
-│
-├── app72/           # 72m uygulama
-│   ├── counter.py   # Sayım mantığı + IOU
-│   ├── main.py      # 12m→72m converter
-│   └── web.py       # Web (Counter, DC, Matrix, IOU, 12→72 Converter)
-│
-├── app80/           # 80m uygulama
-│   ├── counter.py   # Sayım mantığı + IOU
-│   ├── main.py      # 20m→80m converter
-│   └── web.py       # Web (Counter, DC, Matrix, IOU, 20→80 Converter)
-│
-├── app120/          # 120m uygulama
-│   ├── counter.py   # Sayım mantığı
-│   ├── main.py      # 60m→120m converter
-│   ├── web.py       # Web (Counter, DC, Matrix, IOV, IOU, 60→120 Converter)
-│   ├── iov/         # IOV modülü
-│   └── iou/         # IOU modülü
-│
-├── landing/         # Ana giriş sayfası
+├── app48/    # 48m; CLI counter+analyze, 12→48 converter (web), IOU (web)
+│   ├── main.py
 │   └── web.py
-│
-├── appsuite/        # Reverse proxy (tüm applar)
+├── app72/    # 72m; counter.py (sayım+IOU), 12→72 converter (CLI), web
+│   ├── counter.py
+│   ├── main.py
 │   └── web.py
-│
-├── news_data/       # ForexFactory JSON dosyaları
-├── favicon/         # Favicon dosyaları
-└── agents.md        # Bu dokümantasyon
+├── app80/    # 80m; counter.py (sayım+IOU), 20→80 converter (CLI), web
+│   ├── counter.py
+│   ├── main.py
+│   └── web.py
+├── app90/    # 90m; counter (sayım), 30→90 converter (CLI+web), IOU (module+web)
+│   ├── counter.py
+│   ├── main.py
+│   ├── iou/
+│   └── web.py
+├── app96/    # 96m; counter (sayım), 12→96 converter (CLI+web), IOU (module+web)
+│   ├── counter.py
+│   ├── main.py
+│   ├── iou/
+│   └── web.py
+├── app120/   # 120m; counter (sayım), 60→120 converter (CLI+web), IOU+IOV modules, web
+│   ├── counter.py
+│   ├── main.py
+│   ├── web.py
+│   ├── iov/
+│   └── iou/
+├── app321/   # 60m; CLI counter+IOU (tek dosyada), web
+│   ├── main.py
+│   └── web.py
+├── landing/  # Ana giriş sayfası (görsel portal)
+│   └── web.py
+├── appsuite/ # Reverse proxy (tüm applar + news_converter)
+│   └── web.py
+├── news_converter/
+├── news_data/
+├── favicon/
+└── agents.md
 ```
 
 ---
@@ -234,7 +244,7 @@ if cur.ts.weekday() != 6 and cur.ts.hour == 20 and cur.ts.minute == 0:
     cond = False
 ```
 
-**Not:** `compute_sequence_allocations` içinde 13:00-20:00 DC exception kontrolü de vardır (sayımda).
+Not: Sayımda ayrıca 13:00–20:00 aralığı DC istisnası uygulanır (Pazar hariç) — hem DC tespiti hem adım ilerletmede öğle aralığı istisnası kodda mevcuttur.
 
 #### app48 (48m)
 
@@ -248,6 +258,9 @@ if first_day and cur.ts.date() != first_day:
        (cur.ts.hour == 18 and cur.ts.minute == 48) or \
        (cur.ts.hour == 19 and cur.ts.minute == 36):
         cond = False  # DC olamaz (istisna)
+
+# Ek: Sayım sırasında öğle aralığı istisnası uygulanır
+# 13:12–19:36 (Pazar hariç) saatlerinde DC sayımı atlanır (son adım DC kuralı korunur)
 ```
 
 #### app72 (72m)
@@ -333,6 +346,36 @@ if is_week_close:
 
 **Not:** app120'de günlük cycle'a özel ek saat istisnaları yok (app72/app80'deki gibi).
 
+#### app90 (90m)
+```python
+# 18:00 mumu ASLA DC olamaz
+if cur.ts.hour == 18 and cur.ts.minute == 0:
+    cond = False
+
+# 19:30 Pazar HARİÇ DC olamaz
+if cur.ts.hour == 19 and cur.ts.minute == 30 and cur.ts.weekday() != 6:
+    cond = False
+
+# Cuma 16:30 ASLA DC olamaz
+if cur.ts.weekday() == 4 and cur.ts.hour == 16 and cur.ts.minute == 30:
+    cond = False
+```
+
+#### app96 (96m)
+```python
+# 18:00 mumu ASLA DC olamaz
+if cur.ts.hour == 18 and cur.ts.minute == 0:
+    cond = False
+
+# 19:36 Pazar HARİÇ DC olamaz
+if cur.ts.hour == 19 and cur.ts.minute == 36 and cur.ts.weekday() != 6:
+    cond = False
+
+# Cuma 16:24 ASLA DC olamaz
+if cur.ts.weekday() == 4 and cur.ts.hour == 16 and cur.ts.minute == 24:
+    cond = False
+```
+
 ---
 
 ## 🎯 Offset Mantığı
@@ -359,15 +402,18 @@ Offset +3 → 18:00'dan 3 adım ileriye
 
 ### Offset Hesaplama
 
-```python
-# Hedef zaman hesaplama
-target_ts = base_candle.ts + timedelta(minutes=offset * MINUTES_PER_STEP)
+2025-10-07 itibarıyla tüm app’lerde ortak mantık: Ofset, base mumdan itibaren **DC olmayan** mum sayısıdır.
 
-# Örnek (app72, offset=+2):
-# base: 2025-01-10 18:00:00
-# target_ts = 2025-01-10 18:00:00 + (2 * 72) dakika
-# target_ts = 2025-01-10 20:24:00
+```python
+def determine_offset_start(candles, base_idx, offset, dc_flags):
+    # offset==0 → base
+    # >0 ise ileri, <0 ise geri yönde sadece non-DC mumları sayarak hedefe git
+    # hedefteki non-DC mumun (idx, ts) bilgisini döndür
 ```
+
+Notlar:
+- Hedef ts hesaplamasında yine `target_ts = base_ts + offset*TF` referansı oluşturulur; veri denk gelmezse `ts ≥ target_ts` olan ilk mum seçilir ve `missing_steps` bu referansa göre hesaplanır.
+- Ofset başlangıcı non-DC garantilidir; sonrasında dizi yerleştirme DC’leri atlayarak ilerler ve “son adım DC” kuralı uygulanır.
 
 ### DC ile İlişkisi
 
@@ -461,7 +507,7 @@ def predict_time_after_n_steps(base_ts: datetime, n_steps: int) -> datetime:
     return current_ts
 ```
 
-**Haftasonu Kuralları (app72, app80, app120):**
+**Haftasonu Kuralları (app72, app80, app90, app96, app120):**
 
 ```python
 def predict_next_candle_time(current_ts: datetime) -> datetime:
@@ -490,7 +536,9 @@ def predict_next_candle_time(current_ts: datetime) -> datetime:
     return current_ts + timedelta(minutes=MINUTES_PER_STEP)
 ```
 
-**Not:** app321 ve app48'de haftasonu yönetimi yok (direkt dakika ekleme).
+Not:
+- app72/app80/app90/app96/app120: haftasonu sıçramaları dikkate alınır.
+- app321 ve app48: doğrudan dakika ekleme (haftasonu yönetimi yok).
 
 ---
 
@@ -500,10 +548,8 @@ def predict_next_candle_time(current_ts: datetime) -> datetime:
 
 | App | Routes | Açıklama |
 |-----|--------|----------|
-| **app321** | `/` (GET/POST) | Counter analizi |
-| | `/dc` (GET/POST) | DC List |
-| | `/matrix` (GET/POST) | Matrix (tüm offsetler) |
-| | `/iou` (GET/POST) | IOU analizi (çoklu dosya) |
+| App | Routes | Açıklama |
+|-----|--------|----------|
 | **app48** | `/` (GET/POST) | Counter analizi |
 | | `/dc` (GET/POST) | DC List |
 | | `/matrix` (GET/POST) | Matrix |
@@ -519,12 +565,26 @@ def predict_next_candle_time(current_ts: datetime) -> datetime:
 | | `/matrix` (GET/POST) | Matrix |
 | | `/converter` (GET/POST) | 20m→80m Converter |
 | | `/iou` (GET/POST) | IOU analizi (çoklu dosya) |
+| **app90** | `/` (GET/POST) | Counter analizi |
+| | `/dc` (GET/POST) | DC List |
+| | `/matrix` (GET/POST) | Matrix |
+| | `/converter` (GET/POST) | 30m→90m Converter |
+| | `/iou` (GET/POST) | IOU analizi (çoklu dosya) |
+| **app96** | `/` (GET/POST) | Counter analizi |
+| | `/dc` (GET/POST) | DC List |
+| | `/matrix` (GET/POST) | Matrix |
+| | `/converter` (GET/POST) | 12m→96m Converter |
+| | `/iou` (GET/POST) | IOU analizi (çoklu dosya) |
 | **app120** | `/` (GET/POST) | Counter analizi |
 | | `/dc` (GET/POST) | DC List |
 | | `/matrix` (GET/POST) | Matrix |
 | | `/iov` (GET/POST) | IOV analizi (çoklu dosya) |
 | | `/iou` (GET/POST) | IOU analizi (çoklu dosya) |
 | | `/converter` (GET/POST) | 60m→120m Converter |
+| **app321** | `/` (GET/POST) | Counter analizi |
+| | `/dc` (GET/POST) | DC List |
+| | `/matrix` (GET/POST) | Matrix (tüm offsetler) |
+| | `/iou` (GET/POST) | IOU analizi (çoklu dosya) |
 
 ### HTTP Handler Pattern
 
@@ -801,10 +861,12 @@ def is_holiday_event(event: Dict) -> bool:
 
 | App | Converter | Input | Output | CLI |
 |-----|-----------|-------|--------|-----|
-| **app48** | 12m→48m | 12m CSV (UTC-5) | 48m CSV (UTC-4) | ❌ (web only) |
-| **app72** | 12m→72m | 12m CSV (UTC-5) | 72m CSV (UTC-4) | ✅ `python -m app72.main` |
-| **app80** | 20m→80m | 20m CSV (UTC-5) | 80m CSV (UTC-4) | ✅ `python -m app80.main` |
-| **app120** | 60m→120m | 60m CSV (UTC-5) | 120m CSV (UTC-4) | ✅ `python -m app120.main` |
+| **app48** | 12m→48m | 12m CSV (UTC-5) | 48m CSV (UTC-4) | Web (nav: /convert) |
+| **app72** | 12m→72m | 12m CSV (UTC-5) | 72m CSV (UTC-4) | CLI `python -m app72.main` |
+| **app80** | 20m→80m | 20m CSV (UTC-5) | 80m CSV (UTC-4) | CLI `python -m app80.main` |
+| **app90** | 30m→90m | 30m CSV (UTC-5) | 90m CSV (UTC-4) | CLI `python -m app90.main` + Web |
+| **app96** | 12m→96m | 12m CSV (UTC-5) | 96m CSV (UTC-4) | CLI `python -m app96.main` + Web |
+| **app120** | 60m→120m | 60m CSV (UTC-5) | 120m CSV (UTC-4) | CLI `python -m app120.main` + Web |
 
 **Not:** app321'de converter yok.
 
@@ -905,6 +967,8 @@ def insert_synthetic_48m(candles: List[Candle]) -> List[Candle]:
 "01/10/2025 18:00:00"
 "01/10/2025 18:00"
 ```
+
+Ek olarak bazı modüller (converter’lar) Unix epoch saniye veya milisaniye (tam sayı) değerlerini de kabul eder.
 
 ### Ondalık Ayraç
 
@@ -1024,24 +1088,12 @@ if self.path.startswith("/favicon/"):
 
 ## ⚙️ CLI Kullanımı
 
-### app321 (main.py)
+### app48 (counter + converter)
 
 ```bash
-python -m app321.main \
-    --csv data.csv \
-    --sequence S1 \
-    --offset 0 \
-    --show-dc
-```
-
-### app48 (main.py)
-
-```bash
-python -m app48.main \
-    --csv data.csv \
-    --sequence S2 \
-    --offset +1 \
-    --predict 37  # Belirli seq değerinin tahmini
+# Counter (CLI)
+python -m app48.main --csv data.csv --sequence S2 --offset +1 --show-dc
+# Converter (Web): /convert
 ```
 
 ### app72 (counter.py + converter)
@@ -1076,6 +1128,26 @@ python -m app80.main \
     --output output80m.csv
 ```
 
+### app90
+
+```bash
+# Counter
+python -m app90.counter --csv data.csv --sequence S1 --offset 0
+
+# Converter
+python -m app90.main --csv input30m.csv --input-tz UTC-5 --output output90m.csv
+```
+
+### app96
+
+```bash
+# Counter
+python -m app96.counter --csv data.csv --sequence S1 --offset 0
+
+# Converter
+python -m app96.main --csv input12m.csv --input-tz UTC-5 --output output96m.csv
+```
+
 ### app120
 
 ```bash
@@ -1098,23 +1170,18 @@ python -m app120.main \
 ## 🚀 Web Başlatma
 
 ```bash
-# app321
-python -m app321.web --host 127.0.0.1 --port 2160
+# Unified suite (reverse proxy + landing)
+python -m appsuite.web --host 0.0.0.0 --port 2000
 
-# app48
-python -m app48.web --host 127.0.0.1 --port 2148
-
-# app72
-python -m app72.web --host 127.0.0.1 --port 2172
-
-# app80
-python -m app80.web --host 127.0.0.1 --port 2180
-
-# app120
+# Tekil Uygulamalar (varsayılan portlar)
+python -m app48.web  --host 127.0.0.1 --port 2020
+python -m app72.web  --host 127.0.0.1 --port 2172
+python -m app80.web  --host 127.0.0.1 --port 2180
+python -m app90.web  --host 127.0.0.1 --port 2190
+python -m app96.web  --host 127.0.0.1 --port 2196
 python -m app120.web --host 127.0.0.1 --port 2120
-
-# landing
-python -m landing.web --host 127.0.0.1 --port 8000
+python -m app321.web --host 127.0.0.1 --port 2019
+python -m landing.web --host 127.0.0.1 --port 2000
 ```
 
 ---
@@ -1200,6 +1267,7 @@ has_news = bool(non_holiday_events)  # Sadece bunlar sayılır
 3. **CSV size:** Çok büyük CSV'ler (>10MB) yavaş işlenebilir
 4. **Multipart limit:** Çoklu dosya yüklemede 25 dosya limiti var
 5. **Session state:** Web arayüzü stateless (her request bağımsız)
+6. **app80 nav:** Web nav’da 20→80 yanında ek "convert2" linki görünebilir; işlem rotası `/converter` üzerindedir.
 
 ---
 
@@ -1239,7 +1307,7 @@ determine_offset_start(
 predict_next_candle_time(current_ts: datetime, minutes_per_step: int) -> datetime
 predict_time_after_n_steps(base_ts: datetime, n_steps: int, minutes_per_step: int) -> datetime
 
-# IOU Analysis
+# IOU Analysis (genel imza; app90/app96 için iou/ modülü mevcuttur)
 analyze_iou(
     candles: List[Candle],
     sequence: str,
@@ -1262,6 +1330,8 @@ adjust_to_output_tz(candles: List[Candle], input_tz: str) -> Tuple[List[Candle],
 convert_12m_to_48m(candles: List[Candle]) -> List[Candle]
 convert_12m_to_72m(candles: List[Candle]) -> List[Candle]
 convert_20m_to_80m(candles: List[Candle]) -> List[Candle]
+convert_30m_to_90m(candles: List[Candle]) -> List[Candle]
+convert_12m_to_96m(candles: List[Candle]) -> List[Candle]
 convert_60m_to_120m(candles: List[Candle]) -> List[Candle]
 
 # Web
@@ -1356,4 +1426,29 @@ Bu dokümantasyon **gerçek kod implementasyonuna** dayanır ve varsayım içerm
 
 ---
 
-**agents.md - v2.0 - 2025-01-18**
+**agents.md - v2.1 - 2025-10-23**
+**app90 (90m):**
+```python
+# 18:00 mumu ASLA IOU olamaz
+if ts.hour == 18 and ts.minute == 0:
+    continue
+# 19:30 Pazar HARİÇ IOU olamaz
+if ts.hour == 19 and ts.minute == 30 and ts.weekday() != 6:
+    continue
+# Cuma 16:30 ASLA IOU olamaz
+if ts.weekday() == 4 and ts.hour == 16 and ts.minute == 30:
+    continue
+```
+
+**app96 (96m):**
+```python
+# 18:00 mumu ASLA IOU olamaz
+if ts.hour == 18 and ts.minute == 0:
+    continue
+# 19:36 Pazar HARİÇ IOU olamaz
+if ts.hour == 19 and ts.minute == 36 and ts.weekday() != 6:
+    continue
+# Cuma 16:24 ASLA IOU olamaz
+if ts.weekday() == 4 and ts.hour == 16 and ts.minute == 24:
+    continue
+```
