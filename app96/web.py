@@ -10,7 +10,6 @@ from typing import List, Optional, Dict, Any, Type
 from .counter import (
     Candle as CounterCandle,
     SEQUENCES,
-    SEQUENCES_FILTERED,
     MINUTES_PER_STEP,
     DEFAULT_START_TOD,
     normalize_key,
@@ -20,15 +19,18 @@ from .counter import (
     compute_dc_flags,
     compute_offset_alignment,
     predict_time_after_n_steps,
-    analyze_iou,
-    IOUResult,
 )
 from .main import (
     Candle as ConverterCandle,
     estimate_timeframe_minutes,
     adjust_to_output_tz,
-    convert_20m_to_80m,
+    convert_12m_to_96m,
     format_price,
+)
+from .iou.counter import (
+    analyze_iou,
+    SEQUENCES_FILTERED,
+    IOUResult,
 )
 from email.parser import BytesParser
 from email.policy import default as email_default
@@ -138,14 +140,12 @@ def load_news_data_from_directory(
 def find_news_in_timerange(
     events_by_date: Dict[str, List[Dict[str, Any]]],
     start_ts: datetime,
-    duration_minutes: int = 80,
+    duration_minutes: int = 96,
 ) -> List[Dict[str, Any]]:
     """
     Find news events that fall within [start_ts, start_ts + duration_minutes).
     For null-valued events (speeches, statements), check 1 hour before candle start.
     News data is in UTC-4 (same as candle data).
-
-    IMPORTANT: Uses candle year to match news (ignores JSON year).
     """
     end_ts = start_ts + timedelta(minutes=duration_minutes)
     matching = []
@@ -153,67 +153,54 @@ def find_news_in_timerange(
     # For null events, extend search to 1 hour before candle start
     extended_start_ts = start_ts - timedelta(hours=1)
 
-    # Get candle year to match with news (JSON might have different year)
-    candle_year = start_ts.year
+    # Check both start and end date (in case range spans midnight)
+    dates_to_check = {start_ts.strftime("%Y-%m-%d")}
+    if end_ts.date() != start_ts.date():
+        dates_to_check.add(end_ts.strftime("%Y-%m-%d"))
+    if extended_start_ts.date() != start_ts.date():
+        dates_to_check.add(extended_start_ts.strftime("%Y-%m-%d"))
 
-    # Check all dates in events_by_date with matching month-day
-    for date_str, events in events_by_date.items():
-        try:
-            # Parse JSON date (might be any year)
-            json_year, json_month, json_day = map(int, date_str.split("-"))
+    for date_str in dates_to_check:
+        events = events_by_date.get(date_str, [])
 
-            # Replace with candle year for comparison
-            adjusted_date = datetime(candle_year, json_month, json_day)
+        for event in events:
+            time_24h = event.get("time_24h")
 
-            # Check if this date is relevant to our time range
-            if not (
-                adjusted_date.date() >= extended_start_ts.date() - timedelta(days=1)
-                and adjusted_date.date() <= end_ts.date() + timedelta(days=1)
-            ):
-                continue
-
-            for event in events:
-                time_24h = event.get("time_24h")
-
-                try:
-                    # Handle All Day events - they apply to the whole day
-                    if not time_24h:
-                        # All Day event - check if the date falls within our range
-                        event_date = datetime(candle_year, json_month, json_day)
-                        if (
-                            extended_start_ts.date()
-                            <= event_date.date()
-                            <= end_ts.date()
-                        ):
-                            matching.append(event)
-                        continue
-
-                    # Parse time_24h (e.g., "04:48")
-                    hour, minute = map(int, time_24h.split(":"))
-
-                    # Create event timestamp using candle year
-                    event_ts = datetime(candle_year, json_month, json_day, hour, minute)
-
-                    # Check if event has null values (speeches, statements)
-                    values = event.get("values", {})
-                    is_null_event = (
-                        values.get("actual") is None
-                        and values.get("forecast") is None
-                        and values.get("previous") is None
-                    )
-
-                    # For null events: check 1 hour before candle to candle end
-                    # For regular events: check candle start to candle end
-                    if is_null_event:
-                        if extended_start_ts <= event_ts < end_ts:
-                            matching.append(event)
-                    else:
-                        if start_ts <= event_ts < end_ts:
-                            matching.append(event)
-                except Exception:
+            try:
+                # Handle All Day events - they apply to the whole day
+                if not time_24h:
+                    # All Day event - check if the date matches
+                    year, month, day = map(int, date_str.split("-"))
+                    event_date = datetime(year, month, day)
+                    if extended_start_ts.date() <= event_date.date() <= end_ts.date():
+                        matching.append(event)
                     continue
-        except Exception:
-            continue
+
+                # Parse time_24h (e.g., "04:48")
+                hour, minute = map(int, time_24h.split(":"))
+
+                # Parse the date from date_str to handle multi-day ranges
+                year, month, day = map(int, date_str.split("-"))
+                event_ts = datetime(year, month, day, hour, minute)
+
+                # Check if event has null values (speeches, statements)
+                values = event.get("values", {})
+                is_null_event = (
+                    values.get("actual") is None
+                    and values.get("forecast") is None
+                    and values.get("previous") is None
+                )
+
+                # For null events: check 1 hour before candle to candle end
+                # For regular events: check candle start to candle end
+                if is_null_event:
+                    if extended_start_ts <= event_ts < end_ts:
+                        matching.append(event)
+                else:
+                    if start_ts <= event_ts < end_ts:
+                        matching.append(event)
+            except Exception:
+                continue
 
     return matching
 
@@ -327,16 +314,16 @@ def page(title: str, body: str, active_tab: str = "analyze") -> bytes:
       .tabs a.active{{background:#e6f2ff; color:#024ea2;}}
     </style>
   </head>
+  <body>
     <header>
-      <h2>app80</h2>
+      <h2>app96</h2>
     </header>
     <nav class='tabs'>
       <a href='/' class='{"active" if active_tab == "analyze" else ""}'>Counter</a>
-      <a href='/iou' class='{"active" if active_tab == "iou" else ""}'>IOU</a>
       <a href='/dc' class='{"active" if active_tab == "dc" else ""}'>DC List</a>
       <a href='/matrix' class='{"active" if active_tab == "matrix" else ""}'>Matrix</a>
-      <a href='/convert' class='{"active" if active_tab == "convert" else ""}'>20→80</a>
-      <a href='/convert2' class='{"active" if active_tab == "convert2" else ""}'>80→20</a>
+      <a href='/iou' class='{"active" if active_tab == "iou" else ""}'>IOU</a>
+      <a href='/converter' class='{"active" if active_tab == "converter" else ""}'>12→96 Converter</a>
     </nav>
     {body}
   </body>
@@ -355,7 +342,7 @@ def render_analyze_index() -> bytes:
           </div>
           <div>
             <label>Zaman Dilimi</label>
-            <div>80m</div>
+            <div>96m</div>
           </div>
           <div>
             <label>Girdi TZ</label>
@@ -394,9 +381,8 @@ def render_analyze_index() -> bytes:
       </form>
     </div>
     <p>CSV başlıkları: <code>Time, Open, High, Low, Close (Last)</code> (eş anlamlılar desteklenir).</p>
-    <p><strong>Not:</strong> Pazar hariç, 18:00, 19:20 ve 20:40 mumları DC sayılmaz. Ayrıca Cuma 16:40 mumu DC olamaz (hafta kapanışı).</p>
     """
-    return page("app80", body, active_tab="analyze")
+    return page("app96", body, active_tab="analyze")
 
 
 def render_dc_index() -> bytes:
@@ -410,7 +396,7 @@ def render_dc_index() -> bytes:
           </div>
           <div>
             <label>Zaman Dilimi</label>
-            <div>80m</div>
+            <div>96m</div>
           </div>
           <div>
             <label>Girdi TZ</label>
@@ -425,56 +411,9 @@ def render_dc_index() -> bytes:
         </div>
       </form>
     </div>
-    <p>Not: app80 sayımında DC'ler her zaman atlanır; bu sayfada tüm DC'ler listelenir.</p>
-    <p><strong>Önemli:</strong> Pazar hariç, 18:00, 19:20 ve 20:40 mumları DC olarak işaretlenmez (günlük cycle noktaları). Cuma 16:40 mumu DC olamaz (hafta kapanışı).</p>
+    <p>Not: app96 sayımında DC'ler her zaman atlanır; bu sayfada tüm DC'ler listelenir.</p>
     """
-    return page("app80 - DC List", body, active_tab="dc")
-
-
-def render_iou_index() -> bytes:
-    body = """
-    <div class='card'>
-      <h3>IOU (Inverse OC - Uniform sign) Analizi</h3>
-      <form method='post' action='/iou' enctype='multipart/form-data'>
-        <div class='row'>
-          <div>
-            <label>CSV Dosyaları (2 haftalık 80m) - En fazla 25 dosya</label>
-            <input type='file' name='csv' accept='.csv,text/csv' multiple required />
-          </div>
-          <div>
-            <label>Sequence</label>
-            <select name='sequence'>
-              <option value='S1' selected>S1</option>
-              <option value='S2'>S2</option>
-            </select>
-          </div>
-          <div>
-            <label>Limit</label>
-            <input type='number' name='limit' value='0.1' step='0.01' min='0' style='width:80px' />
-          </div>
-          <div>
-            <label>Tolerance</label>
-            <input type='number' name='tolerance' value='0.005' step='0.001' min='0' style='width:80px' />
-          </div>
-          <div>
-            <label>XYZ Küme Analizi</label>
-            <input type='checkbox' name='xyz_analysis' checked />
-          </div>
-          <div>
-            <label>XYZ Özet Tablosu</label>
-            <input type='checkbox' name='xyz_summary_table' />
-          </div>
-        </div>
-        <div style='margin-top:12px;'>
-          <button type='submit'>Analiz Et</button>
-        </div>
-      </form>
-    </div>
-    <p><strong>IOU Kriterleri:</strong> |OC| ≥ limit VE |PrevOC| ≥ limit VE aynı işaret (++ veya --)</p>
-    <p><strong>2 haftalık 80m veri</strong> kullanılır.</p>
-    <p><strong>XYZ Analizi:</strong> Habersiz IOU içeren offsetler elenir, kalan offsetler XYZ kümesini oluşturur.</p>
-    """
-    return page("app80 - IOU", body, active_tab="iou")
+    return page("app96 - DC List", body, active_tab="dc")
 
 
 def render_matrix_index() -> bytes:
@@ -488,7 +427,7 @@ def render_matrix_index() -> bytes:
           </div>
           <div>
             <label>Zaman Dilimi</label>
-            <div>80m</div>
+            <div>96m</div>
           </div>
           <div>
             <label>Girdi TZ</label>
@@ -511,23 +450,77 @@ def render_matrix_index() -> bytes:
       </form>
     </div>
     """
-    return page("app80 - Matrix", body, active_tab="matrix")
+    return page("app96 - Matrix", body, active_tab="matrix")
+
+
+def render_iou_index() -> bytes:
+    body = """
+    <div class='card'>
+      <h3>IOU (Inverse OC - Uniform sign) Analizi</h3>
+      <p>2 haftalık 96m veride, OC ve PrevOC değerlerinin limit üstünde ve AYNI işaretli olduğu özel mumları tespit eder.</p>
+      <form method='post' action='/iou' enctype='multipart/form-data'>
+        <div class='row'>
+          <div>
+            <label>CSV Dosyaları (2 haftalık 96m) - En fazla 25 dosya</label>
+            <input type='file' name='csv' accept='.csv,text/csv' multiple required />
+          </div>
+          <div>
+            <label>Sequence</label>
+            <select name='sequence'>
+              <option value='S1' selected>S1 (1,3 hariç)</option>
+              <option value='S2'>S2 (1,5 hariç)</option>
+            </select>
+          </div>
+          <div>
+            <label>Limit (mutlak değer)</label>
+            <input type='number' name='limit' step='0.001' value='0.1' min='0' required />
+          </div>
+          <div>
+            <label>Tolerance (güvenlik payı)</label>
+            <input type='number' name='tolerance' step='0.001' value='0.005' min='0' required />
+          </div>
+          <div>
+            <label>XYZ Küme Analizi</label>
+            <input type='checkbox' name='xyz_analysis' checked />
+          </div>
+          <div>
+            <label>XYZ Özet Tablosu</label>
+            <input type='checkbox' name='xyz_summary_table' />
+          </div>
+          <div>
+            <button type='submit'>Analiz Et</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class='card'>
+      <h4>IOU Mum Kriterleri:</h4>
+      <ul>
+        <li><strong>|OC| ≥ Limit</strong> - Mumun open-close farkı limit değerinin üstünde olmalı</li>
+        <li><strong>|PrevOC| ≥ Limit</strong> - Önceki mumun open-close farkı limit değerinin üstünde olmalı</li>
+        <li><strong>Aynı İşaret</strong> - OC ve PrevOC her ikisi de (+) VEYA her ikisi de (-) olmalı</li>
+      </ul>
+      <p><strong>Not:</strong> Tüm offsetler (-3..+3) otomatik taranır.</p>
+      <p><strong>XYZ Analizi:</strong> Habersiz IOU içeren offsetler elenir, kalan offsetler XYZ kümesini oluşturur.</p>
+    </div>
+    """
+    return page("app96 - IOU", body, active_tab="iou")
 
 
 def render_converter_index() -> bytes:
     body = """
     <div class='card'>
       <form method='post' action='/converter' enctype='multipart/form-data'>
-        <label>CSV (20m, UTC-5)</label>
+        <label>CSV (12m, UTC-5)</label>
         <input type='file' name='csv' accept='.csv,text/csv' required />
         <div style='margin-top:12px;'>
-          <button type='submit'>80m'e Dönüştür</button>
+          <button type='submit'>96m'e Dönüştür</button>
         </div>
       </form>
     </div>
-    <p>Girdi UTC-5 20 dakikalık mumlar olmalıdır. Çıktı UTC-4 80 dakikalık mumlar olarak indirilir (4 tane 20m = 1 tane 80m).</p>
+    <p>Girdi UTC-5 12 dakikalık mumlar olmalıdır. Çıktı UTC-4 96 dakikalık mumlar olarak indirilir.</p>
     """
-    return page("app80 - Converter", body, active_tab="converter")
+    return page("app96 - Converter", body, active_tab="converter")
 
 
 def parse_multipart(handler: BaseHTTPRequestHandler) -> Dict[str, Dict[str, Any]]:
@@ -575,56 +568,62 @@ def parse_multipart(handler: BaseHTTPRequestHandler) -> Dict[str, Dict[str, Any]
     return out
 
 
-class App80Handler(BaseHTTPRequestHandler):
-    def _parse_multipart_multiple_files(self) -> Dict[str, Any]:
-        """Parse multipart with multiple file support."""
-        ct = self.headers.get("Content-Type", "")
-        try:
-            length = int(self.headers.get("Content-Length", "0") or 0)
-        except Exception:
-            length = 0
-        # File upload size limit: 50 MB
-        MAX_UPLOAD_SIZE = 50 * 1024 * 1024
-        if length > MAX_UPLOAD_SIZE:
-            raise ValueError(f"Dosya boyutu çok büyük (maksimum {MAX_UPLOAD_SIZE // (1024*1024)} MB)")
-        body = self.rfile.read(length)
-        if not ct.lower().startswith("multipart/form-data"):
-            raise ValueError("Yalnızca multipart/form-data desteklenir")
-        header_bytes = (
-            b"Content-Type: " + ct.encode("utf-8") + b"\r\nMIME-Version: 1.0\r\n\r\n"
-        )
-        msg = BytesParser(policy=email_default).parsebytes(header_bytes + body)
+def parse_multipart_with_multiple_files(
+    handler: BaseHTTPRequestHandler,
+) -> Dict[str, Any]:
+    """Parse multipart form data with support for multiple files with same name."""
+    ctype = handler.headers.get("Content-Type")
+    if not ctype or "multipart/form-data" not in ctype:
+        raise ValueError("multipart/form-data bekleniyor")
+    length = int(handler.headers.get("Content-Length", "0") or "0")
+    # File upload size limit: 50 MB
+    MAX_UPLOAD_SIZE = 50 * 1024 * 1024
+    if length > MAX_UPLOAD_SIZE:
+        raise ValueError(f"Dosya boyutu çok büyük (maksimum {MAX_UPLOAD_SIZE // (1024*1024)} MB)")
+    form = BytesParser(policy=email_default).parsebytes(
+        b"Content-Type: " + ctype.encode("utf-8") + b"\n\n" + handler.rfile.read(length)
+    )
 
-        files: List[Dict[str, Any]] = []
-        params: Dict[str, str] = {}
+    files: List[Dict[str, Any]] = []
+    params: Dict[str, str] = {}
 
-        for part in msg.iter_parts():
-            cd = part.get("Content-Disposition", "")
-            if not cd:
-                continue
-            param_dict: Dict[str, str] = {}
-            for item in cd.split(";"):
-                item = item.strip()
-                if "=" in item:
-                    k, v = item.split("=", 1)
-                    param_dict[k.strip().lower()] = v.strip().strip('"')
-            name = param_dict.get("name")
-            filename = param_dict.get("filename")
-            payload = part.get_payload(decode=True) or b""
-            if not name:
-                continue
-            if filename is not None:
-                files.append({"filename": filename, "data": payload})
+    for part in form.iter_parts():
+        if part.get_content_disposition() != "form-data":
+            continue
+        name = part.get_param("name", header="content-disposition")
+        if not name:
+            continue
+        filename = part.get_filename()
+        payload = part.get_payload(decode=True)
+
+        if filename:
+            # It's a file
+            data = payload
+            if data is None:
+                content = part.get_content()
+                data = (
+                    content.encode("utf-8", errors="replace")
+                    if isinstance(content, str)
+                    else content
+                )
+            files.append({"filename": filename, "data": data or b""})
+        else:
+            # It's a regular form field
+            if payload is not None:
+                value = payload.decode("utf-8", errors="replace")
             else:
-                charset = part.get_content_charset() or "utf-8"
-                try:
-                    value = payload.decode(charset, errors="replace")
-                except Exception:
-                    value = payload.decode("utf-8", errors="replace")
-                params[name] = value
+                content = part.get_content()
+                value = (
+                    content
+                    if isinstance(content, str)
+                    else content.decode("utf-8", errors="replace")
+                )
+            params[name] = value
 
-        return {"files": files, "params": params}
+    return {"files": files, "params": params}
 
+
+class App96Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         # Serve favicon files
         if self.path.startswith("/favicon/"):
@@ -661,12 +660,12 @@ class App80Handler(BaseHTTPRequestHandler):
 
         if self.path == "/":
             body = render_analyze_index()
-        elif self.path == "/iou":
-            body = render_iou_index()
         elif self.path == "/dc":
             body = render_dc_index()
         elif self.path == "/matrix":
             body = render_matrix_index()
+        elif self.path == "/iou":
+            body = render_iou_index()
         elif self.path == "/converter":
             body = render_converter_index()
         else:
@@ -680,10 +679,70 @@ class App80Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_POST(self):
-        # IOU uses multiple file upload
-        if self.path == "/iou":
-            try:
-                form_data = self._parse_multipart_multiple_files()
+        try:
+            # IOU uses multiple file upload, others use single file
+            if self.path == "/iou":
+                # Handle multiple files for IOU
+                pass  # Will be handled in specific path block below
+            else:
+                # Single file upload for other paths
+                form = parse_multipart(self)
+                file_obj = form.get("csv")
+                if not file_obj or "data" not in file_obj:
+                    raise ValueError("CSV dosyası bulunamadı")
+                raw = file_obj["data"]
+                text = (
+                    raw.decode("utf-8", errors="replace")
+                    if isinstance(raw, (bytes, bytearray))
+                    else str(raw)
+                )
+
+            if self.path == "/converter":
+                candles = load_candles_from_text(text, ConverterCandle)
+                if not candles:
+                    raise ValueError("Veri boş veya çözümlenemedi")
+                tf_est = estimate_timeframe_minutes(candles)
+                if tf_est is None or abs(tf_est - 12) > 1.0:
+                    raise ValueError("Girdi 12 dakikalık akış gibi görünmüyor")
+                shifted, _ = adjust_to_output_tz(candles, "UTC-5")
+                converted = convert_12m_to_96m(shifted)
+
+                buffer = io.StringIO()
+                writer = csv.writer(buffer)
+                writer.writerow(["Time", "Open", "High", "Low", "Close"])
+                for c in converted:
+                    writer.writerow(
+                        [
+                            c.ts.strftime("%Y-%m-%d %H:%M:%S"),
+                            format_price(c.open),
+                            format_price(c.high),
+                            format_price(c.low),
+                            format_price(c.close),
+                        ]
+                    )
+                data = buffer.getvalue().encode("utf-8")
+                filename = file_obj.get("filename") or "converted.csv"
+                if "." in filename:
+                    base, _ = filename.rsplit(".", 1)
+                    download_name = base + "_96m.csv"
+                else:
+                    download_name = filename + "_96m.csv"
+                download_name = (
+                    download_name.strip().replace('"', "") or "converted_96m.csv"
+                )
+
+                self.send_response(200)
+                self.send_header("Content-Type", "text/csv; charset=utf-8")
+                self.send_header(
+                    "Content-Disposition", f'attachment; filename="{download_name}"'
+                )
+                self.end_headers()
+                self.wfile.write(data)
+                return
+
+            if self.path == "/iou":
+                # Use multiple file parser
+                form_data = parse_multipart_with_multiple_files(self)
                 files = form_data["files"]
                 params = form_data["params"]
 
@@ -695,7 +754,6 @@ class App80Handler(BaseHTTPRequestHandler):
                 sequence = (params.get("sequence") or "S1").strip()
                 if sequence not in SEQUENCES_FILTERED:
                     sequence = "S1"
-
                 limit_str = (params.get("limit") or "0.1").strip()
                 try:
                     limit = float(limit_str)
@@ -757,13 +815,14 @@ class App80Handler(BaseHTTPRequestHandler):
                         candles = load_candles_from_text(text, CounterCandle)
                         if not candles:
                             if not xyz_summary_table:
-                                body += f"<div class='card' style='padding:10px;'><strong>❌ {html.escape(filename)}</strong> - Veri boş</div>"
+                                body += f"<div class='card'><h3>❌ {html.escape(filename)}</h3><p style='color:red;'>Veri boş veya çözümlenemedi</p></div>"
                             continue
 
                         # Analyze IOU
                         results = analyze_iou(candles, sequence, limit, tolerance)
                         total_iou = sum(len(v) for v in results.values())
 
+                        # Skip if no IOU found
                         if total_iou == 0:
                             if not xyz_summary_table:
                                 body += f"<div class='card' style='padding:10px;'><strong>📄 {html.escape(filename)}</strong> - <span style='color:#888;'>IOU yok</span></div>"
@@ -778,7 +837,7 @@ class App80Handler(BaseHTTPRequestHandler):
                             offset: [] for offset in range(-3, 4)
                         }  # Track which candles eliminated each offset
 
-                        # Compact table with all offsets (only if NOT summary mode)
+                        # Compact header and single table with all offsets (only if NOT summary mode)
                         if not xyz_summary_table:
                             body += f"""
                             <div class='card' style='padding:10px;'>
@@ -787,15 +846,17 @@ class App80Handler(BaseHTTPRequestHandler):
                                 <tr><th>Ofs</th><th>Seq</th><th>Idx</th><th>Timestamp</th><th>OC</th><th>PrevOC</th><th>PIdx</th><th>Haber</th></tr>
                             """
 
+                        # Add all IOU candles from all offsets to single table
                         for offset in range(-3, 4):
-                            for iou in results[offset]:
+                            iou_list = results[offset]
+                            for iou in iou_list:
                                 oc_fmt = format_pip(iou.oc)
                                 prev_oc_fmt = format_pip(iou.prev_oc)
 
-                                # Find news for this candle's timerange (80 minutes)
+                                # Find news for this candle's timerange (96 minutes)
                                 news_events = (
                                     find_news_in_timerange(
-                                        events_by_date, iou.timestamp, 80
+                                        events_by_date, iou.timestamp, 96
                                     )
                                     if news_loaded
                                     else []
@@ -812,16 +873,8 @@ class App80Handler(BaseHTTPRequestHandler):
                                 ]
                                 has_news = bool(affecting_events)
 
-                                # Special rule for app80: Ignore 18:00 candles (except Sunday) for XYZ analysis
-                                # Pazar hariç 18:00 mumları XYZ analizinde etkisiz (ne haberli ne habersiz sayılmaz)
-                                is_excluded_time = (
-                                    iou.timestamp.weekday() != 6
-                                    and iou.timestamp.hour == 18
-                                    and iou.timestamp.minute == 0
-                                )
-
                                 # Track for XYZ analysis (per file)
-                                if xyz_analysis and not is_excluded_time:
+                                if xyz_analysis:
                                     if has_news:
                                         file_xyz_data[offset]["with_news"] += 1
                                     else:
@@ -929,7 +982,7 @@ class App80Handler(BaseHTTPRequestHandler):
 
                     except Exception as e:
                         if not xyz_summary_table:
-                            body += f"<div class='card' style='padding:10px;'><strong>❌ {html.escape(filename)}</strong> - <span style='color:red;'>Hata: {html.escape(str(e))}</span></div>"
+                            body += f"<div class='card'><h3>❌ {html.escape(filename)}</h3><p style='color:red;'>Hata: {html.escape(str(e))}</p></div>"
 
                 # Render summary table if enabled
                 if xyz_summary_table and summary_data:
@@ -957,70 +1010,7 @@ class App80Handler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
                 self.end_headers()
-                self.wfile.write(page("app80 - IOU Results", body, active_tab="iou"))
-                return
-
-            except Exception as e:
-                err_msg = f"<div class='card'><h3>Hata</h3><p style='color:red;'>{html.escape(str(e))}</p></div>"
-                self.send_response(400)
-                self.send_header("Content-Type", "text/html; charset=utf-8")
-                self.end_headers()
-                self.wfile.write(page("app80 - Hata", err_msg, active_tab="iou"))
-                return
-
-        try:
-            form = parse_multipart(self)
-            file_obj = form.get("csv")
-            if not file_obj or "data" not in file_obj:
-                raise ValueError("CSV dosyası bulunamadı")
-            raw = file_obj["data"]
-            text = (
-                raw.decode("utf-8", errors="replace")
-                if isinstance(raw, (bytes, bytearray))
-                else str(raw)
-            )
-
-            if self.path == "/converter":
-                candles = load_candles_from_text(text, ConverterCandle)
-                if not candles:
-                    raise ValueError("Veri boş veya çözümlenemedi")
-                tf_est = estimate_timeframe_minutes(candles)
-                if tf_est is None or abs(tf_est - 20) > 1.0:
-                    raise ValueError("Girdi 20 dakikalık akış gibi görünmüyor")
-                shifted, _ = adjust_to_output_tz(candles, "UTC-5")
-                converted = convert_20m_to_80m(shifted)
-
-                buffer = io.StringIO()
-                writer = csv.writer(buffer)
-                writer.writerow(["Time", "Open", "High", "Low", "Close"])
-                for c in converted:
-                    writer.writerow(
-                        [
-                            c.ts.strftime("%Y-%m-%d %H:%M:%S"),
-                            format_price(c.open),
-                            format_price(c.high),
-                            format_price(c.low),
-                            format_price(c.close),
-                        ]
-                    )
-                data = buffer.getvalue().encode("utf-8")
-                filename = file_obj.get("filename") or "converted.csv"
-                if "." in filename:
-                    base, _ = filename.rsplit(".", 1)
-                    download_name = base + "_80m.csv"
-                else:
-                    download_name = filename + "_80m.csv"
-                download_name = (
-                    download_name.strip().replace('"', "") or "converted_80m.csv"
-                )
-
-                self.send_response(200)
-                self.send_header("Content-Type", "text/csv; charset=utf-8")
-                self.send_header(
-                    "Content-Disposition", f'attachment; filename="{download_name}"'
-                )
-                self.end_headers()
-                self.wfile.write(data)
+                self.wfile.write(page("app96 - IOU Results", body, active_tab="iou"))
                 return
 
             candles = load_candles_from_text(text, CounterCandle)
@@ -1072,7 +1062,7 @@ class App80Handler(BaseHTTPRequestHandler):
 
                 info_lines = [
                     f"<div><strong>Data:</strong> {len(candles)} candles</div>",
-                    f"<div><strong>Zaman Dilimi:</strong> 80m</div>",
+                    f"<div><strong>Zaman Dilimi:</strong> 96m</div>",
                     f"<div><strong>Range:</strong> {html.escape(candles[0].ts.strftime('%Y-%m-%d %H:%M:%S'))} -> {html.escape(candles[-1].ts.strftime('%Y-%m-%d %H:%M:%S'))}</div>",
                     f"<div><strong>TZ:</strong> {html.escape(tz_label)}</div>",
                     f"<div><strong>Start:</strong> base(18:00): idx={base_idx} ts={html.escape(candles[base_idx].ts.strftime('%Y-%m-%d %H:%M:%S'))} ({align_status}); "
@@ -1184,7 +1174,7 @@ class App80Handler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
                 self.end_headers()
-                self.wfile.write(page("app80 sonuçlar", body, active_tab="analyze"))
+                self.wfile.write(page("app96 sonuçlar", body, active_tab="analyze"))
                 return
 
             dc_flags = compute_dc_flags(candles)
@@ -1204,7 +1194,7 @@ class App80Handler(BaseHTTPRequestHandler):
                 info = (
                     f"<div class='card'>"
                     f"<div><strong>Data:</strong> {len(candles)} candles</div>"
-                    f"<div><strong>Zaman Dilimi:</strong> 80m</div>"
+                    f"<div><strong>Zaman Dilimi:</strong> 96m</div>"
                     f"<div><strong>Range:</strong> {html.escape(candles[0].ts.strftime('%Y-%m-%d %H:%M:%S'))} -> {html.escape(candles[-1].ts.strftime('%Y-%m-%d %H:%M:%S'))}</div>"
                     f"<div><strong>TZ:</strong> {html.escape(tz_label)}</div>"
                     f"<div><strong>DC count:</strong> {count}</div>"
@@ -1214,7 +1204,7 @@ class App80Handler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
                 self.end_headers()
-                self.wfile.write(page("app80 DC List", body, active_tab="dc"))
+                self.wfile.write(page("app96 DC List", body, active_tab="dc"))
                 return
 
             if self.path == "/matrix":
@@ -1232,6 +1222,8 @@ class App80Handler(BaseHTTPRequestHandler):
                     f"<th>{'+' + str(o) if o > 0 else str(o)}</th>" for o in offsets
                 )
                 rows = []
+                # First tail-predicted cell highlight tracker per offset
+                first_tail_pred_marked = {o: False for o in offsets}
                 for vi, v in enumerate(seq_values):
                     cells = [f"<td>{v}</td>"]
                     for o in offsets:
@@ -1320,8 +1312,17 @@ class App80Handler(BaseHTTPRequestHandler):
                                     base_ts, delta_steps
                                 )
 
+                            # Determine if this predicted cell is start-of-data or tail-of-data
+                            # Start-of-data prediction is indicated by use_target=True (v <= missing_steps)
+                            # Tail-of-data prediction: use_target=False
+                            is_tail_pred = not bool(use_target)
+                            style_attr = ""
+                            if is_tail_pred and not first_tail_pred_marked[o]:
+                                style_attr = " style=\"background-color: rgba(46, 204, 113, 0.16)\""
+                                first_tail_pred_marked[o] = True
+
                             cells.append(
-                                f"<td>{html.escape(ts_pred.strftime('%Y-%m-%d %H:%M:%S'))} (pred, OC -, PrevOC -)</td>"
+                                f"<td{style_attr}>{html.escape(ts_pred.strftime('%Y-%m-%d %H:%M:%S'))} (pred, OC -, PrevOC -)</td>"
                             )
                     rows.append(f"<tr>{''.join(cells)}</tr>")
 
@@ -1334,7 +1335,7 @@ class App80Handler(BaseHTTPRequestHandler):
                 info = (
                     f"<div class='card'>"
                     f"<div><strong>Data:</strong> {len(candles)} candles</div>"
-                    f"<div><strong>Zaman Dilimi:</strong> 80m</div>"
+                    f"<div><strong>Zaman Dilimi:</strong> 96m</div>"
                     f"<div><strong>Range:</strong> {html.escape(candles[0].ts.strftime('%Y-%m-%d %H:%M:%S'))} -> {html.escape(candles[-1].ts.strftime('%Y-%m-%d %H:%M:%S'))}</div>"
                     f"<div><strong>TZ:</strong> {html.escape(tz_label)}</div>"
                     f"<div><strong>Sequence:</strong> {html.escape(sequence)}</div>"
@@ -1346,7 +1347,7 @@ class App80Handler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
                 self.end_headers()
-                self.wfile.write(page("app80 Matrix", body, active_tab="matrix"))
+                self.wfile.write(page("app96 Matrix", body, active_tab="matrix"))
                 return
 
             raise ValueError("Bilinmeyen istek")
@@ -1364,19 +1365,19 @@ class App80Handler(BaseHTTPRequestHandler):
 
 
 def run(host: str, port: int) -> None:
-    server = HTTPServer((host, port), App80Handler)
-    print(f"app80 web: http://{host}:{port}/")
-    server.serve_forever()
+    httpd = HTTPServer((host, port), App96Handler)
+    print(f"app96 web: http://{host}:{port}/")
+    httpd.serve_forever()
 
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
-        prog="app80.web", description="app80 için birleşik web arayüzü"
+        prog="app96.web", description="app96 için birleşik web arayüzü"
     )
     parser.add_argument(
         "--host", default="127.0.0.1", help="Sunucu adresi (vars: 127.0.0.1)"
     )
-    parser.add_argument("--port", type=int, default=2180, help="Port (vars: 2180)")
+    parser.add_argument("--port", type=int, default=2196, help="Port (vars: 2196)")
     args = parser.parse_args(argv)
     run(args.host, args.port)
     return 0

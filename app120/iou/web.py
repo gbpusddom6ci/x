@@ -345,7 +345,7 @@ def render_index() -> bytes:
         <input type='number' name='tolerance' step='0.001' value='0.005' min='0' required />
         <div>
           <label>
-            <input type='checkbox' name='xyz_analysis' /> XYZ Küme Analizi
+            <input type='checkbox' name='xyz_analysis' checked /> XYZ Küme Analizi
           </label>
         </div>
 

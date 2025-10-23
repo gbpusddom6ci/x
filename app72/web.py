@@ -361,15 +361,15 @@ def render_analyze_index() -> bytes:
           <div>
             <label>Girdi TZ</label>
             <select name='input_tz'>
-              <option value='UTC-5' selected>UTC-5</option>
-              <option value='UTC-4'>UTC-4</option>
+              <option value='UTC-5'>UTC-5</option>
+              <option value='UTC-4' selected>UTC-4</option>
             </select>
           </div>
           <div>
             <label>Dizi</label>
             <select name='sequence'>
-              <option value='S1'>S1</option>
-              <option value='S2' selected>S2</option>
+              <option value='S1' selected>S1</option>
+              <option value='S2'>S2</option>
             </select>
           </div>
           <div>
@@ -416,8 +416,8 @@ def render_dc_index() -> bytes:
           <div>
             <label>Girdi TZ</label>
             <select name='input_tz'>
-              <option value='UTC-5' selected>UTC-5</option>
-              <option value='UTC-4'>UTC-4</option>
+              <option value='UTC-5'>UTC-5</option>
+              <option value='UTC-4' selected>UTC-4</option>
             </select>
           </div>
         </div>
@@ -455,7 +455,7 @@ def render_iou_index() -> bytes:
           </div>
           <div>
             <label>XYZ Küme Analizi</label>
-            <input type='checkbox' name='xyz_analysis' />
+            <input type='checkbox' name='xyz_analysis' checked />
           </div>
           <div>
             <label>XYZ Özet Tablosu</label>
@@ -490,15 +490,15 @@ def render_matrix_index() -> bytes:
           <div>
             <label>Girdi TZ</label>
             <select name='input_tz'>
-              <option value='UTC-5' selected>UTC-5</option>
-              <option value='UTC-4'>UTC-4</option>
+              <option value='UTC-5'>UTC-5</option>
+              <option value='UTC-4' selected>UTC-4</option>
             </select>
           </div>
           <div>
             <label>Dizi</label>
             <select name='sequence'>
-              <option value='S1'>S1</option>
-              <option value='S2' selected>S2</option>
+              <option value='S1' selected>S1</option>
+              <option value='S2'>S2</option>
             </select>
           </div>
         </div>
@@ -532,6 +532,10 @@ def parse_multipart(handler: BaseHTTPRequestHandler) -> Dict[str, Dict[str, Any]
     if not ctype or "multipart/form-data" not in ctype:
         raise ValueError("multipart/form-data bekleniyor")
     length = int(handler.headers.get("Content-Length", "0") or "0")
+    # File upload size limit: 50 MB
+    MAX_UPLOAD_SIZE = 50 * 1024 * 1024
+    if length > MAX_UPLOAD_SIZE:
+        raise ValueError(f"Dosya boyutu çok büyük (maksimum {MAX_UPLOAD_SIZE // (1024*1024)} MB)")
     form = BytesParser(policy=email_default).parsebytes(
         b"Content-Type: " + ctype.encode("utf-8") + b"\n\n" + handler.rfile.read(length)
     )
@@ -576,6 +580,10 @@ class App72Handler(BaseHTTPRequestHandler):
             length = int(self.headers.get("Content-Length", "0") or 0)
         except Exception:
             length = 0
+        # File upload size limit: 50 MB
+        MAX_UPLOAD_SIZE = 50 * 1024 * 1024
+        if length > MAX_UPLOAD_SIZE:
+            raise ValueError(f"Dosya boyutu çok büyük (maksimum {MAX_UPLOAD_SIZE // (1024*1024)} MB)")
         body = self.rfile.read(length)
         if not ct.lower().startswith("multipart/form-data"):
             raise ValueError("Yalnızca multipart/form-data desteklenir")
@@ -620,6 +628,11 @@ class App72Handler(BaseHTTPRequestHandler):
             import os
 
             filename = self.path.split("/")[-1].split("?")[0]  # Remove query params
+            # Path traversal protection
+            filename = os.path.basename(filename)
+            if not filename or ".." in filename or "/" in filename:
+                self.send_error(400, "Invalid filename")
+                return
             favicon_path = os.path.join(
                 os.path.dirname(__file__), "..", "favicon", filename
             )

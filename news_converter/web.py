@@ -86,6 +86,10 @@ class NewsConverterHandler(BaseHTTPRequestHandler):
             length = int(self.headers.get("Content-Length", "0") or 0)
         except Exception:
             length = 0
+        # File upload size limit: 50 MB
+        MAX_UPLOAD_SIZE = 50 * 1024 * 1024
+        if length > MAX_UPLOAD_SIZE:
+            raise ValueError(f"Dosya boyutu çok büyük (maksimum {MAX_UPLOAD_SIZE // (1024*1024)} MB)")
         body = self.rfile.read(length)
         if not ct.lower().startswith("multipart/form-data"):
             raise ValueError("Yalnızca multipart/form-data desteklenir")
@@ -126,6 +130,11 @@ class NewsConverterHandler(BaseHTTPRequestHandler):
         # Serve favicon files
         if self.path.startswith("/favicon/"):
             filename = self.path.split("/")[-1].split("?")[0]
+            # Path traversal protection
+            filename = os.path.basename(filename)
+            if not filename or ".." in filename or "/" in filename:
+                self.send_error(400, "Invalid filename")
+                return
             favicon_path = os.path.join(os.path.dirname(__file__), "..", "favicon", filename)
             try:
                 with open(favicon_path, "rb") as f:

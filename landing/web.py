@@ -14,9 +14,11 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
     # App to photo mapping (kept from previous design)
     app_photos = {
         "app48": "kan.jpeg",
-        "app72": "kits.jpg",
+        "app72": "ICT.jpg",
         "app80": "penguins.jpg",
-        "app120": "romantizma.png",
+        "app90": "pussy.png",
+        "app96": "chud.jpeg",
+        "app120": "umt.jpg",
         "app321": "silkroad.jpg",
         "news_converter": "suicide.png",
     }
@@ -99,7 +101,9 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       /* DVD screensaver stage */
       .stage {{ position: fixed; inset: 0; overflow: hidden; z-index: 2; }}
       .dvd {{ position: absolute; display: block; will-change: transform; }}
-      .dvd img {{ height: 96px; width: auto; display: block; transform-origin: 50% 50%; will-change: transform; animation: spin 8s linear infinite; }}
+      .dvd img {{ height: 120px; width: auto; display: block; transform-origin: 50% 50%; will-change: transform; }}
+      .dvd img[alt='app96'] {{ height: 120px; }}
+      @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
       @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
 
       .scene {{ position: relative; z-index: 2; height: 100%; display: grid; place-items: stretch; }}
@@ -183,6 +187,10 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       <div id='stage' class='stage'>
         {dvds_html}
       </div>
+      <!-- Center logo -->
+      <div style='position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 999;'>
+        <img src='/photos/lobotomy.jpg' alt='logo' style='height: clamp(90px, 12.5vmin, 175px); width: auto;'>
+      </div>
       <!-- Hide old portal content entirely -->
       <div class='portal' style='display:none'></div>
     </div>
@@ -214,42 +222,136 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
         const stage = document.getElementById('stage');
         if (!stage) return;
         const nodes = Array.from(stage.querySelectorAll('.dvd'));
-        // Ensure predictable size for measurement
-        function sizeOf(el) {{ return {{ w: el.offsetWidth || 100, h: el.offsetHeight || 80 }}; }}
+        
+        // Wait for images to load, then get real sizes
         let W = stage.clientWidth, H = stage.clientHeight;
         const items = nodes.map((el, i) => {{
-          const s = sizeOf(el);
-          const ang = Math.random() * Math.PI * 2;
+          const dir = Math.random() * Math.PI * 2;
           const speed = 90 + Math.random() * 110; // px/s
-          return {{ el, x: Math.random() * Math.max(1, W - s.w), y: Math.random() * Math.max(1, H - s.h), w: s.w, h: s.h, vx: Math.cos(ang) * speed, vy: Math.sin(ang) * speed }};
+          return {{
+            el,
+            cx: Math.random() * Math.max(1, W - 200) + 100,
+            cy: Math.random() * Math.max(1, H - 200) + 100,
+            bw: 100,
+            bh: 100,
+            vx: Math.cos(dir) * speed,
+            vy: Math.sin(dir) * speed,
+            ang: Math.random() * Math.PI * 2,
+            spin: (Math.random() < 0.5 ? 1 : -1) * (2*Math.PI/8),
+          }};
         }});
+
+        function updateSizes() {{
+          items.forEach(it => {{
+            const img = it.el.querySelector('img');
+            const w = (img && img.complete ? img.offsetWidth : it.el.offsetWidth) || it.bw;
+            const h = (img && img.complete ? img.offsetHeight : it.el.offsetHeight) || it.bh;
+            it.bw = w;
+            it.bh = h;
+          }});
+        }}
+
+        function halfExtents(it) {{
+          const c = Math.cos(it.ang), s = Math.sin(it.ang);
+          const hw = 0.5 * (Math.abs(it.bw * c) + Math.abs(it.bh * s));
+          const hh = 0.5 * (Math.abs(it.bw * s) + Math.abs(it.bh * c));
+          return {{ hw, hh }};
+        }}
 
         function layout() {{
           W = stage.clientWidth; H = stage.clientHeight;
-          // If any item has zero size (images not loaded yet), update sizes
+          updateSizes();
           items.forEach(it => {{
-            const s = sizeOf(it.el);
-            if (s.w && s.h) {{ it.w = s.w; it.h = s.h; }}
-            it.x = Math.max(0, Math.min(it.x, Math.max(0, W - it.w)));
-            it.y = Math.max(0, Math.min(it.y, Math.max(0, H - it.h)));
+            const e = halfExtents(it);
+            it.cx = Math.min(Math.max(it.cx, e.hw), Math.max(e.hw, W - e.hw));
+            it.cy = Math.min(Math.max(it.cy, e.hh), Math.max(e.hh, H - e.hh));
           }});
         }}
         window.addEventListener('resize', layout);
+        setTimeout(layout, 100); // Wait for images to load
         layout();
+
+        // Check collision between two items
+        function checkCollision(a, b) {{
+          return !(a.x + a.w < b.x || b.x + b.w < a.x || a.y + a.h < b.y || b.y + b.h < a.y);
+        }}
+
+        // OBB-SAT collision helpers (exact rectangle edges)
+        function axesOf(it) {{
+          const c = Math.cos(it.ang), s = Math.sin(it.ang);
+          return {{ ux: {{x:c, y:s}}, uy: {{x:-s, y:c}} }};
+        }}
+        function projRadius(it, axis) {{
+          const A = axesOf(it);
+          const hx = it.bw * 0.5, hy = it.bh * 0.5;
+          return hx * Math.abs(A.ux.x * axis.x + A.ux.y * axis.y) +
+                 hy * Math.abs(A.uy.x * axis.x + A.uy.y * axis.y);
+        }}
+        function satMTV(a, b) {{
+          const A = axesOf(a), B = axesOf(b);
+          const axes = [A.ux, A.uy, B.ux, B.uy];
+          let minPen = Infinity;
+          let best = null;
+          const d = {{ x: b.cx - a.cx, y: b.cy - a.cy }};
+          for (const ax of axes) {{
+            const ra = projRadius(a, ax);
+            const rb = projRadius(b, ax);
+            const dist = Math.abs(d.x * ax.x + d.y * ax.y);
+            const pen = ra + rb - dist;
+            if (pen <= 0) return null;
+            if (pen < minPen) {{
+              minPen = pen;
+              const sgn = (d.x * ax.x + d.y * ax.y) < 0 ? -1 : 1;
+              best = {{ overlap: pen, normal: {{ x: ax.x * sgn, y: ax.y * sgn }} }};
+            }}
+          }}
+          return best;
+        }}
+        function resolveCollision(a, b) {{
+          const mtv = satMTV(a, b);
+          if (!mtv) return;
+          const n = mtv.normal;
+          const o = mtv.overlap + 0.5; // positional slop
+          a.cx -= n.x * o * 0.5; a.cy -= n.y * o * 0.5;
+          b.cx += n.x * o * 0.5; b.cy += n.y * o * 0.5;
+          // swap normal velocity components (equal mass)
+          const aN = a.vx * n.x + a.vy * n.y;
+          const bN = b.vx * n.x + b.vy * n.y;
+          const aTx = a.vx - aN * n.x, aTy = a.vy - aN * n.y;
+          const bTx = b.vx - bN * n.x, bTy = b.vy - bN * n.y;
+          a.vx = aTx + bN * n.x; a.vy = aTy + bN * n.y;
+          b.vx = bTx + aN * n.x; b.vy = bTy + aN * n.y;
+        }}
 
         let last = performance.now();
         function tick(now) {{
-          const dt = Math.min(0.05, (now - last) / 1000); // clamp 50ms
+          const dt = Math.min(1/60, (now - last) / 1000); // clamp ~16ms
           last = now;
+          updateSizes();
+          // Integrate motion and spin
           for (const it of items) {{
-            it.x += it.vx * dt; it.y += it.vy * dt;
-            // Bounce X
-            if (it.x <= 0 && it.vx < 0) {{ it.x = 0; it.vx = -it.vx; }}
-            if (it.x + it.w >= W && it.vx > 0) {{ it.x = W - it.w; it.vx = -it.vx; }}
-            // Bounce Y
-            if (it.y <= 0 && it.vy < 0) {{ it.y = 0; it.vy = -it.vy; }}
-            if (it.y + it.h >= H && it.vy > 0) {{ it.y = H - it.h; it.vy = -it.vy; }}
-            it.el.style.transform = `translate3d(${{it.x}}px, ${{it.y}}px, 0)`;
+            it.ang += it.spin * dt;
+            const e = halfExtents(it);
+            it.cx += it.vx * dt; it.cy += it.vy * dt;
+            // Walls X
+            if (it.cx - e.hw <= 0 && it.vx < 0) {{ it.cx = e.hw; it.vx = -it.vx; }}
+            if (it.cx + e.hw >= W && it.vx > 0) {{ it.cx = W - e.hw; it.vx = -it.vx; }}
+            // Walls Y
+            if (it.cy - e.hh <= 0 && it.vy < 0) {{ it.cy = e.hh; it.vy = -it.vy; }}
+            if (it.cy + e.hh >= H && it.vy > 0) {{ it.cy = H - e.hh; it.vy = -it.vy; }}
+          }}
+          // Multiple passes for stability
+          for (let pass = 0; pass < 2; pass++) {{
+            for (let i = 0; i < items.length; i++) {{
+              for (let j = i + 1; j < items.length; j++) {{
+                resolveCollision(items[i], items[j]);
+              }}
+            }}
+          }}
+          // Apply transforms
+          for (const it of items) {{
+            const deg = (it.ang * 180 / Math.PI).toFixed(3);
+            it.el.style.transform = `translate3d(${{it.cx}}px, ${{it.cy}}px, 0) translate(-50%, -50%) rotate(${{deg}}deg)`;
           }}
           requestAnimationFrame(tick);
         }}
@@ -294,6 +396,11 @@ def make_handler(html_bytes: bytes):
                     self.send_error(404, "Stars.gif not found")
             elif self.path.startswith("/photos/"):
                 filename = self.path.split("/")[-1].split("?")[0]
+                # Path traversal protection
+                filename = os.path.basename(filename)
+                if not filename or ".." in filename or "/" in filename:
+                    self.send_error(400, "Invalid filename")
+                    return
                 photos_path = os.path.join(photos_dir, filename)
                 try:
                     with open(photos_path, "rb") as f:
@@ -314,6 +421,11 @@ def make_handler(html_bytes: bytes):
                     self.send_error(404, "Photo not found")
             elif self.path.startswith("/favicon/"):
                 filename = self.path.split("/")[-1].split("?")[0]
+                # Path traversal protection
+                filename = os.path.basename(filename)
+                if not filename or ".." in filename or "/" in filename:
+                    self.send_error(400, "Invalid filename")
+                    return
                 favicon_path = os.path.join(favicon_dir, filename)
                 try:
                     with open(favicon_path, "rb") as f:
@@ -374,6 +486,11 @@ def main(argv: list[str] | None = None) -> int:
         help="app80 web arayüzü için URL",
     )
     parser.add_argument(
+        "--app96-url",
+        default="http://127.0.0.1:2196/",
+        help="app96 web arayüzü için URL",
+    )
+    parser.add_argument(
         "--app120-url",
         default="http://127.0.0.1:2120/",
         help="app120 web arayüzü için URL",
@@ -400,6 +517,11 @@ def main(argv: list[str] | None = None) -> int:
             "title": "app80",
             "url": args.app80_url,
             "description": "80 dakikalık sayım, DC analizi ve 20→80 dönüştürücü (4x20m).",
+        },
+        "app96": {
+            "title": "app96",
+            "url": args.app96_url,
+            "description": "96 dakikalık sayım, IOU analizi ve 12→96 dönüştürücü.",
         },
         "app120": {
             "title": "app120",
