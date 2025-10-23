@@ -362,15 +362,15 @@ def render_index() -> bytes:
           <div>
             <label>Dizi</label>
             <select name='sequence'>
-              <option value='S1'>S1</option>
-              <option value='S2' selected>S2</option>
+              <option value='S1' selected>S1</option>
+              <option value='S2'>S2</option>
             </select>
           </div>
           <div>
             <label>Girdi TZ</label>
             <select name='input_tz'>
-              <option value='UTC-5' selected>UTC-5</option>
-              <option value='UTC-4'>UTC-4</option>
+          <option value='UTC-5'>UTC-5</option>
+          <option value='UTC-4' selected>UTC-4</option>
             </select>
           </div>
           <div>
@@ -437,8 +437,8 @@ def render_dc_index() -> bytes:
           <div>
             <label>Girdi TZ</label>
             <select name='input_tz'>
-              <option value='UTC-5' selected>UTC-5</option>
-              <option value='UTC-4'>UTC-4</option>
+              <option value='UTC-5'>UTC-5</option>
+              <option value='UTC-4' selected>UTC-4</option>
             </select>
           </div>
           <div>
@@ -486,7 +486,7 @@ def render_iou_index() -> bytes:
           </div>
           <div>
             <label>XYZ Küme Analizi</label>
-            <input type='checkbox' name='xyz_analysis' />
+            <input type='checkbox' name='xyz_analysis' checked />
           </div>
           <div>
             <label>XYZ Özet Tablosu</label>
@@ -528,8 +528,8 @@ def render_matrix_index() -> bytes:
           <div>
             <label>Dizi</label>
             <select name='sequence'>
-              <option value='S1'>S1</option>
-              <option value='S2' selected>S2</option>
+          <option value='S1' selected>S1</option>
+          <option value='S2'>S2</option>
             </select>
           </div>
         </div>
