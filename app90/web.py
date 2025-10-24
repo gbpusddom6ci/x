@@ -680,8 +680,8 @@ class App96Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         try:
-        # Converter: multiple files (up to 50) -> ZIP; single file -> CSV
-        if self.path == "/convert":
+            # Converter: multiple files (up to 50) -> ZIP; single file -> CSV
+            if self.path == "/convert":
                 form_data = parse_multipart_with_multiple_files(self)
                 files = form_data.get("files", [])
                 if not files:
