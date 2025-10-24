@@ -340,7 +340,7 @@ def compute_offset_alignment(
     seq_values: List[int],
     offset: int,
 ) -> OffsetComputation:
-    start_idx, target_ts, offset_status = determine_offset_start(candles, base_idx, offset, dc_flags)
+    start_idx, target_ts, offset_status = determine_offset_start(candles, base_idx, offset, dc_flags, MINUTES_PER_STEP)
     base_ts = candles[base_idx].ts.replace(second=0, microsecond=0)
     if target_ts is None:
         target_ts = base_ts + timedelta(minutes=MINUTES_PER_STEP * offset)
