@@ -323,7 +323,7 @@ def page(title: str, body: str, active_tab: str = "analyze") -> bytes:
       <a href='/dc' class='{"active" if active_tab == "dc" else ""}'>DC List</a>
       <a href='/matrix' class='{"active" if active_tab == "matrix" else ""}'>Matrix</a>
       <a href='/iou' class='{"active" if active_tab == "iou" else ""}'>IOU</a>
-      <a href='/converter' class='{"active" if active_tab == "converter" else ""}'>12→96 Converter</a>
+      <a href='/convert' class='{"active" if active_tab == "convert" else ""}'>12→96 Converter</a>
     </nav>
     {body}
   </body>
@@ -510,7 +510,7 @@ def render_iou_index() -> bytes:
 def render_converter_index() -> bytes:
     body = """
     <div class='card'>
-      <form method='post' action='/converter' enctype='multipart/form-data'>
+      <form method='post' action='/convert' enctype='multipart/form-data'>
         <label>CSV (12m, UTC-5) — Birden fazla dosya yükleyebilirsiniz (maks. 50)</label>
         <input type='file' name='csv' accept='.csv,text/csv' multiple required />
         <div style='margin-top:12px;'>
@@ -520,7 +520,7 @@ def render_converter_index() -> bytes:
     </div>
     <p>Tek dosya yüklenirse CSV indirilir; birden fazla dosya yüklenirse ZIP (her biri ayrı CSV) indirilir.</p>
     """
-    return page("app96 - Converter", body, active_tab="converter")
+    return page("app96 - Converter", body, active_tab="convert")
 
 
 def parse_multipart(handler: BaseHTTPRequestHandler) -> Dict[str, Dict[str, Any]]:
@@ -666,7 +666,7 @@ class App96Handler(BaseHTTPRequestHandler):
             body = render_matrix_index()
         elif self.path == "/iou":
             body = render_iou_index()
-        elif self.path == "/converter":
+        elif self.path == "/convert":
             body = render_converter_index()
         else:
             self.send_response(404)
@@ -680,8 +680,8 @@ class App96Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         try:
-            # Converter: multiple files (up to 50) -> ZIP; single file -> CSV
-            if self.path == "/converter":
+        # Converter: multiple files (up to 50) -> ZIP; single file -> CSV
+        if self.path == "/convert":
                 form_data = parse_multipart_with_multiple_files(self)
                 files = form_data.get("files", [])
                 if not files:

@@ -335,8 +335,8 @@ def page(title: str, body: str, active_tab: str = "analyze") -> bytes:
       <a href='/iou' class='{"active" if active_tab == "iou" else ""}'>IOU</a>
       <a href='/dc' class='{"active" if active_tab == "dc" else ""}'>DC List</a>
       <a href='/matrix' class='{"active" if active_tab == "matrix" else ""}'>Matrix</a>
-      <a href='/convert' class='{"active" if active_tab == "convert" else ""}'>20→80</a>
-      <a href='/convert2' class='{"active" if active_tab == "convert2" else ""}'>80→20</a>
+      <a href='/convert' class='{"active" if active_tab == "convert" else ""}'>20→80 Converter</a>
+      <a href='/convert2' class='{"active" if active_tab == "convert2" else ""}'>80→20 Converter</a>
     </nav>
     {body}
   </body>
@@ -517,7 +517,7 @@ def render_matrix_index() -> bytes:
 def render_converter_index() -> bytes:
     body = """
     <div class='card'>
-      <form method='post' action='/converter' enctype='multipart/form-data'>
+      <form method='post' action='/convert' enctype='multipart/form-data'>
         <label>CSV (20m, UTC-5) — Birden fazla dosya yükleyebilirsiniz (maks. 50)</label>
         <input type='file' name='csv' accept='.csv,text/csv' multiple required />
         <div style='margin-top:12px;'>
@@ -527,7 +527,7 @@ def render_converter_index() -> bytes:
     </div>
     <p>Tek dosya yüklenirse CSV indirilir; birden fazla dosya yüklenirse ZIP (her biri ayrı CSV) indirilir.</p>
     """
-    return page("app80 - Converter", body, active_tab="converter")
+    return page("app80 - Converter", body, active_tab="convert")
 
 
 def parse_multipart(handler: BaseHTTPRequestHandler) -> Dict[str, Dict[str, Any]]:
@@ -667,7 +667,7 @@ class App80Handler(BaseHTTPRequestHandler):
             body = render_dc_index()
         elif self.path == "/matrix":
             body = render_matrix_index()
-        elif self.path == "/converter":
+        elif self.path == "/convert":
             body = render_converter_index()
         else:
             self.send_response(404)
@@ -681,7 +681,7 @@ class App80Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         # Converter: multiple files (up to 50) -> ZIP; single file -> CSV
-        if self.path == "/converter":
+        if self.path == "/convert":
             try:
                 form_data = self._parse_multipart_multiple_files()
                 files = form_data.get("files", [])
@@ -789,7 +789,7 @@ class App80Handler(BaseHTTPRequestHandler):
                 self.send_response(400)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
                 self.end_headers()
-                self.wfile.write(page("app80 - Hata", err_msg, active_tab="converter"))
+                self.wfile.write(page("app80 - Hata", err_msg, active_tab="convert"))
                 return
 
         # IOU uses multiple file upload
