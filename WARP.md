@@ -47,6 +47,19 @@ Quickstart commands
   python -m app120.main --csv input60m.csv --input-tz UTC-5 --output out120m.csv
   ```
 
+- Converters (Web UI):
+  - **Multi-file upload support**: All apps with converters (app48, app72, app80, app90, app96, app120) support uploading up to 50 CSV files simultaneously. app321 does not have a converter.
+  - **Single file**: Returns the converted CSV directly (e.g., `filename_48m.csv`).
+  - **Multiple files**: Returns a ZIP archive containing all individually converted CSVs (e.g., `converted_48m.zip`).
+  - **Upload limit**: 50 MB total (applies to both single and multi-file uploads).
+  - **Conversion mappings**:
+    - app48: 12m → 48m
+    - app72: 12m → 72m
+    - app80: 20m → 80m (also supports 80m → 20m)
+    - app90: 30m → 90m
+    - app96: 12m → 96m
+    - app120: 60m → 120m
+
 - Environment setup (optional):
   ```bash path=null start=null
   python -m venv .venv && source .venv/bin/activate

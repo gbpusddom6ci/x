@@ -406,8 +406,8 @@ def render_convert_index() -> bytes:
       <form method='post' action='/convert' enctype='multipart/form-data'>
         <div class='row'>
           <div>
-            <label>CSV (12m, UTC-5)</label>
-            <input type='file' name='csv' accept='.csv,text/csv' required />
+            <label>CSV (12m, UTC-5) — Birden fazla dosya yükleyebilirsiniz (maks. 50)</label>
+            <input type='file' name='csv' accept='.csv,text/csv' multiple required />
           </div>
         </div>
         <div style='margin-top:12px;'>
@@ -415,7 +415,7 @@ def render_convert_index() -> bytes:
         </div>
       </form>
     </div>
-    <p>Yalnızca 12 dakikalık mumlar desteklenir. Çıktı UTC-4 48m mumlarıdır ve otomatik indirme başlatılır.</p>
+    <p>Tek dosya yüklenirse CSV indirilir; birden fazla dosya yüklenirse ZIP (her biri ayrı CSV) indirilir.</p>
     <p>Örnek dosya: <code>ex12to48.csv</code></p>
     """
     return page("app48 - 12m to 48m", body, active_tab="convert")
@@ -689,6 +689,108 @@ class AppHandler(BaseHTTPRequestHandler):
         if self.path not in ("/analyze", "/dc", "/matrix", "/convert", "/iou"):
             self.send_error(404)
             return
+
+        # Converter: multiple files (up to 50) -> ZIP; single file -> CSV
+        if self.path == "/convert":
+            try:
+                form_data = self._parse_multipart_multiple_files()
+                files = form_data.get("files", [])
+                if not files:
+                    raise ValueError("En az bir CSV dosyası yükleyin")
+                if len(files) > 50:
+                    raise ValueError("En fazla 50 dosya yükleyebilirsiniz")
+
+                import zipfile
+
+                if len(files) == 1:
+                    file_item = files[0]
+                    raw = file_item.get("data", b"")
+                    text = raw.decode("utf-8", errors="replace") if isinstance(raw, (bytes, bytearray)) else str(raw)
+
+                    tf_est = estimate_timeframe_minutes(load_candles_from_text(text))
+                    candles = load_candles_from_text(text)
+                    if tf_est is None or abs(tf_est - 12) > 0.6 or not candles:
+                        raise ValueError("Girdi 12 dakikalık akış gibi görünmüyor")
+                    shifted, _ = adjust_to_output_tz(candles, "UTC-5")
+                    converted = convert_12m_to_48m(shifted)
+
+                    buffer = io.StringIO()
+                    writer = csv.writer(buffer)
+                    writer.writerow(["Time", "Open", "High", "Low", "Close"])
+                    for c in converted:
+                        writer.writerow([
+                            c.ts.strftime("%Y-%m-%d %H:%M:%S"),
+                            format_price(c.open),
+                            format_price(c.high),
+                            format_price(c.low),
+                            format_price(c.close),
+                        ])
+                    data = buffer.getvalue().encode("utf-8")
+                    filename = file_item.get("filename") or "converted.csv"
+                    if "." in filename:
+                        base, _ = filename.rsplit(".", 1)
+                        download_name = base + "_48m.csv"
+                    else:
+                        download_name = filename + "_48m.csv"
+                    download_name = download_name.strip().replace('"', "") or "converted_48m.csv"
+
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/csv; charset=utf-8")
+                    self.send_header("Content-Disposition", f'attachment; filename="{download_name}"')
+                    self.send_header("Content-Length", str(len(data)))
+                    self.end_headers()
+                    self.wfile.write(data)
+                    return
+
+                # Multi-file: ZIP
+                zip_buf = io.BytesIO()
+                with zipfile.ZipFile(zip_buf, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
+                    for idx, fobj in enumerate(files, 1):
+                        fname = fobj.get("filename") or f"file_{idx}.csv"
+                        raw = fobj.get("data", b"")
+                        text = raw.decode("utf-8", errors="replace") if isinstance(raw, (bytes, bytearray)) else str(raw)
+                        candles = load_candles_from_text(text)
+                        if not candles:
+                            raise ValueError(f"Veri boş: {fname}")
+                        tf_est = estimate_timeframe_minutes(candles)
+                        if tf_est is None or abs(tf_est - 12) > 0.6:
+                            raise ValueError(f"12m değil: {fname}")
+                        shifted, _ = adjust_to_output_tz(candles, "UTC-5")
+                        converted = convert_12m_to_48m(shifted)
+                        buf = io.StringIO()
+                        writer = csv.writer(buf)
+                        writer.writerow(["Time", "Open", "High", "Low", "Close"])
+                        for c in converted:
+                            writer.writerow([
+                                c.ts.strftime("%Y-%m-%d %H:%M:%S"),
+                                format_price(c.open),
+                                format_price(c.high),
+                                format_price(c.low),
+                                format_price(c.close),
+                            ])
+                        csv_bytes = buf.getvalue().encode("utf-8")
+                        if "." in fname:
+                            base, _ = fname.rsplit(".", 1)
+                            out_name = base + "_48m.csv"
+                        else:
+                            out_name = fname + "_48m.csv"
+                        out_name = out_name.strip().replace('"', "") or f"converted_{idx}_48m.csv"
+                        zf.writestr(out_name, csv_bytes)
+
+                data = zip_buf.getvalue()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/zip")
+                self.send_header("Content-Disposition", 'attachment; filename="converted_48m.zip"')
+                self.end_headers()
+                self.wfile.write(data)
+                return
+            except Exception as e:
+                err_msg = f"<div class='card'><h3>Hata</h3><p style='color:red;'>{html.escape(str(e))}</p></div>"
+                self.send_response(400)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(page("app48 - Hata", err_msg, active_tab="convert"))
+                return
 
         # IOU uses multiple file upload
         if self.path == "/iou":
