@@ -852,48 +852,6 @@ class App120Handler(BaseHTTPRequestHandler):
                     else str(raw)
                 )
 
-            if self.path == "/converter":
-                candles = load_candles_from_text(text, ConverterCandle)
-                if not candles:
-                    raise ValueError("Veri boş veya çözümlenemedi")
-                tf_est = estimate_timeframe_minutes(candles)
-                if tf_est is None or abs(tf_est - 60) > 1.0:
-                    raise ValueError("Girdi 60 dakikalık akış gibi görünmüyor")
-                shifted, _ = adjust_to_output_tz(candles, "UTC-5")
-                converted = convert_60m_to_120m(shifted)
-
-                buffer = io.StringIO()
-                writer = csv.writer(buffer)
-                writer.writerow(["Time", "Open", "High", "Low", "Close"])
-                for c in converted:
-                    writer.writerow(
-                        [
-                            c.ts.strftime("%Y-%m-%d %H:%M:%S"),
-                            format_price(c.open),
-                            format_price(c.high),
-                            format_price(c.low),
-                            format_price(c.close),
-                        ]
-                    )
-                data = buffer.getvalue().encode("utf-8")
-                filename = file_obj.get("filename") or "converted.csv"
-                if "." in filename:
-                    base, _ = filename.rsplit(".", 1)
-                    download_name = base + "_120m.csv"
-                else:
-                    download_name = filename + "_120m.csv"
-                download_name = (
-                    download_name.strip().replace('"', "") or "converted_120m.csv"
-                )
-
-                self.send_response(200)
-                self.send_header("Content-Type", "text/csv; charset=utf-8")
-                self.send_header(
-                    "Content-Disposition", f'attachment; filename="{download_name}"'
-                )
-                self.end_headers()
-                self.wfile.write(data)
-                return
 
             if self.path == "/iov":
                 # Use multiple file parser

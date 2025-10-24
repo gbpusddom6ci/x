@@ -800,48 +800,6 @@ class App96Handler(BaseHTTPRequestHandler):
                     else str(raw)
                 )
 
-            if self.path == "/converter":
-                candles = load_candles_from_text(text, ConverterCandle)
-                if not candles:
-                    raise ValueError("Veri boş veya çözümlenemedi")
-                tf_est = estimate_timeframe_minutes(candles)
-                if tf_est is None or abs(tf_est - 12) > 1.0:
-                    raise ValueError("Girdi 12 dakikalık akış gibi görünmüyor")
-                shifted, _ = adjust_to_output_tz(candles, "UTC-5")
-                converted = convert_12m_to_96m(shifted)
-
-                buffer = io.StringIO()
-                writer = csv.writer(buffer)
-                writer.writerow(["Time", "Open", "High", "Low", "Close"])
-                for c in converted:
-                    writer.writerow(
-                        [
-                            c.ts.strftime("%Y-%m-%d %H:%M:%S"),
-                            format_price(c.open),
-                            format_price(c.high),
-                            format_price(c.low),
-                            format_price(c.close),
-                        ]
-                    )
-                data = buffer.getvalue().encode("utf-8")
-                filename = file_obj.get("filename") or "converted.csv"
-                if "." in filename:
-                    base, _ = filename.rsplit(".", 1)
-                    download_name = base + "_96m.csv"
-                else:
-                    download_name = filename + "_96m.csv"
-                download_name = (
-                    download_name.strip().replace('"', "") or "converted_96m.csv"
-                )
-
-                self.send_response(200)
-                self.send_header("Content-Type", "text/csv; charset=utf-8")
-                self.send_header(
-                    "Content-Disposition", f'attachment; filename="{download_name}"'
-                )
-                self.end_headers()
-                self.wfile.write(data)
-                return
 
             if self.path == "/iou":
                 # Use multiple file parser
