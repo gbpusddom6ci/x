@@ -336,7 +336,6 @@ def page(title: str, body: str, active_tab: str = "analyze") -> bytes:
       <a href='/dc' class='{"active" if active_tab == "dc" else ""}'>DC List</a>
       <a href='/matrix' class='{"active" if active_tab == "matrix" else ""}'>Matrix</a>
       <a href='/convert' class='{"active" if active_tab == "convert" else ""}'>20→80 Converter</a>
-      <a href='/convert2' class='{"active" if active_tab == "convert2" else ""}'>80→20 Converter</a>
     </nav>
     {body}
   </body>
