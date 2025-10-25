@@ -412,14 +412,16 @@ def analyze_iou(
             ts = candle.ts
             if ts.hour == 18 and ts.minute == 0:
                 continue  # Cannot be IOU
-
-            # IOU restriction: 20:00 cannot be IOU (except Sunday)
-            if ts.hour == 20 and ts.minute == 0 and ts.weekday() != 6:
+            
+            # IOU restriction: 20:00 cannot be IOU (except 2 Pazar - her iki Pazar)
+            if ts.hour == 20 and ts.minute == 0:
+                if ts.weekday() != 6:  # Pazar değilse
+                    continue  # Cannot be IOU
+            
+            # IOU restriction: Friday 16:00 cannot be IOU (all Fridays)
+            if ts.weekday() == 4 and ts.hour == 16 and ts.minute == 0:
                 continue  # Cannot be IOU
-
-            # IOU restriction (app120): 14:00 and 16:00 cannot be IOU (all days)
-            if ts.minute == 0 and ts.hour in (14, 16):
-                continue  # Cannot be IOU
+            
             oc = candle.close - candle.open
             prev_oc = prev_candle.close - prev_candle.open
             

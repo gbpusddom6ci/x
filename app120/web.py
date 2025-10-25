@@ -552,7 +552,6 @@ def render_iou_index() -> bytes:
       </ul>
       <p><strong>Not:</strong> Tüm offsetler (-3..+3) otomatik taranır.</p>
       <p><strong>XYZ Analizi:</strong> Habersiz IOU içeren offsetler elenir, kalan offsetler XYZ kümesini oluşturur.</p>
-      <p><strong>Zaman kısıtları (app120):</strong> 18:00 her zaman dışarı; 20:00 Pazar hariç dışarı; ayrıca 14:00 ve 16:00 mumları asla IOU değildir ve XYZ elemesine katılmaz.</p>
     </div>
     """
     return page("app120 - IOU", body, active_tab="iou")

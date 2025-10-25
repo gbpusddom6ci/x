@@ -362,7 +362,6 @@ def render_index() -> bytes:
       </ul>
       <p><strong>Not:</strong> S1 için 1 ve 3 değerleri, S2 için 1 ve 5 değerleri analiz edilmez.</p>
       <p><strong>XYZ Analizi:</strong> Habersiz IOU içeren offsetler elenir, kalan offsetler XYZ kümesini oluşturur.</p>
-      <p><strong>Zaman kısıtları (app120):</strong> 18:00 her zaman dışarı; 20:00 Pazar hariç dışarı; ayrıca 14:00 ve 16:00 mumları asla IOU değildir ve XYZ elemesine katılmaz.</p>
     </div>
     """
     return page("app120_iou", body)
