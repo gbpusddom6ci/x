@@ -99,7 +99,9 @@ Architecture overview
 - IOU/IOV analysis (app90, app96, app120):
   - IOU: OC and PrevOC above limit and same sign; applies tolerance to drop near-limit values. IOV (app120 only): above limit and opposite signs.
   - Both scan all offsets (−3..+3) using filtered sequences (early values removed: S1 excludes [1,3], S2 excludes [1,5]).
-  - IOU time restrictions: 18:00 excluded always; 20:00 excluded (except Sunday); Friday 16:00 excluded.
+  - IOU time restrictions:
+    - Common: 18:00 excluded always; 20:00 excluded (except Sunday).
+    - app120-specific: 14:00 and 16:00 excluded always (also excluded from XYZ).
   - News integration: news_data/*.json is auto-merged. Matching checks [start, start+TF); for null-value events (speeches/statements) also [start−1h, start+TF). Holidays are displayed but don't eliminate offsets. IOU "XYZ set" filters out offsets that contain any news-free IOU; remaining offsets form the XYZ set.
 
 - Reverse proxy (appsuite):
