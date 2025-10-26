@@ -116,7 +116,7 @@ App‑Bazlı IOU Saat İstisnaları
 - app80: 18:00 asla; 19:20, 20:40 IOU değil (2. Pazar HARİÇ); Cuma 16:40 asla IOU değil.
 - app90: 18:00 asla; 19:30 IOU değil (Pazar HARİÇ); Cuma 16:30 asla IOU değil.
 - app96: 18:00 asla; 19:36 IOU değil (Pazar HARİÇ); Cuma 16:24 asla IOU değil.
-- app120: 18:00 asla; 20:00 IOU değil (Pazar HARİÇ); Cuma 16:00 asla IOU değil.
+- app120: 18:00 asla; 20:00 asla; Cuma 16:00 asla IOU değil.
 - app321: 18:00, 19:00, 20:00 (dakika=00) IOU değil.
 
 XYZ (Haber) Analizi (özet)
