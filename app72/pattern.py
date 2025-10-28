@@ -230,25 +230,31 @@ def format_pattern_results(results: List[PatternResult]) -> str:
     html_parts.append("<ol>")
     
     for idx, result in enumerate(results, 1):
-        # Format pattern sequence
-        pattern_str = " → ".join([
-            f"{o:+d}" if o != 0 else "0" for o in result.pattern
-        ])
+        # Build pattern string with hover tooltips
+        pattern_parts = []
+        for i, offset in enumerate(result.pattern):
+            # Format offset
+            offset_str = f"{offset:+d}" if offset != 0 else "0"
+            
+            # Get filename for this offset (remove .csv extension)
+            if i < len(result.file_sequence):
+                _, full_filename = result.file_sequence[i]
+                # Remove .csv extension for tooltip
+                filename = full_filename.rsplit('.', 1)[0] if '.' in full_filename else full_filename
+                # Add span with title attribute for tooltip
+                pattern_parts.append(f'<span title="{filename}" style="cursor:help; border-bottom:1px dotted #999;">{offset_str}</span>')
+            else:
+                pattern_parts.append(offset_str)
         
-        # Format file sequence
-        file_str = ", ".join([
-            f"Dosya {file_idx}: {filename}" for file_idx, filename in result.file_sequence
-        ])
+        pattern_str = " → ".join(pattern_parts)
         
         # Completion status
         status = "✅ Tamamlandı" if result.is_complete else "⚠️ Devam ediyor"
         
         html_parts.append(f"""
         <li>
-            <strong>Pattern {idx}:</strong> <code>{pattern_str}</code> 
+            <strong>Pattern {idx}:</strong> <code style="font-size:14px;">{pattern_str}</code> 
             <span style="color: {'green' if result.is_complete else 'orange'};">({status})</span>
-            <br>
-            <small style="color: #666;">{file_str}</small>
         </li>
         """)
     
