@@ -577,6 +577,178 @@ def parse_multipart(handler: BaseHTTPRequestHandler) -> Dict[str, Dict[str, Any]
 
 
 class App72Handler(BaseHTTPRequestHandler):
+    def _render_joker_selection(
+        self, files, sequence, limit, xyz_analysis, events_by_date
+    ):
+        """Stage 1: Calculate XYZ for all files and show joker selection interface."""
+        import base64
+        
+        # Calculate XYZ for each file
+        file_xyz_results = []
+        for file_idx, file_obj in enumerate(files):
+            filename = file_obj.get("filename", f"Dosya {file_idx + 1}")
+            raw = file_obj["data"]
+            text = (
+                raw.decode("utf-8", errors="replace")
+                if isinstance(raw, (bytes, bytearray))
+                else str(raw)
+            )
+            
+            try:
+                candles = load_candles_from_text(text, CounterCandle)
+                if not candles:
+                    continue
+                
+                results = analyze_iou(candles, sequence, limit)
+                total_iou = sum(len(v) for v in results.values())
+                
+                if total_iou == 0:
+                    continue
+                
+                # Calculate XYZ set
+                file_xyz_data = {offset: {"news_free": 0, "with_news": 0} for offset in range(-3, 4)}
+                
+                for offset in range(-3, 4):
+                    for iou in results[offset]:
+                        news_events = (
+                            find_news_in_timerange(events_by_date, iou.timestamp, 72)
+                            if events_by_date
+                            else []
+                        )
+                        affecting_events = [
+                            e for e in news_events if categorize_news_event(e) in ["NORMAL", "SPEECH"]
+                        ]
+                        has_news = bool(affecting_events)
+                        
+                        if has_news:
+                            file_xyz_data[offset]["with_news"] += 1
+                        else:
+                            file_xyz_data[offset]["news_free"] += 1
+                
+                # Determine XYZ set (offsets without news-free IOUs)
+                xyz_set = []
+                for offset in range(-3, 4):
+                    if file_xyz_data[offset]["news_free"] == 0:
+                        xyz_set.append(offset)
+                
+                # Store file data (encode CSV for hidden field)
+                file_xyz_results.append({
+                    "filename": filename,
+                    "xyz_set": xyz_set,
+                    "data_base64": base64.b64encode(raw).decode('ascii')
+                })
+            except Exception:
+                continue
+        
+        if not file_xyz_results:
+            raise ValueError("Hiçbir dosyada IOU bulunamadı")
+        
+        # Render joker selection page
+        body = f"""
+        <div class='card'>
+          <h3>🎯 Joker Dosya Seçimi</h3>
+          <p>Her dosya için XYZ kümesi hesaplandı. İstediğiniz dosyayı <strong>Joker</strong> yaparak tüm offsetlerde kullanılabilir hale getirebilirsiniz.</p>
+          <form method='post' action='/iou_analyze'>
+            <input type='hidden' name='sequence' value='{html.escape(sequence)}' />
+            <input type='hidden' name='limit' value='{limit}' />
+            <table style='margin-top:12px;'>
+              <tr>
+                <th>Dosya Adı</th>
+                <th>XYZ Kümesi</th>
+                <th>Joker (Tüm Offsetler)</th>
+              </tr>
+        """
+        
+        for idx, file_data in enumerate(file_xyz_results):
+            xyz_str = ", ".join([f"{o:+d}" if o != 0 else "0" for o in file_data["xyz_set"]])
+            if not xyz_str:
+                xyz_str = "Ø (boş)"
+            
+            body += f"""
+              <tr>
+                <td>{html.escape(file_data["filename"])}</td>
+                <td><code>{html.escape(xyz_str)}</code></td>
+                <td><input type='checkbox' name='joker_{idx}' value='1' /></td>
+              </tr>
+              <input type='hidden' name='file_{idx}_name' value='{html.escape(file_data["filename"])}' />
+              <input type='hidden' name='file_{idx}_xyz' value='{html.escape(",".join(map(str, file_data["xyz_set"])))}' />
+              <input type='hidden' name='file_{idx}_data' value='{file_data["data_base64"]}' />
+            """
+        
+        body += f"""
+            </table>
+            <input type='hidden' name='file_count' value='{len(file_xyz_results)}' />
+            <div style='margin-top:16px;'>
+              <button type='submit'>Pattern Analizi Başlat</button>
+            </div>
+          </form>
+        </div>
+        """
+        
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.end_headers()
+        self.wfile.write(page("app72 - Joker Seçimi", body, active_tab="iou"))
+    
+    def _handle_iou_final_analysis(self):
+        """Stage 2: Perform pattern analysis with joker selections."""
+        import base64
+        
+        form_data = self._parse_multipart_multiple_files()
+        params = form_data["params"]
+        
+        file_count = int(params.get("file_count", "0"))
+        if file_count == 0:
+            raise ValueError("Dosya bilgisi bulunamadı")
+        
+        sequence = params.get("sequence", "S1").strip()
+        limit_str = params.get("limit", "0.1").strip()
+        try:
+            limit = float(limit_str)
+        except:
+            limit = 0.1
+        
+        # Reconstruct file data with joker info
+        pattern_xyz_data = []
+        for idx in range(file_count):
+            filename = params.get(f"file_{idx}_name", f"Dosya {idx + 1}")
+            xyz_str = params.get(f"file_{idx}_xyz", "")
+            is_joker = f"joker_{idx}" in params
+            
+            if is_joker:
+                # Joker: all offsets
+                xyz_set = list(range(-3, 4))
+            else:
+                # Normal: use calculated XYZ
+                if xyz_str:
+                    xyz_set = [int(x.strip()) for x in xyz_str.split(",") if x.strip()]
+                else:
+                    xyz_set = []
+            
+            pattern_xyz_data.append((filename, xyz_set))
+        
+        # Run pattern analysis
+        pattern_results = find_valid_patterns(pattern_xyz_data, max_branches=1000)
+        pattern_html = format_pattern_results(pattern_results)
+        
+        body = f"""
+        <div class='card'>
+          <h3>📊 Pattern Analiz Sonuçları</h3>
+          <div><strong>Dosya Sayısı:</strong> {file_count}</div>
+          <div><strong>Sequence:</strong> {html.escape(sequence)}</div>
+          <div><strong>Limit:</strong> {limit}</div>
+        </div>
+        <div class='card' style='padding:10px; background:#f0fdf4; border:1px solid #10b981;'>
+          <h3>🔍 Pattern Analizi</h3>
+          {pattern_html}
+        </div>
+        """
+        
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.end_headers()
+        self.wfile.write(page("app72 - Pattern Sonuçları", body, active_tab="iou"))
+    
     def _parse_multipart_multiple_files(self) -> Dict[str, Any]:
         """Parse multipart with multiple file support."""
         ct = self.headers.get("Content-Type", "")
@@ -681,7 +853,7 @@ class App72Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_POST(self):
-        # IOU uses multiple file upload
+        # IOU Stage 1: File upload + XYZ calculation + Joker selection
         if self.path == "/iou":
             try:
                 form_data = self._parse_multipart_multiple_files()
@@ -706,6 +878,12 @@ class App72Handler(BaseHTTPRequestHandler):
                 xyz_analysis = "xyz_analysis" in params
                 xyz_summary_table = "xyz_summary_table" in params
                 pattern_analysis = "pattern_analysis" in params
+                
+                # Stage 1: Just calculate XYZ and show joker selection if pattern analysis enabled
+                if pattern_analysis:
+                    return self._render_joker_selection(
+                        files, sequence, limit, xyz_analysis, events_by_date
+                    )
 
                 # Load news data from directory (auto-detects all JSON files)
                 news_dir = os.path.join(
@@ -968,6 +1146,18 @@ class App72Handler(BaseHTTPRequestHandler):
                 self.wfile.write(page("app72 - IOU Results", body, active_tab="iou"))
                 return
 
+            except Exception as e:
+                err_msg = f"<div class='card'><h3>Hata</h3><p style='color:red;'>{html.escape(str(e))}</p></div>"
+                self.send_response(400)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(page("app72 - Hata", err_msg, active_tab="iou"))
+                return
+        
+        # IOU Stage 2: Pattern analysis with joker selections
+        if self.path == "/iou_analyze":
+            try:
+                return self._handle_iou_final_analysis()
             except Exception as e:
                 err_msg = f"<div class='card'><h3>Hata</h3><p style='color:red;'>{html.escape(str(e))}</p></div>"
                 self.send_response(400)
