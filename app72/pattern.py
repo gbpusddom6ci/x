@@ -56,7 +56,7 @@ def find_valid_patterns(
     initial_branches: List[PatternBranch] = []
     first_filename, first_offsets = xyz_data[0]
     
-    # First file must contain at least one starting point
+    # First file can start with ANY offset (data before is unknown)
     for offset in first_offsets:
         if offset == 0:
             # Start with 0 - can branch to ±1 or ±3 next
@@ -68,7 +68,7 @@ def find_valid_patterns(
                 direction=None
             ))
         elif offset in {-3, -1, 1, 3}:
-            # Start directly without 0 (valid for first position)
+            # Start with ±1 or ±3: single direction known
             state = 'plus_started' if offset > 0 else 'minus_started'
             direction = 'ascending' if offset in {1, -1} else 'descending'
             expected = _get_expected_next(offset, state, direction)
@@ -78,6 +78,27 @@ def find_valid_patterns(
                 current_state=state,
                 expected_next=expected,
                 direction=direction
+            ))
+        elif offset in {-2, 2}:
+            # Start with ±2: direction unknown, try both
+            state = 'plus_started' if offset > 0 else 'minus_started'
+            
+            # Branch 1: Ascending (±1 → ±2 → ±3)
+            initial_branches.append(PatternBranch(
+                path=[offset],
+                file_indices=[0],
+                current_state=state,
+                expected_next={3 if offset > 0 else -3},
+                direction='ascending'
+            ))
+            
+            # Branch 2: Descending (±3 → ±2 → ±1)
+            initial_branches.append(PatternBranch(
+                path=[offset],
+                file_indices=[0],
+                current_state=state,
+                expected_next={1 if offset > 0 else -1},
+                direction='descending'
             ))
     
     if not initial_branches:
