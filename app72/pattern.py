@@ -230,22 +230,15 @@ def format_pattern_results(results: List[PatternResult]) -> str:
     html_parts.append("<ol>")
     
     for idx, result in enumerate(results, 1):
-        # Build pattern string with inline filenames
-        pattern_parts = []
-        for i, offset in enumerate(result.pattern):
-            # Format offset
-            offset_str = f"{offset:+d}" if offset != 0 else "0"
-            
-            # Get filename for this offset (remove .csv extension)
-            if i < len(result.file_sequence):
-                _, full_filename = result.file_sequence[i]
-                # Remove .csv extension
-                filename = full_filename.rsplit('.', 1)[0] if '.' in full_filename else full_filename
-                pattern_parts.append(f"{offset_str}({filename})")
-            else:
-                pattern_parts.append(offset_str)
+        # Format pattern sequence
+        pattern_str = " → ".join([
+            f"{o:+d}" if o != 0 else "0" for o in result.pattern
+        ])
         
-        pattern_str = " → ".join(pattern_parts)
+        # Format file sequence
+        file_str = ", ".join([
+            f"Dosya {file_idx}: {filename}" for file_idx, filename in result.file_sequence
+        ])
         
         # Completion status
         status = "✅ Tamamlandı" if result.is_complete else "⚠️ Devam ediyor"
@@ -254,6 +247,8 @@ def format_pattern_results(results: List[PatternResult]) -> str:
         <li>
             <strong>Pattern {idx}:</strong> <code>{pattern_str}</code> 
             <span style="color: {'green' if result.is_complete else 'orange'};">({status})</span>
+            <br>
+            <small style="color: #666;">{file_str}</small>
         </li>
         """)
     
