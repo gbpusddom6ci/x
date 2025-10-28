@@ -767,13 +767,20 @@ class App72Handler(BaseHTTPRequestHandler):
         # Create summary of final offsets
         final_offsets_summary = ""
         if final_offsets:
+            # Get unique offsets (preserve order of first occurrence)
+            unique_offsets = []
+            seen = set()
+            for offset in final_offsets:
+                if offset not in seen:
+                    unique_offsets.append(offset)
+                    seen.add(offset)
+            
             # Format as comma-separated list
-            offset_strs = [f"{o:+d}" if o != 0 else "0" for o in final_offsets]
+            offset_strs = [f"{o:+d}" if o != 0 else "0" for o in unique_offsets]
             final_offsets_summary = f"""
             <div class='card' style='padding:10px; background:#fff7ed; border:1px solid #f97316;'>
               <h3>📌 Pattern Son Değerleri</h3>
-              <p><strong>{len(final_offsets)} pattern tespit edildi.</strong> Son offsetler:</p>
-              <p style='font-size:16px;'><code>{', '.join(offset_strs)}</code></p>
+              <p><strong>{len(final_offsets)} pattern tespit edildi.</strong> Benzersiz son offsetler: <code>{', '.join(offset_strs)}</code></p>
             </div>
             """
         
