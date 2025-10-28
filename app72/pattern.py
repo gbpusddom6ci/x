@@ -23,6 +23,7 @@ class PatternBranch:
     file_indices: List[int]  # Which file index provided each offset
     current_state: str  # 'reset', 'plus_started', 'minus_started', 'complete'
     expected_next: Set[int]  # Valid next offsets for this branch
+    direction: Optional[str]  # 'ascending' (1→2→3), 'descending' (3→2→1), or None
 
 
 @dataclass
@@ -63,17 +64,20 @@ def find_valid_patterns(
                 path=[0],
                 file_indices=[0],
                 current_state='reset',
-                expected_next={-3, -1, 1, 3}
+                expected_next={-3, -1, 1, 3},
+                direction=None
             ))
         elif offset in {-3, -1, 1, 3}:
             # Start directly without 0 (valid for first position)
             state = 'plus_started' if offset > 0 else 'minus_started'
-            expected = _get_expected_next(offset, state)
+            direction = 'ascending' if offset in {1, -1} else 'descending'
+            expected = _get_expected_next(offset, state, direction)
             initial_branches.append(PatternBranch(
                 path=[offset],
                 file_indices=[0],
                 current_state=state,
-                expected_next=expected
+                expected_next=expected,
+                direction=direction
             ))
     
     if not initial_branches:
@@ -96,13 +100,23 @@ def find_valid_patterns(
                     new_path = branch.path + [offset]
                     new_file_indices = branch.file_indices + [file_idx]
                     new_state = _get_next_state(branch.current_state, offset)
-                    new_expected = _get_expected_next(offset, new_state)
+                    
+                    # Determine direction: set on first non-zero in cycle, reset on 0
+                    new_direction = branch.direction
+                    if offset == 0:
+                        new_direction = None  # Reset direction on 0
+                    elif branch.current_state == 'reset' and offset != 0:
+                        # First step after 0: set direction
+                        new_direction = 'ascending' if offset in {1, -1} else 'descending'
+                    
+                    new_expected = _get_expected_next(offset, new_state, new_direction)
                     
                     new_branch = PatternBranch(
                         path=new_path,
                         file_indices=new_file_indices,
                         current_state=new_state,
-                        expected_next=new_expected
+                        expected_next=new_expected,
+                        direction=new_direction
                     )
                     new_branches.append(new_branch)
                     
@@ -153,8 +167,8 @@ def _get_next_state(current_state: str, offset: int) -> str:
         return current_state
 
 
-def _get_expected_next(current_offset: int, current_state: str) -> Set[int]:
-    """Get valid next offsets based on current offset and state."""
+def _get_expected_next(current_offset: int, current_state: str, direction: Optional[str]) -> Set[int]:
+    """Get valid next offsets based on current offset, state, and direction."""
     if current_state == 'reset':
         # After 0, can start with ±1 or ±3
         return {-3, -1, 1, 3}
@@ -163,28 +177,42 @@ def _get_expected_next(current_offset: int, current_state: str) -> Set[int]:
         # Just hit 0, can start new cycle
         return {-3, -1, 1, 3}
     
-    # In middle of cycle - determine next step
+    # In middle of cycle - MUST follow direction
     if current_state == 'plus_started':
-        # Positive cycle: can go +1→+2→+3 or +3→+2→+1
-        if current_offset == 1:
-            return {2}  # +1 → +2
-        elif current_offset == 2:
-            return {1, 3}  # +2 → +1 (reverse) or +3 (forward)
-        elif current_offset == 3:
-            return {2, 0}  # +3 → +2 (continue reverse) or 0 (end)
-        else:
-            return set()
+        if direction == 'ascending':
+            # +1 → +2 → +3 → 0
+            if current_offset == 1:
+                return {2}
+            elif current_offset == 2:
+                return {3}
+            elif current_offset == 3:
+                return {0}
+        elif direction == 'descending':
+            # +3 → +2 → +1 → 0
+            if current_offset == 3:
+                return {2}
+            elif current_offset == 2:
+                return {1}
+            elif current_offset == 1:
+                return {0}
     
     elif current_state == 'minus_started':
-        # Negative cycle: can go -1→-2→-3 or -3→-2→-1
-        if current_offset == -1:
-            return {-2}  # -1 → -2
-        elif current_offset == -2:
-            return {-1, -3}  # -2 → -1 (reverse) or -3 (forward)
-        elif current_offset == -3:
-            return {-2, 0}  # -3 → -2 (continue reverse) or 0 (end)
-        else:
-            return set()
+        if direction == 'ascending':
+            # -1 → -2 → -3 → 0
+            if current_offset == -1:
+                return {-2}
+            elif current_offset == -2:
+                return {-3}
+            elif current_offset == -3:
+                return {0}
+        elif direction == 'descending':
+            # -3 → -2 → -1 → 0
+            if current_offset == -3:
+                return {-2}
+            elif current_offset == -2:
+                return {-1}
+            elif current_offset == -1:
+                return {0}
     
     return set()
 
