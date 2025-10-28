@@ -23,6 +23,7 @@ from .counter import (
     analyze_iou,
     IOUResult,
 )
+from .pattern import find_valid_patterns, format_pattern_results
 from .main import (
     Candle as ConverterCandle,
     estimate_timeframe_minutes,
@@ -460,6 +461,10 @@ def render_iou_index() -> bytes:
             <label>XYZ Özet Tablosu</label>
             <input type='checkbox' name='xyz_summary_table' />
           </div>
+          <div>
+            <label>Pattern Analizi</label>
+            <input type='checkbox' name='pattern_analysis' />
+          </div>
         </div>
         <div style='margin-top:12px;'>
           <button type='submit'>Analiz Et</button>
@@ -700,6 +705,7 @@ class App72Handler(BaseHTTPRequestHandler):
 
                 xyz_analysis = "xyz_analysis" in params
                 xyz_summary_table = "xyz_summary_table" in params
+                pattern_analysis = "pattern_analysis" in params
 
                 # Load news data from directory (auto-detects all JSON files)
                 news_dir = os.path.join(
@@ -726,11 +732,15 @@ class App72Handler(BaseHTTPRequestHandler):
                   <div><strong>Haber Verisi:</strong> {f"✅ {json_files_count} JSON dosyası yüklendi ({len(events_by_date)} gün)" if news_loaded else "❌ news_data/ klasöründe JSON bulunamadı"}</div>
                   <div><strong>XYZ Analizi:</strong> {"✅ Aktif" if xyz_analysis else "❌ Pasif"}</div>
                   <div><strong>XYZ Özet Tablosu:</strong> {"✅ Aktif" if xyz_summary_table else "❌ Pasif"}</div>
+                  <div><strong>Pattern Analizi:</strong> {"✅ Aktif" if pattern_analysis else "❌ Pasif"}</div>
                 </div>
                 """
 
                 # For summary table mode: collect all results first
                 summary_data = [] if xyz_summary_table else None
+                
+                # For pattern analysis: collect XYZ data from all files
+                pattern_xyz_data = [] if pattern_analysis else None
 
                 # Process each file
                 for file_idx, file_obj in enumerate(files, 1):
@@ -908,6 +918,10 @@ class App72Handler(BaseHTTPRequestHandler):
                                     "eliminated": eliminated_str,
                                 }
                             )
+                        
+                        # Collect XYZ data for pattern analysis
+                        if pattern_analysis:
+                            pattern_xyz_data.append((filename, xyz_set))
 
                     except Exception as e:
                         if not xyz_summary_table:
@@ -933,6 +947,18 @@ class App72Handler(BaseHTTPRequestHandler):
 
                     body += """
                       </table>
+                    </div>
+                    """
+                
+                # Run pattern analysis if enabled
+                if pattern_analysis and pattern_xyz_data:
+                    pattern_results = find_valid_patterns(pattern_xyz_data, max_branches=1000)
+                    pattern_html = format_pattern_results(pattern_results)
+                    
+                    body += f"""
+                    <div class='card' style='padding:10px; background:#f0fdf4; border:1px solid #10b981;'>
+                      <h3>🔍 Pattern Analizi</h3>
+                      {pattern_html}
                     </div>
                     """
 
