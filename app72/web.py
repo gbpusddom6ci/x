@@ -693,9 +693,15 @@ class App72Handler(BaseHTTPRequestHandler):
     def _handle_iou_final_analysis(self):
         """Stage 2: Perform pattern analysis with joker selections."""
         import base64
+        from urllib.parse import parse_qs
         
-        form_data = self._parse_multipart_multiple_files()
-        params = form_data["params"]
+        # Parse URL-encoded form data
+        content_length = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(content_length).decode('utf-8')
+        parsed = parse_qs(body)
+        
+        # Convert to simple dict (take first value of each key)
+        params = {k: v[0] if v else '' for k, v in parsed.items()}
         
         file_count = int(params.get("file_count", "0"))
         if file_count == 0:
