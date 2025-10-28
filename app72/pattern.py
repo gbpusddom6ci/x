@@ -249,10 +249,10 @@ def format_pattern_results(results: List[PatternResult]) -> str:
     if not results:
         return "<p><strong>❌ Pattern bulunamadı</strong> - Geçerli örüntü oluşturulamadı.</p>"
     
-    # Build color map for (filename, offset) pairs
-    # Collect all unique (filename, offset) pairs across all patterns
-    pair_map = {}  # (filename, offset) -> color
-    pair_counter = 0
+    # Build color map for triplet groups (3 consecutive non-zero offsets)
+    # Skip 0s, group consecutive triplets, assign same color to each triplet
+    triplet_map = {}  # (file1, file2, file3, offset1, offset2, offset3) -> color
+    triplet_counter = 0
     
     # Predefined color palette (pastel colors for better readability)
     colors = [
@@ -262,21 +262,78 @@ def format_pattern_results(results: List[PatternResult]) -> str:
         '#FFE8E5', '#E5FFFA', '#FAE5FF', '#E5FAFF', '#FFEFA5', '#E5FFEF',
     ]
     
+    # Build triplet map
     for result in results:
-        for i, offset in enumerate(result.pattern):
-            if i < len(result.file_sequence):
-                _, filename = result.file_sequence[i]
-                pair = (filename, offset)
-                if pair not in pair_map:
-                    pair_map[pair] = colors[pair_counter % len(colors)]
-                    pair_counter += 1
+        i = 0
+        while i < len(result.pattern):
+            # Skip 0s
+            if result.pattern[i] == 0:
+                i += 1
+                continue
+            
+            # Collect triplet (3 consecutive non-zero offsets)
+            triplet_offsets = []
+            triplet_files = []
+            j = i
+            while j < len(result.pattern) and len(triplet_offsets) < 3:
+                if result.pattern[j] == 0:
+                    break
+                triplet_offsets.append(result.pattern[j])
+                if j < len(result.file_sequence):
+                    _, filename = result.file_sequence[j]
+                    triplet_files.append(filename)
+                j += 1
+            
+            # If we have a complete triplet (3 offsets), create a key
+            if len(triplet_offsets) == 3 and len(triplet_files) == 3:
+                triplet_key = tuple(triplet_files + triplet_offsets)
+                if triplet_key not in triplet_map:
+                    triplet_map[triplet_key] = colors[triplet_counter % len(colors)]
+                    triplet_counter += 1
+            
+            i = j if j > i else i + 1
     
     html_parts = [f"<p><strong>✅ {len(results)} geçerli pattern bulundu:</strong></p>"]
     html_parts.append("<ol>")
     
     for idx, result in enumerate(results, 1):
-        # Build pattern string with hover tooltips and color coding
+        # Build pattern string with hover tooltips and triplet-based color coding
         pattern_parts = []
+        
+        # Build triplet membership for this pattern
+        offset_to_color = {}  # offset_index -> color
+        i = 0
+        while i < len(result.pattern):
+            # Skip 0s
+            if result.pattern[i] == 0:
+                i += 1
+                continue
+            
+            # Collect triplet
+            triplet_offsets = []
+            triplet_files = []
+            triplet_indices = []
+            j = i
+            while j < len(result.pattern) and len(triplet_offsets) < 3:
+                if result.pattern[j] == 0:
+                    break
+                triplet_offsets.append(result.pattern[j])
+                triplet_indices.append(j)
+                if j < len(result.file_sequence):
+                    _, filename = result.file_sequence[j]
+                    triplet_files.append(filename)
+                j += 1
+            
+            # If complete triplet, assign color to all 3 offsets
+            if len(triplet_offsets) == 3 and len(triplet_files) == 3:
+                triplet_key = tuple(triplet_files + triplet_offsets)
+                color = triplet_map.get(triplet_key, 'transparent')
+                for ti in triplet_indices:
+                    offset_to_color[ti] = color
+            
+            i = j if j > i else i + 1
+        
+        # Now build the pattern string
         for i, offset in enumerate(result.pattern):
             # Format offset
             offset_str = f"{offset:+d}" if offset != 0 else "0"
@@ -287,9 +344,8 @@ def format_pattern_results(results: List[PatternResult]) -> str:
                 # Remove .csv extension for tooltip
                 filename = full_filename.rsplit('.', 1)[0] if '.' in full_filename else full_filename
                 
-                # Get color for this (filename, offset) pair
-                pair = (full_filename, offset)
-                bg_color = pair_map.get(pair, 'transparent')
+                # Get color for this offset (from triplet map, or transparent for 0)
+                bg_color = offset_to_color.get(i, 'transparent') if offset != 0 else 'transparent'
                 
                 # Add span with title attribute for tooltip and background color
                 pattern_parts.append(
