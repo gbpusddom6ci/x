@@ -249,11 +249,33 @@ def format_pattern_results(results: List[PatternResult]) -> str:
     if not results:
         return "<p><strong>❌ Pattern bulunamadı</strong> - Geçerli örüntü oluşturulamadı.</p>"
     
+    # Build color map for (filename, offset) pairs
+    # Collect all unique (filename, offset) pairs across all patterns
+    pair_map = {}  # (filename, offset) -> color
+    pair_counter = 0
+    
+    # Predefined color palette (pastel colors for better readability)
+    colors = [
+        '#FFE5E5', '#E5F3FF', '#E5FFE5', '#FFF5E5', '#FFE5F5', '#F5E5FF',
+        '#E5FFFF', '#FFFFE5', '#F0E5FF', '#E5FFF0', '#FFE5EB', '#E5F0FF',
+        '#F5FFE5', '#FFE5F0', '#E5FFE8', '#FFF0E5', '#E5E5FF', '#FFFFE8',
+        '#FFE8E5', '#E5FFFA', '#FAE5FF', '#E5FAFF', '#FFEFA5', '#E5FFEF',
+    ]
+    
+    for result in results:
+        for i, offset in enumerate(result.pattern):
+            if i < len(result.file_sequence):
+                _, filename = result.file_sequence[i]
+                pair = (filename, offset)
+                if pair not in pair_map:
+                    pair_map[pair] = colors[pair_counter % len(colors)]
+                    pair_counter += 1
+    
     html_parts = [f"<p><strong>✅ {len(results)} geçerli pattern bulundu:</strong></p>"]
     html_parts.append("<ol>")
     
     for idx, result in enumerate(results, 1):
-        # Build pattern string with hover tooltips
+        # Build pattern string with hover tooltips and color coding
         pattern_parts = []
         for i, offset in enumerate(result.pattern):
             # Format offset
@@ -264,8 +286,19 @@ def format_pattern_results(results: List[PatternResult]) -> str:
                 _, full_filename = result.file_sequence[i]
                 # Remove .csv extension for tooltip
                 filename = full_filename.rsplit('.', 1)[0] if '.' in full_filename else full_filename
-                # Add span with title attribute for tooltip
-                pattern_parts.append(f'<span title="{filename}" style="cursor:help; border-bottom:1px dotted #999;">{offset_str}</span>')
+                
+                # Get color for this (filename, offset) pair
+                pair = (full_filename, offset)
+                bg_color = pair_map.get(pair, 'transparent')
+                
+                # Add span with title attribute for tooltip and background color
+                pattern_parts.append(
+                    f'<span title="{filename}" style="'
+                    f'cursor:help; border-bottom:1px dotted #999; '
+                    f'background-color:{bg_color}; padding:2px 4px; border-radius:3px; '
+                    f'display:inline-block; margin:0 2px;'
+                    f'">{offset_str}</span>'
+                )
             else:
                 pattern_parts.append(offset_str)
         
