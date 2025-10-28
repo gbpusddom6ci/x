@@ -756,6 +756,27 @@ class App72Handler(BaseHTTPRequestHandler):
         pattern_results = find_valid_patterns(pattern_xyz_data, max_branches=1000)
         pattern_html = format_pattern_results(pattern_results)
         
+        # Extract final offsets from all patterns
+        final_offsets = []
+        if pattern_results:
+            for result in pattern_results:
+                if result.pattern:
+                    final_offset = result.pattern[-1]
+                    final_offsets.append(final_offset)
+        
+        # Create summary of final offsets
+        final_offsets_summary = ""
+        if final_offsets:
+            # Format as comma-separated list
+            offset_strs = [f"{o:+d}" if o != 0 else "0" for o in final_offsets]
+            final_offsets_summary = f"""
+            <div class='card' style='padding:10px; background:#fff7ed; border:1px solid #f97316;'>
+              <h3>📌 Pattern Son Değerleri</h3>
+              <p><strong>{len(final_offsets)} pattern tespit edildi.</strong> Son offsetler:</p>
+              <p style='font-size:16px;'><code>{', '.join(offset_strs)}</code></p>
+            </div>
+            """
+        
         body = f"""
         <div class='card'>
           <h3>📊 Pattern Analiz Sonuçları</h3>
@@ -763,6 +784,7 @@ class App72Handler(BaseHTTPRequestHandler):
           <div><strong>Sequence:</strong> {html.escape(sequence)}</div>
           <div><strong>Limit:</strong> {limit}</div>
         </div>
+        {final_offsets_summary}
         <div class='card' style='padding:10px; background:#f0fdf4; border:1px solid #10b981;'>
           <h3>🔍 Pattern Analizi</h3>
           {pattern_html}
