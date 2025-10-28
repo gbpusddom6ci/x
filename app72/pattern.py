@@ -249,10 +249,10 @@ def format_pattern_results(results: List[PatternResult]) -> str:
     if not results:
         return "<p><strong>❌ Pattern bulunamadı</strong> - Geçerli örüntü oluşturulamadı.</p>"
     
-    # Build color map for triplet groups (3 consecutive non-zero offsets)
-    # Skip 0s, group consecutive triplets, assign same color to each triplet
-    triplet_map = {}  # (file1, file2, file3, offset1, offset2, offset3) -> color
-    triplet_counter = 0
+    # Build color map for groups (2-3 consecutive non-zero offsets)
+    # Skip 0s, group consecutive offsets (doublets or triplets), assign same color
+    group_map = {}  # (file1, file2, [file3], offset1, offset2, [offset3]) -> color
+    group_counter = 0
     
     # Predefined color palette (pastel colors for better readability)
     colors = [
@@ -262,7 +262,7 @@ def format_pattern_results(results: List[PatternResult]) -> str:
         '#FFE8E5', '#E5FFFA', '#FAE5FF', '#E5FAFF', '#FFEFA5', '#E5FFEF',
     ]
     
-    # Build triplet map
+    # Build group map (supports doublets and triplets)
     for result in results:
         i = 0
         while i < len(result.pattern):
@@ -271,25 +271,25 @@ def format_pattern_results(results: List[PatternResult]) -> str:
                 i += 1
                 continue
             
-            # Collect triplet (3 consecutive non-zero offsets)
-            triplet_offsets = []
-            triplet_files = []
+            # Collect group (2-3 consecutive non-zero offsets)
+            group_offsets = []
+            group_files = []
             j = i
-            while j < len(result.pattern) and len(triplet_offsets) < 3:
+            while j < len(result.pattern) and len(group_offsets) < 3:
                 if result.pattern[j] == 0:
                     break
-                triplet_offsets.append(result.pattern[j])
+                group_offsets.append(result.pattern[j])
                 if j < len(result.file_sequence):
                     _, filename = result.file_sequence[j]
-                    triplet_files.append(filename)
+                    group_files.append(filename)
                 j += 1
             
-            # If we have a complete triplet (3 offsets), create a key
-            if len(triplet_offsets) == 3 and len(triplet_files) == 3:
-                triplet_key = tuple(triplet_files + triplet_offsets)
-                if triplet_key not in triplet_map:
-                    triplet_map[triplet_key] = colors[triplet_counter % len(colors)]
-                    triplet_counter += 1
+            # If we have a complete group (2 or 3 offsets), create a key
+            if len(group_offsets) >= 2 and len(group_files) >= 2:
+                group_key = tuple(group_files + group_offsets)
+                if group_key not in group_map:
+                    group_map[group_key] = colors[group_counter % len(colors)]
+                    group_counter += 1
             
             i = j if j > i else i + 1
     
@@ -297,10 +297,10 @@ def format_pattern_results(results: List[PatternResult]) -> str:
     html_parts.append("<ol>")
     
     for idx, result in enumerate(results, 1):
-        # Build pattern string with hover tooltips and triplet-based color coding
+        # Build pattern string with hover tooltips and group-based color coding
         pattern_parts = []
         
-        # Build triplet membership for this pattern
+        # Build group membership for this pattern
         offset_to_color = {}  # offset_index -> color
         i = 0
         while i < len(result.pattern):
@@ -309,31 +309,31 @@ def format_pattern_results(results: List[PatternResult]) -> str:
                 i += 1
                 continue
             
-            # Collect triplet
-            triplet_offsets = []
-            triplet_files = []
-            triplet_indices = []
+            # Collect group (2-3 offsets)
+            group_offsets = []
+            group_files = []
+            group_indices = []
             j = i
-            while j < len(result.pattern) and len(triplet_offsets) < 3:
+            while j < len(result.pattern) and len(group_offsets) < 3:
                 if result.pattern[j] == 0:
                     break
-                triplet_offsets.append(result.pattern[j])
-                triplet_indices.append(j)
+                group_offsets.append(result.pattern[j])
+                group_indices.append(j)
                 if j < len(result.file_sequence):
                     _, filename = result.file_sequence[j]
-                    triplet_files.append(filename)
+                    group_files.append(filename)
                 j += 1
             
-            # If complete triplet, assign color to all 3 offsets
-            if len(triplet_offsets) == 3 and len(triplet_files) == 3:
-                triplet_key = tuple(triplet_files + triplet_offsets)
-                color = triplet_map.get(triplet_key, 'transparent')
-                for ti in triplet_indices:
-                    offset_to_color[ti] = color
+            # If complete group (2 or 3), assign color to all offsets
+            if len(group_offsets) >= 2 and len(group_files) >= 2:
+                group_key = tuple(group_files + group_offsets)
+                color = group_map.get(group_key, 'transparent')
+                for gi in group_indices:
+                    offset_to_color[gi] = color
             
             i = j if j > i else i + 1
         
-        # Now build the pattern string with continuous triplet blocks
+        # Now build the pattern string with continuous group blocks
         i = 0
         while i < len(result.pattern):
             offset = result.pattern[i]
