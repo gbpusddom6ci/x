@@ -597,33 +597,38 @@ class App72Handler(BaseHTTPRequestHandler):
             try:
                 candles = load_candles_from_text(text, CounterCandle)
                 if not candles:
+                    # Add file with empty XYZ (can be used as joker)
+                    file_xyz_results.append({
+                        "filename": filename,
+                        "xyz_set": [],
+                        "data_base64": base64.b64encode(raw).decode('ascii'),
+                        "note": "Veri okunamad\u0131"
+                    })
                     continue
                 
                 results = analyze_iou(candles, sequence, limit)
                 total_iou = sum(len(v) for v in results.values())
                 
-                if total_iou == 0:
-                    continue
-                
-                # Calculate XYZ set
+                # Calculate XYZ set (even if zero IOUs)
                 file_xyz_data = {offset: {"news_free": 0, "with_news": 0} for offset in range(-3, 4)}
                 
-                for offset in range(-3, 4):
-                    for iou in results[offset]:
-                        news_events = (
-                            find_news_in_timerange(events_by_date, iou.timestamp, 72)
-                            if events_by_date
-                            else []
-                        )
-                        affecting_events = [
-                            e for e in news_events if categorize_news_event(e) in ["NORMAL", "SPEECH"]
-                        ]
-                        has_news = bool(affecting_events)
-                        
-                        if has_news:
-                            file_xyz_data[offset]["with_news"] += 1
-                        else:
-                            file_xyz_data[offset]["news_free"] += 1
+                if total_iou > 0:
+                    for offset in range(-3, 4):
+                        for iou in results[offset]:
+                            news_events = (
+                                find_news_in_timerange(events_by_date, iou.timestamp, 72)
+                                if events_by_date
+                                else []
+                            )
+                            affecting_events = [
+                                e for e in news_events if categorize_news_event(e) in ["NORMAL", "SPEECH"]
+                            ]
+                            has_news = bool(affecting_events)
+                            
+                            if has_news:
+                                file_xyz_data[offset]["with_news"] += 1
+                            else:
+                                file_xyz_data[offset]["news_free"] += 1
                 
                 # Determine XYZ set (offsets without news-free IOUs)
                 xyz_set = []
@@ -632,12 +637,21 @@ class App72Handler(BaseHTTPRequestHandler):
                         xyz_set.append(offset)
                 
                 # Store file data (encode CSV for hidden field)
+                note = "IOU yok" if total_iou == 0 else None
                 file_xyz_results.append({
                     "filename": filename,
                     "xyz_set": xyz_set,
-                    "data_base64": base64.b64encode(raw).decode('ascii')
+                    "data_base64": base64.b64encode(raw).decode('ascii'),
+                    "note": note
                 })
-            except Exception:
+            except Exception as e:
+                # Add file with empty XYZ and error note
+                file_xyz_results.append({
+                    "filename": filename,
+                    "xyz_set": [],
+                    "data_base64": base64.b64encode(raw).decode('ascii'),
+                    "note": f"Hata: {str(e)[:50]}"
+                })
                 continue
         
         if not file_xyz_results:
@@ -664,9 +678,14 @@ class App72Handler(BaseHTTPRequestHandler):
             if not xyz_str:
                 xyz_str = "Ø (boş)"
             
+            # Add note if present
+            note_html = ""
+            if file_data.get("note"):
+                note_html = f" <small style='color:#888;'>({html.escape(file_data['note'])})</small>"
+            
             body += f"""
               <tr>
-                <td>{html.escape(file_data["filename"])}</td>
+                <td>{html.escape(file_data["filename"])}{note_html}</td>
                 <td><code>{html.escape(xyz_str)}</code></td>
                 <td><input type='checkbox' name='joker_{idx}' value='1' /></td>
               </tr>
