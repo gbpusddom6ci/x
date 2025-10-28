@@ -879,17 +879,17 @@ class App72Handler(BaseHTTPRequestHandler):
                 xyz_summary_table = "xyz_summary_table" in params
                 pattern_analysis = "pattern_analysis" in params
                 
-                # Stage 1: Just calculate XYZ and show joker selection if pattern analysis enabled
-                if pattern_analysis:
-                    return self._render_joker_selection(
-                        files, sequence, limit, xyz_analysis, events_by_date
-                    )
-
                 # Load news data from directory (auto-detects all JSON files)
                 news_dir = os.path.join(
                     os.path.dirname(os.path.dirname(__file__)), "news_data"
                 )
                 events_by_date = load_news_data_from_directory(news_dir)
+                
+                # Stage 1: Just calculate XYZ and show joker selection if pattern analysis enabled
+                if pattern_analysis:
+                    return self._render_joker_selection(
+                        files, sequence, limit, xyz_analysis, events_by_date
+                    )
 
                 # Count loaded files
                 json_files_count = 0
