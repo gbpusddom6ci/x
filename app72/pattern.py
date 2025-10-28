@@ -333,30 +333,58 @@ def format_pattern_results(results: List[PatternResult]) -> str:
             
             i = j if j > i else i + 1
         
-        # Now build the pattern string
-        for i, offset in enumerate(result.pattern):
-            # Format offset
+        # Now build the pattern string with continuous triplet blocks
+        i = 0
+        while i < len(result.pattern):
+            offset = result.pattern[i]
             offset_str = f"{offset:+d}" if offset != 0 else "0"
             
-            # Get filename for this offset (remove .csv extension)
-            if i < len(result.file_sequence):
-                _, full_filename = result.file_sequence[i]
-                # Remove .csv extension for tooltip
-                filename = full_filename.rsplit('.', 1)[0] if '.' in full_filename else full_filename
+            # Check if this is start of a colored triplet
+            if i in offset_to_color and offset != 0:
+                # Find the triplet boundaries
+                triplet_start = i
+                triplet_color = offset_to_color[i]
+                triplet_end = i
                 
-                # Get color for this offset (from triplet map, or transparent for 0)
-                bg_color = offset_to_color.get(i, 'transparent') if offset != 0 else 'transparent'
+                # Find where this triplet ends (same color)
+                while triplet_end < len(result.pattern) and offset_to_color.get(triplet_end) == triplet_color:
+                    triplet_end += 1
                 
-                # Add span with title attribute for tooltip and background color
+                # Build continuous triplet block
+                triplet_parts = []
+                for j in range(triplet_start, triplet_end):
+                    o = result.pattern[j]
+                    o_str = f"{o:+d}" if o != 0 else "0"
+                    
+                    # Get filename for tooltip
+                    if j < len(result.file_sequence):
+                        _, full_filename = result.file_sequence[j]
+                        filename = full_filename.rsplit('.', 1)[0] if '.' in full_filename else full_filename
+                        triplet_parts.append(f'<span title="{filename}" style="cursor:help;">{o_str}</span>')
+                    else:
+                        triplet_parts.append(o_str)
+                
+                # Wrap entire triplet in colored block
+                triplet_html = ' → '.join(triplet_parts)
                 pattern_parts.append(
-                    f'<span title="{filename}" style="'
-                    f'cursor:help; border-bottom:1px dotted #999; '
-                    f'background-color:{bg_color}; padding:2px 4px; border-radius:3px; '
-                    f'display:inline-block; margin:0 2px;'
-                    f'">{offset_str}</span>'
+                    f'<span style="'
+                    f'background-color:{triplet_color}; padding:4px 8px; border-radius:4px; '
+                    f'display:inline-block; margin:0 4px;'
+                    f'">{triplet_html}</span>'
                 )
+                
+                i = triplet_end
             else:
-                pattern_parts.append(offset_str)
+                # Single offset (0 or not in triplet)
+                if i < len(result.file_sequence):
+                    _, full_filename = result.file_sequence[i]
+                    filename = full_filename.rsplit('.', 1)[0] if '.' in full_filename else full_filename
+                    pattern_parts.append(
+                        f'<span title="{filename}" style="cursor:help; border-bottom:1px dotted #999;">{offset_str}</span>'
+                    )
+                else:
+                    pattern_parts.append(offset_str)
+                i += 1
         
         pattern_str = " → ".join(pattern_parts)
         
