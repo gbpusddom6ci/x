@@ -33,6 +33,7 @@ class PatternResult:
     file_sequence: List[Tuple[int, str]]  # [(file_idx, filename), ...]
     is_complete: bool  # Whether pattern ends with 0
     length: int  # Number of offsets in pattern
+    expected_next: Set[int]  # Valid next offsets for continuation
 
 
 def find_valid_patterns(
@@ -168,7 +169,8 @@ def find_valid_patterns(
             pattern=branch.path,
             file_sequence=file_sequence,
             is_complete=is_complete,
-            length=len(branch.path)
+            length=len(branch.path),
+            expected_next=branch.expected_next
         )
         completed_patterns.append(result)
     
@@ -269,13 +271,17 @@ def format_pattern_results(results: List[PatternResult]) -> str:
         
         pattern_str = " → ".join(pattern_parts)
         
-        # Completion status
-        status = "✅ Tamamlandı" if result.is_complete else "⚠️ Devam ediyor"
+        # Format expected next offsets
+        if result.expected_next:
+            next_offsets = sorted(result.expected_next)
+            next_str = ", ".join([f"{o:+d}" if o != 0 else "0" for o in next_offsets])
+            status_html = f'<span style="color: {"green" if result.is_complete else "orange"};">(→ next: {next_str})</span>'
+        else:
+            status_html = '<span style="color: gray;">(→ next: none)</span>'
         
         html_parts.append(f"""
         <li>
-            <strong>Pattern {idx}:</strong> <code style="font-size:14px;">{pattern_str}</code> 
-            <span style="color: {'green' if result.is_complete else 'orange'};">({status})</span>
+            <strong>Pattern {idx}:</strong> <code style="font-size:14px;">{pattern_str}</code> {status_html}
         </li>
         """)
     
