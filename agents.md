@@ -1,7 +1,7 @@
 # 📘 x1 — Teknik Rehber (AGENTS)
 
 Son Güncelleme: 2025-10-29
-Versiyon: 3.4
+Versiyon: 3.5
 Amaç: Agent'lar için doğru, öz ve bakımı kolay referans (200–500 satır arası).
 
 Not: Detaylı örnekler ve uzun anlatımlar WARP.md ve app modüllerindedir. Bu belge; kurallar, sapmayan kararlar (invariants), app‑bazı farklar ve hızlı çalışma akışını içerir.
