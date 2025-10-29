@@ -53,6 +53,18 @@ def find_valid_patterns(
     if not xyz_data:
         return []
     
+    # AUTO-JOKER: Empty XYZ files (no IOUs) become jokers (all offsets -3..+3)
+    # This prevents empty files from killing all branches
+    xyz_data_processed = []
+    for filename, offsets in xyz_data:
+        if not offsets:
+            # Empty XYZ → auto-joker with all offsets
+            xyz_data_processed.append((f"{filename} [AUTO-JOKER]", list(range(-3, 4))))
+        else:
+            xyz_data_processed.append((filename, offsets))
+    
+    xyz_data = xyz_data_processed
+    
     # Initialize: start from first file's offsets
     initial_branches: List[PatternBranch] = []
     first_filename, first_offsets = xyz_data[0]
