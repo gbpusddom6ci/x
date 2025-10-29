@@ -650,7 +650,6 @@ class AppHandler(BaseHTTPRequestHandler):
             self.wfile.write(render_index())
 
     def do_POST(self):
-        if self.path not in ("/analyze", "/dc", "/matrix", "/iou"):
         # Stage 2: Pattern analysis with joker selections
         if self.path == "/iou_analyze":
             try:
@@ -664,6 +663,7 @@ class AppHandler(BaseHTTPRequestHandler):
                 self.wfile.write(page("app321 - Hata", err_msg, active_tab="iou"))
                 return
         
+        if self.path not in ("/analyze", "/dc", "/matrix", "/iou"):
             self.send_error(404)
             return
 
