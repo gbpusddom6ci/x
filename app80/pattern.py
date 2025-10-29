@@ -53,6 +53,18 @@ def find_valid_patterns(
     if not xyz_data:
         return []
     
+    # AUTO-JOKER: Empty XYZ files (no IOUs) become jokers (all offsets -3..+3)
+    # This prevents empty files from killing all branches
+    xyz_data_processed = []
+    for filename, offsets in xyz_data:
+        if not offsets:
+            # Empty XYZ → auto-joker with all offsets
+            xyz_data_processed.append((f"{filename} [AUTO-JOKER]", list(range(-3, 4))))
+        else:
+            xyz_data_processed.append((filename, offsets))
+    
+    xyz_data = xyz_data_processed
+    
     # Initialize: start from first file's offsets
     initial_branches: List[PatternBranch] = []
     first_filename, first_offsets = xyz_data[0]
@@ -69,10 +81,14 @@ def find_valid_patterns(
                 direction=None
             ))
         elif offset in {-3, -1, 1, 3}:
-            # Start with ±1 or ±3: single direction known
+            # Start with ±1 or ±3: two possibilities
+            # 1) New triplet starting (normal flow)
+            # 2) Triplet ending (previous steps in unloaded data)
             state = 'plus_started' if offset > 0 else 'minus_started'
             direction = 'ascending' if offset in {1, -1} else 'descending'
             expected = _get_expected_next(offset, state, direction)
+            
+            # Branch 1: Normal triplet continuation
             initial_branches.append(PatternBranch(
                 path=[offset],
                 file_indices=[0],
@@ -80,8 +96,19 @@ def find_valid_patterns(
                 expected_next=expected,
                 direction=direction
             ))
+            
+            # Branch 2: Previous steps were in unloaded data range
+            # Can jump directly to 0 (triplet completion)
+            initial_branches.append(PatternBranch(
+                path=[offset],
+                file_indices=[0],
+                current_state=state,
+                expected_next={0},
+                direction=direction
+            ))
         elif offset in {-2, 2}:
             # Start with ±2: direction unknown, try both
+            # NOTE: ±2 is in the MIDDLE of triplet, cannot jump to 0
             state = 'plus_started' if offset > 0 else 'minus_started'
             
             # Branch 1: Ascending (±1 → ±2 → ±3)
