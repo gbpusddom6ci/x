@@ -1,8 +1,8 @@
 # 📘 x1 — Teknik Rehber (AGENTS)
 
-Son Güncelleme: 2025-10-23
-Versiyon: 3.3
-Amaç: Agent’lar için doğru, öz ve bakımı kolay referans (200–500 satır arası).
+Son Güncelleme: 2025-10-29
+Versiyon: 3.4
+Amaç: Agent'lar için doğru, öz ve bakımı kolay referans (200–500 satır arası).
 
 Not: Detaylı örnekler ve uzun anlatımlar WARP.md ve app modüllerindedir. Bu belge; kurallar, sapmayan kararlar (invariants), app‑bazı farklar ve hızlı çalışma akışını içerir.
 
@@ -121,8 +121,67 @@ App‑Bazlı IOU Saat İstisnaları
 
 XYZ (Haber) Analizi (özet)
 - IOU aralığı: [start, start+TF). `time_24h=null` olaylar için [start−1h, start+TF).
-- “Holiday” olayları gösterilir ama XYZ elemede sayılmaz (non‑holiday filtre).
-- Offset eleme: bir ofsette ≥1 habersiz IOU varsa ofset elenir; kalanı “XYZ kümesi”dir.
+- "Holiday" olayları gösterilir ama XYZ elemede sayılmaz (non‑holiday filtre).
+- Offset eleme: bir ofsette ≥1 habersiz IOU varsa ofset elenir; kalanı "XYZ kümesi"dir.
+
+---
+
+## 🧩 Pattern Analizi (app72 İçin Uygulanmıştır)
+
+Genel Bakış
+- Amaç: Birden fazla haftalık veriyi analiz edip geçerli offset pattern'lerini bulmak.
+- Giriş: XYZ kümeleri (habersiz IOU'lar) + opsiyonel joker dosyalar.
+- Çıkış: Geçerli pattern'ler, görselleştirme, devam ihtimalleri.
+
+Pattern Kuralları
+1. **0 = Reset noktası**: Her cycle sonrası 0 gelir (zorunlu değil ama tamamlanma kriteri).
+2. **Triplet yapısı**: `-1→-2→-3→0` veya `-3→-2→-1→0` (aynı şey + için).
+3. **Yön sabitleme**: Triplet başladıktan sonra yön değişmez (ascending/descending).
+4. **Ardışıklık**: Atlama yok (`-1→-3` geçersiz, `-1→-2→-3` gerekli).
+5. **İlk dosya özel**: Herhangi bir offset ile başlayabilir (öncesi bilinmiyor).
+   - `-2` ile başlarsa → 2 dal açılır (ascending: bekler -3, descending: bekler -1).
+   - `+2` ile başlarsa → 2 dal açılır (ascending: bekler +3, descending: bekler +1).
+6. **Son dosya serbest**: Herhangi bir yerde bitebilir.
+   - `0` ile biterse → ✅ Tamamlandı
+   - Diğer offsetle biterse → ⚠️ Devam ediyor (next: X, Y, Z)
+
+Dallanma Algoritması
+- Her dosyada birden fazla geçerli offset varsa → her ihtimal için ayrı dal açılır.
+- Max dal limiti: 1000 (kombinatoryal patlamayı önler).
+- Dallar dosyalar arası ilerler; geçersiz dallar elenir.
+
+İki Aşamalı İşlem (Web)
+1. **Stage 1** (`/iou` POST): Dosya yükle → XYZ hesapla → Joker seçim tablosu göster.
+2. **Stage 2** (`/iou_analyze` POST): Joker seçimleri al → Pattern analizi yap → Sonuç göster.
+
+Joker Sistemi
+- Problem: Bazı dosyalarda IOU yok/az, XYZ boş.
+- Çözüm: Joker yaparak tüm offsetlere (`-3..+3`) izin ver.
+- Kullanım: Joker seçim tablosunda checkbox ile işaretle.
+- Etki: Joker dosyalar her pattern dalında wildcard olarak kullanılabilir.
+
+Görselleştirme
+- **Renklendirme**: Aynı (dosya×3, offset×3) triplet → aynı pastel renk.
+- **Blok yapısı**: `[🟦 -1 → -2 → -3 🟦] → 0 → [🟨 +1 → +2 🟨]`
+  - Triplet (3'lü) ve doublet (2'li) gruplar tek blok halinde.
+  - 0'lar renksiz.
+- **Tooltip**: Her offset üzerine hover → dosya adı gösterilir.
+- **Son offsetler özeti**: Tüm pattern'lerin son değerleri (benzersiz) listelenir.
+
+Veri Yapıları
+- `PatternBranch`: `path, file_indices, current_state, expected_next, direction`
+- `PatternResult`: `pattern, file_sequence, is_complete, length, expected_next`
+
+Dosya Konumu
+- Modül: `app72/pattern.py`
+- Web entegrasyonu: `app72/web.py` (satır ~580-800)
+- Fonksiyonlar: `find_valid_patterns(xyz_data, max_branches=1000)`, `format_pattern_results(results)`
+
+Diğer App'lere Taşıma (TODO)
+- `pattern.py` kopyala → her app klasörüne.
+- `web.py` entegrasyonu: `/iou` route'una ekle.
+- `MINUTES_PER_STEP` değiştir (app80→80, app90→90, vb.).
+- IOU analizi zaten var, XYZ hesaplama aynı.
 
 ---
 
