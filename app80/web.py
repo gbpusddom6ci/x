@@ -835,7 +835,10 @@ class App80Handler(BaseHTTPRequestHandler):
 
                 xyz_analysis = "xyz_analysis" in params
                 xyz_summary_table = "xyz_summary_table" in params
-
+                
+                # Get previous results if this is an appended analysis
+                previous_results = params.get("previous_results", "")
+                
                 # Load news data from directory (auto-detects all JSON files)
                 news_dir = os.path.join(
                     os.path.dirname(os.path.dirname(__file__)), "news_data"
@@ -844,7 +847,7 @@ class App80Handler(BaseHTTPRequestHandler):
                 
                 # Stage 1: If XYZ analysis enabled, render joker selection interface
                 if xyz_analysis:
-                    self._render_joker_selection(files, sequence, limit, xyz_analysis, events_by_date)
+                    self._render_joker_selection(files, sequence, limit, xyz_analysis, events_by_date, previous_results)
                     return
 
                 # Count loaded files
@@ -1448,7 +1451,7 @@ class App80Handler(BaseHTTPRequestHandler):
             )
 
     def _render_joker_selection(
-        self, files, sequence, limit, xyz_analysis, events_by_date
+        self, files, sequence, limit, xyz_analysis, events_by_date, previous_results=""
     ):
         """Stage 1: Calculate XYZ for all files and show joker selection interface."""
         import base64
@@ -1535,6 +1538,7 @@ class App80Handler(BaseHTTPRequestHandler):
           <form method='post' action='/iou_analyze'>
             <input type='hidden' name='sequence' value='{html.escape(sequence)}' />
             <input type='hidden' name='limit' value='{limit}' />
+            <input type='hidden' name='previous_results' value='{html.escape(previous_results)}' />
             <table style='margin-top:12px;'>
               <tr>
                 <th>Dosya Adı</th>
@@ -1654,8 +1658,17 @@ class App80Handler(BaseHTTPRequestHandler):
             </div>
             """
         
-        body = f"""
-        <div class='card'>
+        # Check if there are previous results to display
+        previous_html = params.get("previous_results", "")
+        if previous_html:
+            try:
+                previous_html = base64.b64decode(previous_html.encode('ascii')).decode('utf-8')
+            except:
+                previous_html = ""
+        
+        # Build current results
+        current_results = f"""
+        <div class='card' style='border: 2px solid #10b981;'>
           <h3>📊 Pattern Analiz Sonuçları</h3>
           <div><strong>Dosya Sayısı:</strong> {file_count}</div>
           <div><strong>Sequence:</strong> {html.escape(sequence)}</div>
@@ -1667,6 +1680,54 @@ class App80Handler(BaseHTTPRequestHandler):
           {pattern_html}
         </div>
         """
+        
+        # Combine previous and current results
+        all_results_html = previous_html + current_results if previous_html else current_results
+        
+        # Encode all results for next iteration
+        all_results_base64 = base64.b64encode(all_results_html.encode('utf-8')).decode('ascii')
+        
+        # Add "Additional Analysis" form at the bottom
+        additional_form = f"""
+        <hr style='margin: 40px 0; border: none; border-top: 2px dashed #ccc;'>
+        <div class='card' style='background: #fffbeb; border: 2px dashed #f59e0b;'>
+          <h3>➕ Ek IOU Analizi Yap</h3>
+          <p>Üstteki sonuçlar korunarak yeni analiz ekleyebilirsiniz.</p>
+          <form method='post' action='/iou' enctype='multipart/form-data'>
+            <input type='hidden' name='previous_results' value='{html.escape(all_results_base64)}' />
+            <div class='row'>
+              <div>
+                <label>CSV Dosyaları (2 haftalık 80m) - En fazla 25 dosya</label>
+                <input type='file' name='csv' accept='.csv,text/csv' multiple required />
+              </div>
+              <div>
+                <label>Sequence</label>
+                <select name='sequence'>
+                  <option value='S1' selected>S1</option>
+                  <option value='S2'>S2</option>
+                </select>
+              </div>
+              <div>
+                <label>Limit</label>
+                <input type='number' name='limit' value='0.1' step='0.01' min='0' style='width:80px' />
+              </div>
+              <div>
+                <label>XYZ Küme Analizi</label>
+                <input type='checkbox' name='xyz_analysis' checked />
+              </div>
+              <div>
+                <label>Pattern Analizi</label>
+                <input type='checkbox' name='pattern_analysis' checked />
+              </div>
+            </div>
+            <div style='margin-top:12px;'>
+              <button type='submit'>Ek Analiz Yap</button>
+            </div>
+          </form>
+        </div>
+        """
+        
+        body = all_results_html + additional_form
         
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
