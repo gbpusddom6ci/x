@@ -23,6 +23,8 @@ from .main import (
 import csv
 from email.parser import BytesParser
 from email.policy import default as email_default
+from .pattern import find_valid_patterns, format_pattern_results
+
 from datetime import time as dtime
 from datetime import timedelta, datetime
 
@@ -648,6 +650,19 @@ class AppHandler(BaseHTTPRequestHandler):
             self.wfile.write(render_index())
 
     def do_POST(self):
+        # Stage 2: Pattern analysis with joker selections
+        if self.path == "/iou_analyze":
+            try:
+                self._handle_iou_final_analysis()
+                return
+            except Exception as e:
+                err_msg = f"<div class='card'><h3>Hata</h3><p style='color:red;'>{html.escape(str(e))}</p></div>"
+                self.send_response(400)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(page("app321 - Hata", err_msg, active_tab="iou"))
+                return
+        
         if self.path not in ("/analyze", "/dc", "/matrix", "/iou"):
             self.send_error(404)
             return
@@ -682,12 +697,20 @@ class AppHandler(BaseHTTPRequestHandler):
 
                 xyz_analysis = "xyz_analysis" in params
                 xyz_summary_table = "xyz_summary_table" in params
+                
+                # Get previous results if this is an appended analysis
+                previous_results = params.get("previous_results", "")
 
                 # Load news data from directory (auto-detects all JSON files)
                 news_dir = os.path.join(
                     os.path.dirname(os.path.dirname(__file__)), "news_data"
                 )
                 events_by_date = load_news_data_from_directory(news_dir)
+                
+                # Stage 1: If XYZ analysis enabled, render joker selection interface
+                if xyz_analysis:
+                    self._render_joker_selection(files, sequence, limit, xyz_analysis, events_by_date, previous_results)
+                    return
 
                 # Count loaded files
                 json_files_count = 0
@@ -1314,6 +1337,272 @@ class AppHandler(BaseHTTPRequestHandler):
             self.wfile.write(
                 page("Hata", f"<p>Hata: {msg}</p><p><a href='/'>&larr; Geri</a></p>")
             )
+
+    def _render_joker_selection(
+        self, files, sequence, limit, xyz_analysis, events_by_date, previous_results=""
+    ):
+        """Stage 1: Calculate XYZ for all files and show joker selection interface."""
+        import base64
+        
+        file_xyz_results = []
+        for file_idx, file_obj in enumerate(files):
+            filename = file_obj.get("filename", f"Dosya {file_idx + 1}")
+            raw = file_obj["data"]
+            text = (
+                raw.decode("utf-8", errors="replace")
+                if isinstance(raw, (bytes, bytearray))
+                else str(raw)
+            )
+            
+            try:
+                candles = load_candles_from_text(text)
+                if not candles:
+                    file_xyz_results.append({
+                        "filename": filename,
+                        "xyz_set": [],
+                        "data_base64": base64.b64encode(raw).decode('ascii'),
+                        "note": "Veri okunamadı"
+                    })
+                    continue
+                
+                results = analyze_iou(candles, sequence, limit)
+                total_iou = sum(len(v) for v in results.values())
+                
+                file_xyz_data = {offset: {"news_free": 0, "with_news": 0} for offset in range(-3, 4)}
+                
+                if total_iou > 0:
+                    for offset in range(-3, 4):
+                        for iou in results[offset]:
+                            news_events = (
+                                find_news_in_timerange(events_by_date, iou.timestamp, 60)
+                                if events_by_date
+                                else []
+                            )
+                            affecting_events = [
+                                e for e in news_events if categorize_news_event(e) in ["NORMAL", "SPEECH"]
+                            ]
+                            has_news = bool(affecting_events)
+                            
+                            if has_news:
+                                file_xyz_data[offset]["with_news"] += 1
+                            else:
+                                file_xyz_data[offset]["news_free"] += 1
+                
+                xyz_set = []
+                for offset in range(-3, 4):
+                    if file_xyz_data[offset]["news_free"] == 0:
+                        xyz_set.append(offset)
+                
+                note = "IOU yok" if total_iou == 0 else None
+                file_xyz_results.append({
+                    "filename": filename,
+                    "xyz_set": xyz_set,
+                    "data_base64": base64.b64encode(raw).decode('ascii'),
+                    "note": note
+                })
+            except Exception as e:
+                file_xyz_results.append({
+                    "filename": filename,
+                    "xyz_set": [],
+                    "data_base64": base64.b64encode(raw).decode('ascii'),
+                    "note": f"Hata: {str(e)[:50]}"
+                })
+                continue
+        
+        if not file_xyz_results:
+            raise ValueError("Hiçbir dosyada IOU bulunamadı")
+        
+        body = f"""
+        <div class='card'>
+          <h3>🎯 Joker Dosya Seçimi</h3>
+          <p>Her dosya için XYZ kümesi hesaplandı. İstediğiniz dosyayı <strong>Joker</strong> yaparak tüm offsetlerde kullanılabilir hale getirebilirsiniz.</p>
+          <form method='post' action='/iou_analyze'>
+            <input type='hidden' name='sequence' value='{html.escape(sequence)}' />
+            <input type='hidden' name='limit' value='{limit}' />
+            <input type='hidden' name='previous_results' value='{html.escape(previous_results)}' />
+            <table style='margin-top:12px;'>
+              <tr>
+                <th>Dosya Adı</th>
+                <th>XYZ Kümesi</th>
+                <th>Joker (Tüm Offsetler)</th>
+              </tr>
+        """
+        
+        for idx, file_data in enumerate(file_xyz_results):
+            xyz_str = ", ".join([f"{o:+d}" if o != 0 else "0" for o in file_data["xyz_set"]])
+            if not xyz_str:
+                xyz_str = "Ø (boş)"
+            
+            note_html = ""
+            if file_data.get("note"):
+                note_html = f" <small style='color:#888;'>({html.escape(file_data['note'])})</small>"
+            
+            body += f"""
+              <tr>
+                <td>{html.escape(file_data["filename"])}{note_html}</td>
+                <td><code>{html.escape(xyz_str)}</code></td>
+                <td><input type='checkbox' name='joker_{idx}' value='1' /></td>
+              </tr>
+              <input type='hidden' name='file_{idx}_name' value='{html.escape(file_data["filename"])}' />
+              <input type='hidden' name='file_{idx}_xyz' value='{html.escape(",".join(map(str, file_data["xyz_set"])))}' />
+              <input type='hidden' name='file_{idx}_data' value='{file_data["data_base64"]}' />
+            """
+        
+        body += f"""
+            </table>
+            <input type='hidden' name='file_count' value='{len(file_xyz_results)}' />
+            <div style='margin-top:16px;'>
+              <button type='submit'>Pattern Analizi Başlat</button>
+            </div>
+          </form>
+        </div>
+        """
+        
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.end_headers()
+        self.wfile.write(page("app321 - Joker Seçimi", body, active_tab="iou"))
+    
+    def _handle_iou_final_analysis(self):
+        """Stage 2: Perform pattern analysis with joker selections."""
+        import base64
+        from urllib.parse import parse_qs
+        
+        content_length = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(content_length).decode('utf-8')
+        parsed = parse_qs(body)
+        
+        params = {k: v[0] if v else '' for k, v in parsed.items()}
+        
+        file_count = int(params.get("file_count", "0"))
+        if file_count == 0:
+            raise ValueError("Dosya bilgisi bulunamadı")
+        
+        sequence = params.get("sequence", "S1").strip()
+        limit_str = params.get("limit", "0.1").strip()
+        try:
+            limit = float(limit_str)
+        except:
+            limit = 0.1
+        
+        pattern_xyz_data = []
+        for idx in range(file_count):
+            filename = params.get(f"file_{idx}_name", f"Dosya {idx + 1}")
+            xyz_str = params.get(f"file_{idx}_xyz", "")
+            is_joker = f"joker_{idx}" in params
+            
+            if is_joker:
+                xyz_set = list(range(-3, 4))
+            else:
+                if xyz_str:
+                    xyz_set = [int(x.strip()) for x in xyz_str.split(",") if x.strip()]
+                else:
+                    xyz_set = []
+            
+            pattern_xyz_data.append((filename, xyz_set))
+        
+        pattern_results = find_valid_patterns(pattern_xyz_data, max_branches=1000)
+        pattern_html = format_pattern_results(pattern_results)
+        
+        final_offsets = []
+        if pattern_results:
+            for result in pattern_results:
+                if result.pattern:
+                    final_offset = result.pattern[-1]
+                    final_offsets.append(final_offset)
+        
+        final_offsets_summary = ""
+        if final_offsets:
+            unique_offsets = []
+            seen = set()
+            for offset in final_offsets:
+                if offset not in seen:
+                    unique_offsets.append(offset)
+                    seen.add(offset)
+            
+            offset_strs = [f"{o:+d}" if o != 0 else "0" for o in unique_offsets]
+            final_offsets_summary = f"""
+            <div class='card' style='padding:10px; background:#fff7ed; border:1px solid #f97316;'>
+              <h3>📌 Pattern Son Değerleri</h3>
+              <p><strong>{len(final_offsets)} pattern tespit edildi.</strong> Benzersiz son offsetler: <code>{', '.join(offset_strs)}</code></p>
+            </div>
+            """
+        
+        # Check if there are previous results to display
+        previous_html = params.get("previous_results", "")
+        if previous_html:
+            try:
+                previous_html = base64.b64decode(previous_html.encode('ascii')).decode('utf-8')
+            except:
+                previous_html = ""
+        
+        # Build current results
+        current_results = f"""
+        <div class='card' style='border: 2px solid #10b981;'>
+          <h3>📊 Pattern Analiz Sonuçları</h3>
+          <div><strong>Dosya Sayısı:</strong> {file_count}</div>
+          <div><strong>Sequence:</strong> {html.escape(sequence)}</div>
+          <div><strong>Limit:</strong> {limit}</div>
+        </div>
+        {final_offsets_summary}
+        <div class='card' style='padding:10px; background:#f0fdf4; border:1px solid #10b981;'>
+          <h3>🔍 Pattern Analizi</h3>
+          {pattern_html}
+        </div>
+        """
+        
+        # Combine previous and current results
+        all_results_html = previous_html + current_results if previous_html else current_results
+        
+        # Encode all results for next iteration
+        all_results_base64 = base64.b64encode(all_results_html.encode('utf-8')).decode('ascii')
+        
+        # Add "Additional Analysis" form at the bottom
+        additional_form = f"""
+        <hr style='margin: 40px 0; border: none; border-top: 2px dashed #ccc;'>
+        <div class='card' style='background: #fffbeb; border: 2px dashed #f59e0b;'>
+          <h3>➕ Ek IOU Analizi Yap</h3>
+          <p>Üstteki sonuçlar korunarak yeni analiz ekleyebilirsiniz.</p>
+          <form method='post' action='/iou' enctype='multipart/form-data'>
+            <input type='hidden' name='previous_results' value='{html.escape(all_results_base64)}' />
+            <div class='row'>
+              <div>
+                <label>CSV Dosyaları (1 haftalık 60m) - En fazla 25 dosya</label>
+                <input type='file' name='csv' accept='.csv,text/csv' multiple required />
+              </div>
+              <div>
+                <label>Sequence</label>
+                <select name='sequence'>
+                  <option value='S1' selected>S1</option>
+                  <option value='S2'>S2</option>
+                </select>
+              </div>
+              <div>
+                <label>Limit</label>
+                <input type='number' name='limit' value='0.1' step='0.01' min='0' style='width:80px' />
+              </div>
+              <div>
+                <label>XYZ Küme Analizi</label>
+                <input type='checkbox' name='xyz_analysis' checked />
+              </div>
+              <div>
+                <label>Pattern Analizi</label>
+                <input type='checkbox' name='pattern_analysis' checked />
+              </div>
+            </div>
+            <div style='margin-top:12px;'>
+              <button type='submit'>Ek Analiz Yap</button>
+            </div>
+          </form>
+        </div>
+        """
+        
+        body = all_results_html + additional_form
+        
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.end_headers()
+        self.wfile.write(page("app321 - Pattern Analiz", body, active_tab="iou"))
 
     def log_message(self, format, *args):
         pass

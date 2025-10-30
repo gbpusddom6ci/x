@@ -162,9 +162,16 @@ def compute_dc_flags(candles: List[Candle]) -> List[Optional[bool]]:
         cur = candles[i]
         within = min(prev.open, prev.close) <= cur.close <= max(prev.open, prev.close)
         cond = cur.high <= prev.high and cur.low >= prev.low and within
+        
+        # 18:00 mumu ASLA DC olamaz (Pazar dahil)
         if cur.ts.hour == DEFAULT_START_TOD.hour and cur.ts.minute == DEFAULT_START_TOD.minute:
             cond = False
+        # 20:00 mumu (Pazar HARİÇ) DC olamaz — Matrix ile uyum için
+        elif cur.ts.hour == 20 and cur.ts.minute == 0:
+            if cur.ts.weekday() != 6:  # Pazar değilse
+                cond = False
         else:
+            # Hafta kapanışı kontrolü (Cuma 16:00 ve sonrasında uzun boşluk)
             is_week_close = False
             if cur.ts.hour == 16 and cur.ts.minute == 0:
                 if i + 1 >= len(candles):
@@ -175,6 +182,8 @@ def compute_dc_flags(candles: List[Candle]) -> List[Optional[bool]]:
                         is_week_close = True
             if is_week_close:
                 cond = False
+        
+        # Ardışık DC yasak
         prev_flag = bool(flags[i - 1]) if flags[i - 1] is not None else False
         if prev_flag and cond:
             cond = False
@@ -404,10 +413,9 @@ def analyze_iou(
             if ts.hour == 18 and ts.minute == 0:
                 continue  # Cannot be IOU
             
-            # IOU restriction: 20:00 cannot be IOU (except 2 Pazar - her iki Pazar)
+            # IOU restriction: 20:00 cannot be IOU (all days)
             if ts.hour == 20 and ts.minute == 0:
-                if ts.weekday() != 6:  # Pazar değilse
-                    continue  # Cannot be IOU
+                continue  # Cannot be IOU
             
             # IOU restriction: Friday 16:00 cannot be IOU (all Fridays)
             if ts.weekday() == 4 and ts.hour == 16 and ts.minute == 0:

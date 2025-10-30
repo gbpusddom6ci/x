@@ -47,6 +47,19 @@ Quickstart commands
   python -m app120.main --csv input60m.csv --input-tz UTC-5 --output out120m.csv
   ```
 
+- Converters (Web UI):
+  - **Multi-file upload support**: All apps with converters (app48, app72, app80, app90, app96, app120) support uploading up to 50 CSV files simultaneously. app321 does not have a converter.
+  - **Single file**: Returns the converted CSV directly (e.g., `filename_48m.csv`).
+  - **Multiple files**: Returns a ZIP archive containing all individually converted CSVs (e.g., `converted_48m.zip`).
+  - **Upload limit**: 50 MB total (applies to both single and multi-file uploads).
+  - **Conversion mappings**:
+    - app48: 12m → 48m
+    - app72: 12m → 72m
+    - app80: 20m → 80m (also supports 80m → 20m)
+    - app90: 30m → 90m
+    - app96: 12m → 96m
+    - app120: 60m → 120m
+
 - Environment setup (optional):
   ```bash path=null start=null
   python -m venv .venv && source .venv/bin/activate
@@ -86,7 +99,7 @@ Architecture overview
 - IOU/IOV analysis (app90, app96, app120):
   - IOU: OC and PrevOC above limit and same sign; applies tolerance to drop near-limit values. IOV (app120 only): above limit and opposite signs.
   - Both scan all offsets (−3..+3) using filtered sequences (early values removed: S1 excludes [1,3], S2 excludes [1,5]).
-  - IOU time restrictions: 18:00 excluded always; 20:00 excluded (except Sunday); Friday 16:00 excluded.
+  - IOU time restrictions: 18:00 excluded always; 20:00 excluded always; Friday 16:00 excluded.
   - News integration: news_data/*.json is auto-merged. Matching checks [start, start+TF); for null-value events (speeches/statements) also [start−1h, start+TF). Holidays are displayed but don't eliminate offsets. IOU "XYZ set" filters out offsets that contain any news-free IOU; remaining offsets form the XYZ set.
 
 - Reverse proxy (appsuite):
