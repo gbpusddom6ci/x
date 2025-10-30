@@ -1,7 +1,7 @@
 # 📘 x1 — Teknik Rehber (AGENTS)
 
 Son Güncelleme: 2025-10-30
-Versiyon: 3.6
+Versiyon: 4.0
 Amaç: Agent'lar için doğru, öz ve bakımı kolay referans.
 
 Not: Detaylı örnekler ve uzun anlatımlar WARP.md ve app modüllerindedir. Bu belge; kurallar, sapmayan kararlar (invariants), app‑bazı farklar ve hızlı çalışma akışını içerir.
@@ -128,13 +128,13 @@ Sequence Allocation (özet algoritma)
 - **Sequence filtre**: SEQUENCES_FILTERED kullanılır (S1: 1,3 hariç; S2: 1,5 hariç).
 
 **App‑Bazlı IOU Saat İstisnaları** (bu saatlerdeki mumlar **ASLA** IOU olamaz)
-- **app48**: 18:00, 18:48, 19:36
-- **app72**: 18:00 (her zaman); 19:12, 20:24 (Pazar HARİÇ); Cuma 16:48 (her zaman)
-- **app80**: 18:00 (her zaman); 19:20, 20:40 (Pazar HARİÇ); Cuma 16:40 (her zaman)
+- **app48**: 18:00, 18:48, 19:36 (her zaman)
+- **app72**: 18:00 (her zaman); 19:12, 20:24 (Pazar HARİÇ, **ANCAK 2. Pazar'da bu kısıtlama kalkar**); Cuma 16:48 (her zaman)
+- **app80**: 18:00 (her zaman); 19:20, 20:40 (Pazar HARİÇ, **ANCAK 2. Pazar'da bu kısıtlama kalkar**); Cuma 16:40 (her zaman)
 - **app90**: 18:00 (her zaman); 19:30 (Pazar HARİÇ); Cuma 16:30 (her zaman)
 - **app96**: 18:00 (her zaman); 19:36 (Pazar HARİÇ); Cuma 16:24 (her zaman)
 - **app120**: 18:00, 20:00, Cuma 16:00 (hepsi her zaman)
-- **app321**: 18:00, 19:00, 20:00 (dakika=00 olan tüm saatler)
+- **app321**: 18:00, 19:00, 20:00 (dakika=00 olan tüm saatler, her zaman)
 
 **XYZ (Haber) Analizi**
 - **Amaç**: Habersiz IOU'ları filtreleyerek güvenilir offset kümesi bulmak.
@@ -146,21 +146,23 @@ Sequence Allocation (özet algoritma)
   - **ALLDAY**: All Day + null values (holiday değil, gösterilir ama XYZ'yi ETKİLEMEZ)
 - **Offset eleme**: Bir offsette ≥1 habersiz IOU varsa o offset elenir. Kalan offsetler **XYZ kümesi**'ni oluşturur.
 - **Veri kaynağı**: `news_data/*.json` (otomatik merge, candle year ile eşleme).
-- **Web UI**: Çoklu dosya upload (max 25), joker seçimi, pattern analizi (sadece app72'de aktif).
+- **Web UI**: Çoklu dosya upload (max 50 dosya), joker seçimi (max 25 seçilebilir), pattern analizi (sadece app72'de aktif).
+- **2. Pazar İstisnası** (app72/app80): 2 haftalık veride 2. Pazar tespit edilir; o gün 19:12/20:24 (app72) veya 19:20/20:40 (app80) IOU olabilir.
 
 ## 🔄 IOV (Inverse OC Value — Opposite sign) [Sadece app120]
 
 **Tanım ve Kurallar**
 - **IOV**: OC ve PrevOC limit üstü ve **zıt işaret** (+- veya -+). Trend dönüşü sinyali.
-- **Şartlar**:
+- **Şartlar** (3 adım, IOU'dan daha basit):
   1) |OC| ≥ limit
   2) |PrevOC| ≥ limit
   3) İşaretler zıt: `(OC>0 AND PrevOC<0) OR (OC<0 AND PrevOC>0)`
 - **Özel**: Tolerance kontrolü **YOK** (IOU'dan farklı).
 - **Sequence filtre**: IOU ile aynı (SEQUENCES_FILTERED).
-- **Saat istisnası YOK**: IOV için özel saat kısıtlaması bulunmuyor.
-- **Modül**: `app120/iov/counter.py`
-- **Web UI**: `/iov` route'u (app120'de mevcut).
+- **DC Kuralları**: app120 matrix/counter ile aynı (18:00, 20:00 (Pazar HARİÇ), Cuma 16:00).
+- **Saat kısıtlaması**: IOV için IOU gibi saat bazlı eleme **YOK** (tüm saatler IOV olabilir).
+- **Modül**: `app120/iov/counter.py`, `app120/iov/web.py`
+- **Web UI**: `/iov` route'u (app120'de mevcut), form ve tablo gösterimi.
 
 ---
 
@@ -199,12 +201,14 @@ Joker Sistemi
 - Etki: Joker dosyalar her pattern dalında wildcard olarak kullanılabilir.
 
 Görselleştirme
-- **Renklendirme**: Aynı (dosya×3, offset×3) triplet → aynı pastel renk.
-- **Blok yapısı**: `[🟦 -1 → -2 → -3 🟦] → 0 → [🟨 +1 → +2 🟨]`
-  - Triplet (3'lü) ve doublet (2'li) gruplar tek blok halinde.
-  - 0'lar renksiz.
-- **Tooltip**: Her offset üzerine hover → dosya adı gösterilir.
+- **Renklendirme**: Aynı (dosya+offset) grubu → aynı pastel renk (24 renk paleti, cycling).
+- **Blok yapısı**: `[🟦 -1 → -2 → -3 🟦] → 0 → [🟨 +1 → +2 → +3 🟨]`
+  - **Triplet** (3 ardışık offset): `-1→-2→-3` veya `+1→+2→+3` tek renk bloğu.
+  - **Doublet** (2 ardışık offset): Son dosyada biterse 2'li grup da desteklenir.
+  - 0'lar renksiz (reset noktası).
+- **Tooltip**: Her offset üzerine hover → dosya adı gösterilir (`.rsplit('.', 1)[0]`).
 - **Son offsetler özeti**: Tüm pattern'lerin son değerleri (benzersiz) listelenir.
+- **Tamamlanma durumu**: ✅ (0 ile biter) veya ⚠️ (devam ediyor, next offsetler gösterilir).
 
 Veri Yapıları
 - `PatternBranch`: `path, file_indices, current_state, expected_next, direction`
@@ -226,13 +230,30 @@ Dosya Konumu
 
 ## 🧮 Tahmin (Prediction)
 
-- 72/80/90/96/120: Haftasonu boşluğu kuralları uygulanır.
-  - Cuma 16:00 sonrası → Pazar 18:00’a sıçrama (uygulamaya göre TF adımıyla ilerlerken bu kural gözetilir).
-  - Cumartesi: Pazar 18:00’a atla.
-  - Pazar 18:00’dan önce: 18:00’a hizala.
-- 48/321: Haftasonu yönetimi yok; dakika ekleme ile ilerler.
+**Haftasonu Jump Logic** (app72, app80, app90, app96, app120)
+- **Cuma kapanış kontrolü**: Her app'in son Cuma mumu farklı:
+  - app72: 16:48 → Pazar 18:00
+  - app80: 16:40 → Pazar 18:00
+  - app90: 16:30 → Pazar 18:00 (alternatif: 14:24'ten 16:00'a)
+  - app96: 16:24 → Pazar 18:00 (alternatif: 14:24'ten 16:00'a)
+  - app120: 16:00 → Pazar 18:00 (alternatif: 14:00'den 16:00'a)
+- **Cumartesi**: Herhangi bir saat → Pazar 18:00'a atla.
+- **Pazar 18:00 öncesi**: 18:00'a hizala.
+- **Algoritma**: `predict_next_candle_time(current_ts, minutes_per_step)` fonksiyonu:
+  1. `next_ts = current_ts + timedelta(minutes=TF)`
+  2. Hafta sonu kontrolü yap (Cuma kapanış, Cumartesi, Pazar sabahı)
+  3. Gerekirse Pazar 18:00'a ayarla
+  4. Döngü ile `predict_time_after_n_steps(base_ts, n_steps)` çağrılır
 
-Not: app90/app96/app120 IOU modüllerinde haber eşlemesi kullanılabilir; app120’de ayrıca IOV (zıt işaret) analizi vardır.
+**Basit Prediction** (app48, app321)
+- Haftasonu yönetimi **YOK**
+- Doğrudan `base_ts + timedelta(minutes=TF * n_steps)` hesaplama
+- 48m ve 60m sistemlerde hafta sonu boşluğu ignore edilir
+
+**IOU/IOV Modül Dağılımı**
+- **IOU**: app48, app72, app80, app90, app96, app120, app321 (7 app)
+- **IOV**: Sadece app120 (zıt işaret analizi)
+- **Pattern**: Sadece app72 (XYZ pattern analizi aktif)
 
 ---
 
@@ -245,22 +266,24 @@ Not: app90/app96/app120 IOU modüllerinde haber eşlemesi kullanılabilir; app12
 - **Upload limiti**: 50 MB (tek veya çoklu dosya toplamı).
 
 **Rota Özeti (GET/POST)**
-- **app48**: `/` (counter), `/dc` (DC listesi), `/matrix`, `/convert` (12→48), `/iou` (XYZ+pattern)
-- **app72**: `/` (counter), `/dc`, `/matrix`, `/converter` (12→72), `/iou` (XYZ+pattern), `/iou_analyze` (pattern stage 2)
-- **app80**: `/` (counter), `/dc`, `/matrix`, `/converter` (20↔80), `/iou`
-- **app90**: `/` (counter), `/dc`, `/matrix`, `/converter` (30→90), `/iou`
-- **app96**: `/` (counter), `/dc`, `/matrix`, `/converter` (12→96), `/iou`
-- **app120**: `/` (counter), `/dc`, `/matrix`, `/iov` (IOV analizi), `/iou`, `/converter` (60→120)
-- **app321**: `/` (counter), `/dc`, `/matrix`, `/iou` (converter yok)
-- **news_converter**: `/` (upload form), `/convert` (MD→JSON)
-- **landing**: `/` (DVD-screensaver UI), `/health`, statik dosyalar
-- **appsuite**: `/` (landing), `/health`, `/app48/*`, `/app72/*`, ..., `/news/*` (proxy)
+- **app48**: `/` (counter), `/dc` (DC listesi), `/matrix`, `/convert` (12→48 çoklu dosya), `/iou` (XYZ+pattern)
+- **app72**: `/` (counter), `/dc`, `/matrix`, `/converter` (12→72 çoklu dosya), `/iou` (XYZ+pattern stage 1), `/iou_analyze` (pattern stage 2)
+- **app80**: `/` (counter), `/dc`, `/matrix`, `/converter` (20↔80 iki yönlü, çoklu dosya), `/iou`
+- **app90**: `/` (counter), `/dc`, `/matrix`, `/converter` (30→90 çoklu dosya), `/iou`
+- **app96**: `/` (counter), `/dc`, `/matrix`, `/converter` (12→96 çoklu dosya), `/iou`
+- **app120**: `/` (counter), `/dc`, `/matrix`, `/converter` (60→120 çoklu dosya), `/iou`, `/iov` (IOV analizi)
+- **app321**: `/` (counter), `/dc`, `/matrix`, `/iou` (converter yok, sadece counter/IOU)
+- **news_converter**: `/` (upload form), `/convert` (MD→JSON, çoklu dosya + ZIP)
+- **landing**: `/` (DVD-screensaver wormhole UI), `/health`, statik `/favicon/*`, `/photos/*`, `/stars.gif`
+- **appsuite**: `/` (landing proxy), `/health`, `/app48/*`, `/app72/*`, `/app80/*`, `/app90/*`, `/app96/*`, `/app120/*`, `/app321/*`, `/news/*` (reverse proxy)
 
 **Form Parametreleri**
 - **Counter/DC/Matrix**: `csv` (file), `sequence` (S1/S2), `offset` (−3..+3), `input_tz` (UTC-4/UTC-5), `show_dc` (checkbox).
-- **IOU**: `csv` veya `files[]` (çoklu, max 25), `sequence`, `limit` (float), `tolerance` (float, default 0.005), `xyz_analysis` (checkbox), `xyz_summary_table` (checkbox).
-- **Pattern (app72)**: `/iou_analyze` POST ile joker seçimleri (checkbox array) gönderilir.
-- **Converter**: `csv` veya çoklu dosya (max 50 app48, 25 diğerleri), `input_tz` (UTC-5 varsayılan).
+- **IOU**: `csv` veya `files[]` (çoklu, max 50), `sequence`, `limit` (float), `tolerance` (float, default 0.005), `xyz_analysis` (checkbox), `xyz_summary_table` (checkbox), `pattern_analysis` (checkbox, sadece app72).
+- **Pattern (app72)**: `/iou_analyze` POST ile joker seçimleri (`joker_N` checkbox array, max 25 seçilebilir) gönderilir.
+- **IOV (app120)**: `csv`, `sequence`, `limit` (float, tolerance YOK).
+- **Converter**: `csv` veya çoklu dosya (max 50 tüm app'ler), `input_tz` (UTC-5 varsayılan, UTC-4 mevcut).
+- **News Converter**: `files[]` (max 10 MD dosyası), tek dosya→JSON, çoklu→ZIP.
 
 ---
 
@@ -268,15 +291,15 @@ Not: app90/app96/app120 IOU modüllerinde haber eşlemesi kullanılabilir; app12
 
 **Özet (Timeframe Dönüşümleri)**
 - **app48**: 12m→48m (Web: `/convert`, CLI: `main.py`). **Sentetik mum ekleme**: İlk gün hariç 18:00 ve 18:48.
-- **app72**: 12m→72m (CLI: `main.py`, converter fonksiyonu var ama web UI yok)
-- **app80**: 20m↔80m **iki yönlü** (CLI: `main.py`, web UI yok)
-- **app90**: 30m→90m (CLI: `main.py` + Web: `/converter`)
-- **app96**: 12m→96m (CLI: `main.py` + Web: `/converter`)
-- **app120**: 60m→120m (CLI: `main.py` + Web: `/converter`)
+- **app72**: 12m→72m (Web: `/converter`, CLI: `main.py`)
+- **app80**: 20m↔80m **iki yönlü** (Web: `/converter`, CLI: `main.py`)
+- **app90**: 30m→90m (Web: `/converter`, CLI: `main.py`)
+- **app96**: 12m→96m (Web: `/converter`, CLI: `main.py`)
+- **app120**: 60m→120m (Web: `/converter`, CLI: `main.py`)
 - **app321**: **Converter YOK** (sadece 60m counter/IOU)
 
 **Genel Converter Kuralları**
-- **TZ normalize**: Girdi UTC‑5 ise +1h kaydır (çıkış UTC‑4). Girdi UTC‑4 ise değişiklik yok.
+- **TZ normalize**: Girdi UTC‑5 ise +1h kaydır (çıkış UTC‑4). Girdi UTC‑4 ise değişiklik yok. **Tüm işlemler naive datetime** (tzinfo yok).
 - **Blok hizası**: Günlük 18:00 anchor'a göre; `block_index = floor((ts−anchor)/TF)`.
 - **Hafta sonu filtreleme**: Cumartesi atla; Pazar 18:00 öncesi atla.
 - **OHLC birleştirme**:
@@ -286,7 +309,8 @@ Not: app90/app96/app120 IOU modüllerinde haber eşlemesi kullanılabilir; app12
   - `low = min(candle.low for candle in block)`
   - **Close adjustment**: `candles[i].close = candles[i+1].open` (next-open ile düzelt)
   - **Son mum**: `if close >= high: high = close` / `if close <= low: low = close`
-- **Çoklu dosya desteği (Web)**: Max 50 dosya (app48), max 25 (diğerleri). Tek dosya→CSV, çoklu→ZIP.
+- **Çoklu dosya desteği (Web)**: Max 50 dosya (tüm converter'lar). Tek dosya→CSV indir, çoklu→ZIP arşivi indir.
+- **Dosya adlandırma**: Tek dosya `original_48m.csv`, ZIP `converted_48m.zip` (app numarası eklenir).
 
 **app48 Sentetik Mum Kuralları**
 - **Amaç**: 18:00 ve 18:48 mumlarının eksik olduğu günlerde ekleme yaparak hizalama sağlamak.
@@ -364,10 +388,10 @@ Converter (örnekler)
 
 **Web UI**
 - **Upload limiti**: 50 MB toplam (tek veya çoklu dosya).
-- **IOU çoklu dosya**: Max 25 dosya (app48'de pattern yoksa), max 50 dosya (app48 convert).
-- **Pattern analizi**: Şu an sadece app72'de aktif; `/iou` ve `/iou_analyze` 2-stage flow.
-- **Joker sistemi**: Boş XYZ dosyalarını wildcard yaparak pattern devamını sağlar.
-- **ZIP indirme**: Çoklu dosya converter/IOU'da otomatik ZIP oluşturulur.
+- **IOU çoklu dosya**: Max 50 dosya upload, max 25 joker seçimi (pattern analizi için).
+- **Pattern analizi**: Şu an sadece app72'de aktif; `/iou` (stage 1: XYZ hesaplama) ve `/iou_analyze` (stage 2: pattern analizi) iki aşamalı flow.
+- **Joker sistemi**: Boş veya az IOU'lu XYZ dosyalarını wildcard (-3..+3 tüm offsetler) yaparak pattern devamını sağlar.
+- **ZIP indirme**: Çoklu dosya converter/IOU'da otomatik ZIP oluşturulur (in-memory, zipfile.ZipFile).
 
 **Performance**
 - **Geniş CSV**: ≥10 MB dosyalarda işlem süresi artar (pure Python stdlib, optimizasyon yok).
@@ -465,4 +489,4 @@ docker run --rm -e PORT=2000 -p 2000:2000 x1
 
 ---
 
-agents.md — v3.6 — 2025-10-30
+agents.md — v4.0 — 2025-10-30 — Comprehensive technical reference for x1 trading analysis suite
