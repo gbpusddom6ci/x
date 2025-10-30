@@ -490,6 +490,10 @@ def render_iou_index() -> bytes:
             <input type='checkbox' name='xyz_summary_table' />
           </div>
           <div>
+            <label>Pattern Analizi</label>
+            <input type='checkbox' name='pattern_analysis' />
+          </div>
+          <div>
             <button type='submit'>Analiz Et</button>
           </div>
         </div>
