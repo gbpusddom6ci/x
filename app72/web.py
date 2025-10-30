@@ -454,6 +454,10 @@ def render_iou_index() -> bytes:
             <input type='number' name='limit' value='0.1' step='0.01' min='0' style='width:80px' />
           </div>
           <div>
+            <label>Tolerance</label>
+            <input type='number' name='tolerance' value='0.005' step='0.001' min='0' style='width:80px' />
+          </div>
+          <div>
             <label>XYZ Küme Analizi</label>
             <input type='checkbox' name='xyz_analysis' checked />
           </div>
@@ -471,7 +475,7 @@ def render_iou_index() -> bytes:
         </div>
       </form>
     </div>
-    <p><strong>IOU Kriterleri:</strong> |OC| ≥ limit VE |PrevOC| ≥ limit VE aynı işaret (++ veya --)</p>
+    <p><strong>IOU Kriterleri:</strong> |OC| ≥ limit VE |PrevOC| ≥ limit VE aynı işaret (++ veya --) VE |OC| ve |PrevOC| limit'ten tolerance kadar uzak olmalı</p>
     <p><strong>2 haftalık 72m veri</strong> kullanılır.</p>
     <p><strong>XYZ Analizi:</strong> Habersiz IOU içeren offsetler elenir, kalan offsetler XYZ kümesini oluşturur.</p>
     """
@@ -578,7 +582,7 @@ def parse_multipart(handler: BaseHTTPRequestHandler) -> Dict[str, Dict[str, Any]
 
 class App72Handler(BaseHTTPRequestHandler):
     def _render_joker_selection(
-        self, files, sequence, limit, xyz_analysis, events_by_date, previous_results=""
+        self, files, sequence, limit, tolerance, xyz_analysis, events_by_date, previous_results=""
     ):
         """Stage 1: Calculate XYZ for all files and show joker selection interface."""
         import base64
@@ -606,7 +610,7 @@ class App72Handler(BaseHTTPRequestHandler):
                     })
                     continue
                 
-                results = analyze_iou(candles, sequence, limit)
+                results = analyze_iou(candles, sequence, limit, tolerance)
                 total_iou = sum(len(v) for v in results.values())
                 
                 # Calculate XYZ set (even if zero IOUs)
@@ -665,6 +669,7 @@ class App72Handler(BaseHTTPRequestHandler):
           <form method='post' action='/iou_analyze'>
             <input type='hidden' name='sequence' value='{html.escape(sequence)}' />
             <input type='hidden' name='limit' value='{limit}' />
+            <input type='hidden' name='tolerance' value='{tolerance}' />
             <input type='hidden' name='previous_results' value='{html.escape(previous_results)}' />
             <table style='margin-top:12px;'>
               <tr>
@@ -733,6 +738,12 @@ class App72Handler(BaseHTTPRequestHandler):
             limit = float(limit_str)
         except:
             limit = 0.1
+        
+        tolerance_str = params.get("tolerance", "0.005").strip()
+        try:
+            tolerance = float(tolerance_str)
+        except:
+            tolerance = 0.005
         
         # Reconstruct file data with joker info
         pattern_xyz_data = []
@@ -988,6 +999,12 @@ class App72Handler(BaseHTTPRequestHandler):
                 except:
                     limit = 0.1
 
+                tolerance_str = (params.get("tolerance") or "0.005").strip()
+                try:
+                    tolerance = float(tolerance_str)
+                except:
+                    tolerance = 0.005
+
                 xyz_analysis = "xyz_analysis" in params
                 xyz_summary_table = "xyz_summary_table" in params
                 pattern_analysis = "pattern_analysis" in params
@@ -1004,7 +1021,7 @@ class App72Handler(BaseHTTPRequestHandler):
                 # Stage 1: Just calculate XYZ and show joker selection if pattern analysis enabled
                 if pattern_analysis:
                     return self._render_joker_selection(
-                        files, sequence, limit, xyz_analysis, events_by_date, previous_results
+                        files, sequence, limit, tolerance, xyz_analysis, events_by_date, previous_results
                     )
 
                 # Count loaded files
@@ -1054,7 +1071,7 @@ class App72Handler(BaseHTTPRequestHandler):
                             continue
 
                         # Analyze IOU
-                        results = analyze_iou(candles, sequence, limit)
+                        results = analyze_iou(candles, sequence, limit, tolerance)
                         total_iou = sum(len(v) for v in results.values())
 
                         if total_iou == 0:
