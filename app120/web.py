@@ -540,6 +540,10 @@ def render_iou_index() -> bytes:
             <input type='checkbox' name='xyz_summary_table' />
           </div>
           <div>
+            <label>Pattern Analizi</label>
+            <input type='checkbox' name='pattern_analysis' />
+          </div>
+          <div>
             <button type='submit'>Analiz Et</button>
           </div>
         </div>
@@ -984,6 +988,7 @@ class App120Handler(BaseHTTPRequestHandler):
 
                 xyz_analysis = "xyz_analysis" in params
                 xyz_summary_table = "xyz_summary_table" in params
+                pattern_analysis = "pattern_analysis" in params
                 
                 # Get previous results if this is an appended analysis
                 previous_results = params.get("previous_results", "")
@@ -996,7 +1001,7 @@ class App120Handler(BaseHTTPRequestHandler):
                 
                 # Stage 1: If XYZ analysis enabled, render joker selection interface
                 if xyz_analysis:
-                    self._render_joker_selection(files, sequence, limit, xyz_analysis, events_by_date, previous_results)
+                    self._render_joker_selection(files, sequence, limit, xyz_analysis, pattern_analysis, events_by_date, previous_results)
                     return
 
                 # Count loaded files
@@ -1574,7 +1579,7 @@ class App120Handler(BaseHTTPRequestHandler):
             )
 
     def _render_joker_selection(
-        self, files, sequence, limit, xyz_analysis, events_by_date, previous_results=""
+        self, files, sequence, limit, xyz_analysis, pattern_analysis, events_by_date, previous_results=""
     ):
         """Stage 1: Calculate XYZ for all files and show joker selection interface."""
         import base64
@@ -1654,6 +1659,7 @@ class App120Handler(BaseHTTPRequestHandler):
           <form method='post' action='/iou_analyze'>
             <input type='hidden' name='sequence' value='{html.escape(sequence)}' />
             <input type='hidden' name='limit' value='{limit}' />
+            <input type='hidden' name='pattern_analysis' value='{"true" if pattern_analysis else "false"}' />
             <input type='hidden' name='previous_results' value='{html.escape(previous_results)}' />
             <table style='margin-top:12px;'>
               <tr>
@@ -1720,6 +1726,8 @@ class App120Handler(BaseHTTPRequestHandler):
         except:
             limit = 0.1
         
+        pattern_analysis = params.get("pattern_analysis", "false").lower() == "true"
+        
         pattern_xyz_data = []
         for idx in range(file_count):
             filename = params.get(f"file_{idx}_name", f"Dosya {idx + 1}")
@@ -1736,8 +1744,13 @@ class App120Handler(BaseHTTPRequestHandler):
             
             pattern_xyz_data.append((filename, xyz_set))
         
-        pattern_results = find_valid_patterns(pattern_xyz_data, max_branches=1000)
-        pattern_html = format_pattern_results(pattern_results)
+        # Only run pattern analysis if enabled
+        if pattern_analysis:
+            pattern_results = find_valid_patterns(pattern_xyz_data, max_branches=1000)
+            pattern_html = format_pattern_results(pattern_results)
+        else:
+            pattern_results = []
+            pattern_html = "<p><strong>Pattern Analizi:</strong> Devre dışı</p>"
         
         final_offsets = []
         if pattern_results:
