@@ -1,8 +1,8 @@
 # 📘 x1 — Teknik Rehber (AGENTS)
 
-Son Güncelleme: 2025-10-29
-Versiyon: 3.5
-Amaç: Agent'lar için doğru, öz ve bakımı kolay referans (200–500 satır arası).
+Son Güncelleme: 2025-10-30
+Versiyon: 3.6
+Amaç: Agent'lar için doğru, öz ve bakımı kolay referans.
 
 Not: Detaylı örnekler ve uzun anlatımlar WARP.md ve app modüllerindedir. Bu belge; kurallar, sapmayan kararlar (invariants), app‑bazı farklar ve hızlı çalışma akışını içerir.
 
@@ -10,25 +10,38 @@ Not: Detaylı örnekler ve uzun anlatımlar WARP.md ve app modüllerindedir. Bu 
 
 ## 🚀 Hızlı Bakış
 
-- Uygulamalar (TF): app48(48m), app72(72m), app80(80m), app90(90m), app96(96m), app120(120m), app321(60m)
-- Suite (tek kapı): `python -m appsuite.web --host 0.0.0.0 --port 2000`
-- Portlar (varsayılan): app48 2020, app72 2172, app80 2180, app90 2190, app96 2196, app120 2120, app321 2019
-- Zaman: UTC‑4 (naive). Girdi UTC‑5 ise converter/`--input-tz` ile +1h normalize edilir.
-- Anchor: 18:00. Ofset: −3..+3 (sadece non‑DC sayılır, 2025‑10‑07).
-- İlgili belgeler: WARP.md (çalıştırma/komutlar), her app’in `counter.py`/`main.py`/`web.py`/`iou/`/`iov/` dosyaları.
+- **Uygulamalar (TF)**: app48(48m), app72(72m), app80(80m), app90(90m), app96(96m), app120(120m), app321(60m)
+- **Suite (tek kapı)**: `python -m appsuite.web --host 0.0.0.0 --port 2000`
+- **Portlar (standalone)**: app48:2020, app72:2172, app80:2180, app90:2190, app96:2196, app120:2120, app321:2019, landing:2000, news:2199
+- **Portlar (appsuite internal)**: 9200(app48), 9201(app72), 9202(app80), 9207(app90), 9206(app96), 9203(app120), 9204(app321), 9205(news)
+- **Zaman**: UTC‑4 (naive output). Girdi UTC‑5 ise converter/`--input-tz` ile +1h normalize edilir.
+- **Anchor**: 18:00 (tüm app'lerde sabit). **Ofset**: −3..+3 (sadece non‑DC sayılır, 2025‑10‑07 güncellemesi).
+- **Bağımlılıklar**: Pure Python stdlib (sadece gunicorn production için opsiyonel).
+- **İlgili belgeler**: WARP.md (çalıştırma/komutlar), her app'in `counter.py`/`main.py`/`web.py`/`iou/`/`iov/` dosyaları.
 
 ---
 
 ## 📂 Klasör & Servis Özeti
 
-- app48/app72/app80/app90/app96/app120/app321: CLI counter + http.server tabanlı web UI.
-- iou/: app90, app96, app120 için IOU analiz modülleri; app120’de ek olarak iov/.
-- landing: görsel giriş; appsuite: reverse proxy (tüm servisleri tek portta sunar).
-- news_converter: ForexFactory benzeri Markdown→JSON üretir; IOU UIs `news_data/` klasörünü okur.
+**Ana Uygulamalar**
+- **app48** (48m): 12m→48m converter + sentetik mum ekleme (18:00, 18:48) + IOU analizi + pattern analizi
+- **app72** (72m): 12m→72m converter + IOU analizi + **XYZ pattern analizi** (joker sistemi ile)
+- **app80** (80m): 20m↔80m iki yönlü converter + IOU analizi
+- **app90** (90m): 30m→90m converter + IOU analizi + hafta sonu filtreleme
+- **app96** (96m): 12m→96m converter + IOU analizi
+- **app120** (120m): 60m→120m converter + IOU + **IOV** (zıt işaret) analizi
+- **app321** (60m): Counter + IOU analizi (converter yok)
 
-Port Haritası (appsuite varsayılanları)
-- Dış: appsuite 0.0.0.0:2000 (landing `/`, health `/health`, statik `/favicon/*`, `/photos/*`)
-- İç: 127.0.0.1:9200–9207 (app48…app321, news_converter), proxy altında `/app48`, `/app72`, …, `/news` olarak sunulur.
+**Yardımcı Servisler**
+- **appsuite**: Reverse proxy (tüm app'leri tek portta birleştirir, 0.0.0.0:2000)
+- **landing**: DVD-screensaver tarzı görsel giriş sayfası
+- **news_converter**: ForexFactory Markdown→JSON converter (çoklu dosya + ZIP desteği)
+- **news_data/**: JSON haber verileri (IOU XYZ analizinde kullanılır)
+
+**Port Haritası**
+- **Dış (appsuite)**: 0.0.0.0:2000 → landing `/`, health `/health`, statik `/favicon/*`, `/photos/*`, `/stars.gif`
+- **İç (appsuite)**: 127.0.0.1:9200–9207 → proxy altında `/app48`, `/app72`, `/app80`, `/app90`, `/app96`, `/app120`, `/app321`, `/news`
+- **Standalone**: Her app kendi portunda çalışabilir (app48:2020, app72:2172, etc.)
 
 ---
 
@@ -43,9 +56,12 @@ Port Haritası (appsuite varsayılanları)
 - Tahmin: 72/80/90/96/120 haftasonu atlar (Cuma 16:00 → Pazar 18:00); 48/321 doğrudan dakika ekler.
 
 Veri Yapıları (özet)
-- Candle: `ts, open, high, low, close` (UTC‑4). app48’de ek: `synthetic: bool`.
-- SequenceAllocation: `idx, ts, used_dc`.
-- IOUResult: `seq_value, index, timestamp, oc, prev_oc, prev_index, prev_timestamp`.
+- **Candle**: `ts, open, high, low, close` (UTC‑4). app48'de ek: `synthetic: bool`.
+- **SequenceAllocation**: `idx, ts, used_dc` (sequence değeri dizi içindeki pozisyonu gösterir).
+- **IOUResult**: `seq_value, index, timestamp, oc, prev_oc, prev_index, prev_timestamp` (IOU analiz sonucu).
+- **IOVResult**: `seq_value, offset, index, timestamp, oc, prev_oc, prev_index, prev_timestamp` (sadece app120, zıt işaret).
+- **PatternBranch**: `path, file_indices, current_state, expected_next, direction` (pattern analizi için).
+- **PatternResult**: `pattern, file_sequence, is_complete, length, expected_next` (pattern sonuçları).
 
 Sequence Kullanımı
 - Genel analizde SEQUENCES (tam dizi), IOU’da SEQUENCES_FILTERED (erken değerler hariç) kullanılır.
@@ -100,29 +116,51 @@ Sequence Allocation (özet algoritma)
 
 ## 🔍 IOU (Inverse OC — Uniform sign)
 
-Tanım ve Kurallar
-- IOU: OC ve PrevOC limit üstü ve aynı işaret (++ veya --).
-- 5 şart (sıra önemlidir):
+**Tanım ve Kurallar**
+- **IOU**: OC ve PrevOC limit üstü ve **aynı işaret** (++ veya --). Trend devamı sinyali.
+- **5 şart (sıra önemlidir)**:
   1) |OC| ≥ limit
   2) |PrevOC| ≥ limit
   3) |OC − limit| ≥ tolerance (limit çok yakın eleme)
   4) |PrevOC − limit| ≥ tolerance
-  5) İşaretler aynı
-- Tolerance varsayılanı: 0.005 (mutlaka limit kontrollerinden SONRA uygulanır).
+  5) İşaretler aynı: `(OC>0 AND PrevOC>0) OR (OC<0 AND PrevOC<0)`
+- **Tolerance**: varsayılan 0.005 (mutlaka limit kontrollerinden **SONRA** uygulanır).
+- **Sequence filtre**: SEQUENCES_FILTERED kullanılır (S1: 1,3 hariç; S2: 1,5 hariç).
 
-App‑Bazlı IOU Saat İstisnaları
-- app48: 18:00, 18:48, 19:36 IOU değil.
-- app72: 18:00, 19:12, 20:24 IOU değil (2. Pazar HARİÇ); Cuma 16:48 asla IOU değil.
-- app80: 18:00 asla; 19:20, 20:40 IOU değil (2. Pazar HARİÇ); Cuma 16:40 asla IOU değil.
-- app90: 18:00 asla; 19:30 IOU değil (Pazar HARİÇ); Cuma 16:30 asla IOU değil.
-- app96: 18:00 asla; 19:36 IOU değil (Pazar HARİÇ); Cuma 16:24 asla IOU değil.
-- app120: 18:00 asla; 20:00 asla; Cuma 16:00 asla IOU değil.
-- app321: 18:00, 19:00, 20:00 (dakika=00) IOU değil.
+**App‑Bazlı IOU Saat İstisnaları** (bu saatlerdeki mumlar **ASLA** IOU olamaz)
+- **app48**: 18:00, 18:48, 19:36
+- **app72**: 18:00 (her zaman); 19:12, 20:24 (Pazar HARİÇ); Cuma 16:48 (her zaman)
+- **app80**: 18:00 (her zaman); 19:20, 20:40 (Pazar HARİÇ); Cuma 16:40 (her zaman)
+- **app90**: 18:00 (her zaman); 19:30 (Pazar HARİÇ); Cuma 16:30 (her zaman)
+- **app96**: 18:00 (her zaman); 19:36 (Pazar HARİÇ); Cuma 16:24 (her zaman)
+- **app120**: 18:00, 20:00, Cuma 16:00 (hepsi her zaman)
+- **app321**: 18:00, 19:00, 20:00 (dakika=00 olan tüm saatler)
 
-XYZ (Haber) Analizi (özet)
-- IOU aralığı: [start, start+TF). `time_24h=null` olaylar için [start−1h, start+TF).
-- "Holiday" olayları gösterilir ama XYZ elemede sayılmaz (non‑holiday filtre).
-- Offset eleme: bir ofsette ≥1 habersiz IOU varsa ofset elenir; kalanı "XYZ kümesi"dir.
+**XYZ (Haber) Analizi**
+- **Amaç**: Habersiz IOU'ları filtreleyerek güvenilir offset kümesi bulmak.
+- **Haber aralığı**: `[start, start+TF)`. Null-value events (speeches, statements) için `[start−1h, start+TF)`.
+- **Haber kategorileri**:
+  - **NORMAL**: actual/forecast/previous değerli (XYZ'yi etkiler)
+  - **SPEECH**: time_24h var + null values (XYZ'yi etkiler, 1h öncesi dahil)
+  - **HOLIDAY**: "holiday" başlıklı + All Day + null values (gösterilir ama XYZ'yi ETKİLEMEZ)
+  - **ALLDAY**: All Day + null values (holiday değil, gösterilir ama XYZ'yi ETKİLEMEZ)
+- **Offset eleme**: Bir offsette ≥1 habersiz IOU varsa o offset elenir. Kalan offsetler **XYZ kümesi**'ni oluşturur.
+- **Veri kaynağı**: `news_data/*.json` (otomatik merge, candle year ile eşleme).
+- **Web UI**: Çoklu dosya upload (max 25), joker seçimi, pattern analizi (sadece app72'de aktif).
+
+## 🔄 IOV (Inverse OC Value — Opposite sign) [Sadece app120]
+
+**Tanım ve Kurallar**
+- **IOV**: OC ve PrevOC limit üstü ve **zıt işaret** (+- veya -+). Trend dönüşü sinyali.
+- **Şartlar**:
+  1) |OC| ≥ limit
+  2) |PrevOC| ≥ limit
+  3) İşaretler zıt: `(OC>0 AND PrevOC<0) OR (OC<0 AND PrevOC>0)`
+- **Özel**: Tolerance kontrolü **YOK** (IOU'dan farklı).
+- **Sequence filtre**: IOU ile aynı (SEQUENCES_FILTERED).
+- **Saat istisnası YOK**: IOV için özel saat kısıtlaması bulunmuyor.
+- **Modül**: `app120/iov/counter.py`
+- **Web UI**: `/iov` route'u (app120'de mevcut).
 
 ---
 
@@ -177,11 +215,12 @@ Dosya Konumu
 - Web entegrasyonu: `app72/web.py` (satır ~580-800)
 - Fonksiyonlar: `find_valid_patterns(xyz_data, max_branches=1000)`, `format_pattern_results(results)`
 
-Diğer App'lere Taşıma (TODO)
-- `pattern.py` kopyala → her app klasörüne.
-- `web.py` entegrasyonu: `/iou` route'una ekle.
+**Pattern Analizi Taşıma Rehberi** (şu an sadece app72'de)
+- `pattern.py` kopyala → hedef app klasörüne.
+- `web.py` entegrasyonu: `/iou` ve `/iou_analyze` route'larını ekle.
 - `MINUTES_PER_STEP` değiştir (app80→80, app90→90, vb.).
-- IOU analizi zaten var, XYZ hesaplama aynı.
+- IOU XYZ analizi zaten tüm app'lerde var; pattern logic eklenmesi yeterli.
+- Joker selection UI ve format_pattern_results fonksiyonunu kullan.
 
 ---
 
@@ -199,45 +238,65 @@ Not: app90/app96/app120 IOU modüllerinde haber eşlemesi kullanılabilir; app12
 
 ## 🌐 Web Arayüzü & Rotalar
 
-Genel
-- Tüm web’ler tek dosya HTML/CSS ve BaseHTTPRequestHandler üzerine kurulu, stateless.
-- appsuite, backend linklerini prefix altında yaşatmak için `href/action` yollarını yeniden yazar.
-- Favicon ve görseller: `/favicon/*`, `/photos/*` appsuite’ten statik servis edilir.
+**Genel Mimari**
+- **Tek dosya**: Tüm web UI'lar HTML/CSS inline, `BaseHTTPRequestHandler` üzerine kurulu, **stateless**.
+- **Path rewriting**: appsuite, backend linklerini prefix altında yaşatmak için `href/action` yollarını otomatik düzenler.
+- **Statik servis**: `/favicon/*`, `/photos/*`, `/stars.gif` appsuite'ten servis edilir.
+- **Upload limiti**: 50 MB (tek veya çoklu dosya toplamı).
 
-Rota Özeti
-- app48: `/`, `/dc`, `/matrix`, `/convert`, `/iou`
-- app72: `/`, `/dc`, `/matrix`, `/converter`, `/iou`
-- app80: `/`, `/dc`, `/matrix`, `/converter`, `/iou`
-- app90: `/`, `/dc`, `/matrix`, `/converter`, `/iou`
-- app96: `/`, `/dc`, `/matrix`, `/converter`, `/iou`
-- app120: `/`, `/dc`, `/matrix`, `/iov`, `/iou`, `/converter`
-- app321: `/`, `/dc`, `/matrix`, `/iou`
+**Rota Özeti (GET/POST)**
+- **app48**: `/` (counter), `/dc` (DC listesi), `/matrix`, `/convert` (12→48), `/iou` (XYZ+pattern)
+- **app72**: `/` (counter), `/dc`, `/matrix`, `/converter` (12→72), `/iou` (XYZ+pattern), `/iou_analyze` (pattern stage 2)
+- **app80**: `/` (counter), `/dc`, `/matrix`, `/converter` (20↔80), `/iou`
+- **app90**: `/` (counter), `/dc`, `/matrix`, `/converter` (30→90), `/iou`
+- **app96**: `/` (counter), `/dc`, `/matrix`, `/converter` (12→96), `/iou`
+- **app120**: `/` (counter), `/dc`, `/matrix`, `/iov` (IOV analizi), `/iou`, `/converter` (60→120)
+- **app321**: `/` (counter), `/dc`, `/matrix`, `/iou` (converter yok)
+- **news_converter**: `/` (upload form), `/convert` (MD→JSON)
+- **landing**: `/` (DVD-screensaver UI), `/health`, statik dosyalar
+- **appsuite**: `/` (landing), `/health`, `/app48/*`, `/app72/*`, ..., `/news/*` (proxy)
 
-Form Parametreleri (örnek)
-- Counter/DC/Matrix: `csv` (file), `sequence` (S1/S2), `offset` (−3..+3), opsiyonel gösterim bayrakları.
-- IOU (çoklu dosya): `files[]` (en fazla 25), `sequence`, `limit`, `tolerance`.
+**Form Parametreleri**
+- **Counter/DC/Matrix**: `csv` (file), `sequence` (S1/S2), `offset` (−3..+3), `input_tz` (UTC-4/UTC-5), `show_dc` (checkbox).
+- **IOU**: `csv` veya `files[]` (çoklu, max 25), `sequence`, `limit` (float), `tolerance` (float, default 0.005), `xyz_analysis` (checkbox), `xyz_summary_table` (checkbox).
+- **Pattern (app72)**: `/iou_analyze` POST ile joker seçimleri (checkbox array) gönderilir.
+- **Converter**: `csv` veya çoklu dosya (max 50 app48, 25 diğerleri), `input_tz` (UTC-5 varsayılan).
 
 ---
 
-## 🔄 Converter’lar
+## 🔄 Converter'lar
 
-Özet
-- app48: 12→48 (Web: `/convert`). İlk gün hariç her gün 18:00 ve 18:48 sentetik mum ekler (hizalama/doğruluk için).
-- app72: 12→72 (CLI)
-- app80: 20→80 (CLI)
-- app90: 30→90 (CLI + Web)
-- app96: 12→96 (CLI + Web)
-- app120: 60→120 (CLI + Web)
+**Özet (Timeframe Dönüşümleri)**
+- **app48**: 12m→48m (Web: `/convert`, CLI: `main.py`). **Sentetik mum ekleme**: İlk gün hariç 18:00 ve 18:48.
+- **app72**: 12m→72m (CLI: `main.py`, converter fonksiyonu var ama web UI yok)
+- **app80**: 20m↔80m **iki yönlü** (CLI: `main.py`, web UI yok)
+- **app90**: 30m→90m (CLI: `main.py` + Web: `/converter`)
+- **app96**: 12m→96m (CLI: `main.py` + Web: `/converter`)
+- **app120**: 60m→120m (CLI: `main.py` + Web: `/converter`)
+- **app321**: **Converter YOK** (sadece 60m counter/IOU)
 
-Genel Kurallar
-- TZ normalize: Girdi UTC‑5 ise +1h kaydır (çıkış UTC‑4). Girdi UTC‑4 ise değişiklik yok.
-- Blok hizası: Günlük 18:00 anchor’a göre; `block_index = floor((ts−anchor)/TF)`.
-- Hafta sonu filtreleme: Cumartesi atla; Pazar 18:00 öncesi atla.
-- OHLC birleştirme: open=ilk, close=son (sonra close’u bir sonraki blok open’ı ile düzelt). high/low gerekli ise close’a göre ayarlanır.
-- Son mum: close≥high ise high=close; close≤low ise low=close (kapanış tutarlılığı).
+**Genel Converter Kuralları**
+- **TZ normalize**: Girdi UTC‑5 ise +1h kaydır (çıkış UTC‑4). Girdi UTC‑4 ise değişiklik yok.
+- **Blok hizası**: Günlük 18:00 anchor'a göre; `block_index = floor((ts−anchor)/TF)`.
+- **Hafta sonu filtreleme**: Cumartesi atla; Pazar 18:00 öncesi atla.
+- **OHLC birleştirme**:
+  - `open = block[0].open` (blok içindeki ilk mum)
+  - `close = block[-1].close` (blok içindeki son mum)
+  - `high = max(candle.high for candle in block)`
+  - `low = min(candle.low for candle in block)`
+  - **Close adjustment**: `candles[i].close = candles[i+1].open` (next-open ile düzelt)
+  - **Son mum**: `if close >= high: high = close` / `if close <= low: low = close`
+- **Çoklu dosya desteği (Web)**: Max 50 dosya (app48), max 25 (diğerleri). Tek dosya→CSV, çoklu→ZIP.
 
-app48 Sentetik Kuralları (kısa)
-- Her gün (ilk gün hariç) 17:12–19:36 aralığında 18:00 ve 18:48 eksikse eklenir. Değerler lineer aralıkla (1/3, 2/3) tahmin edilir; `synthetic=True`.
+**app48 Sentetik Mum Kuralları**
+- **Amaç**: 18:00 ve 18:48 mumlarının eksik olduğu günlerde ekleme yaparak hizalama sağlamak.
+- **Kapsam**: İlk gün (Pazar) HARİÇ her gün.
+- **Koşul**: 17:12 ve 19:36 mumları mevcut olmalı.
+- **Hesaplama**:
+  - **18:00 mumu**: `close = c[17:12] + (c[19:36] - c[17:12]) / 3` (lineer interpolasyon 1/3)
+  - **18:48 mumu**: `close = c[17:12] + 2 * (c[19:36] - c[17:12]) / 3` (lineer interpolasyon 2/3)
+  - `open = prev_candle.close`, `high = max(open, close)`, `low = min(open, close)`
+- **İşaretleme**: `synthetic=True` (DC kontrollerinde kullanılabilir).
 
 —
 
@@ -296,27 +355,114 @@ Converter (örnekler)
 
 ## 📌 Önemli Notlar & İpuçları
 
-- IOU tolerance kuralı, limit kontrolü geçildikten sonra uygulanır; aksi halde yanlış eleme olur.
-- “Holiday” olayları görüntüde tutulur fakat XYZ elemeyi ETKİLEMEZ (yalnız non‑holiday sayılır).
-- Ofset başlangıcı non‑DC garanti edilse bile, dizi ilerlerken “son adım DC” kuralı geçerlidir.
-- app80 UI’da ek “convert2” linki görünebilir; gerçek dönüşüm rotası `/converter`.
-- Geniş CSV’lerde (≥10MB) işlem süresi artar; IOU çoklu yükleme limiti 25 dosyadır.
+**Kritik Kurallar**
+- **IOU tolerance**: Mutlaka limit kontrolünden **SONRA** uygulanır; sırayı değiştirmek yanlış elemeye yol açar.
+- **Holiday olayları**: Gösterilir ama XYZ elemeyi **ETKİLEMEZ** (sadece NORMAL ve SPEECH kategorisi etkiler).
+- **Ofset başlangıcı**: Non-DC garanti edilir, ama dizi ilerlerken "son adım DC" kuralı hala geçerlidir.
+- **News matching**: Candle **year** kullanılır, JSON year'ı ignore edilir (yıllara göre aynı tarihler eşlenir).
+- **IOV vs IOU**: IOV tolerance kontrolü **yapmaz**, sadece zıt işaret kontrolü yapar.
+
+**Web UI**
+- **Upload limiti**: 50 MB toplam (tek veya çoklu dosya).
+- **IOU çoklu dosya**: Max 25 dosya (app48'de pattern yoksa), max 50 dosya (app48 convert).
+- **Pattern analizi**: Şu an sadece app72'de aktif; `/iou` ve `/iou_analyze` 2-stage flow.
+- **Joker sistemi**: Boş XYZ dosyalarını wildcard yaparak pattern devamını sağlar.
+- **ZIP indirme**: Çoklu dosya converter/IOU'da otomatik ZIP oluşturulur.
+
+**Performance**
+- **Geniş CSV**: ≥10 MB dosyalarda işlem süresi artar (pure Python stdlib, optimizasyon yok).
+- **Stateless**: Her request bağımsız, session/cache yok.
+- **Concurrent**: appsuite tüm backend'leri paralel başlatır (threading.Thread daemon=True).
+
+**Deployment**
+- **Railway/Render/Fly.io**: `railway.toml`, `render.yaml`, `Dockerfile` hazır.
+- **Health check**: `/health` endpoint (appsuite ve tüm app'ler).
+- **Port binding**: Railway/Render otomatik `$PORT` inject eder.
 
 ---
 
-## 📚 Fonksiyon İmzaları (seçki)
+## 📚 Fonksiyon İmzaları (Özet)
 
-- CSV: `load_candles(path) -> List[Candle]`
-- DC: `compute_dc_flags(candles) -> List[Optional[bool]]`
-- Ofset: `determine_offset_start(candles, base_idx, offset, minutes_per_step?, dc_flags?) -> (idx?, ts?, status)`
-- Sayım: `compute_sequence_allocations(candles, dc_flags, start_idx, seq_values) -> List[SequenceAllocation]`
-- Tahmin: `predict_time_after_n_steps(base_ts, n, minutes_per_step) -> datetime`
-- IOU: `analyze_iou(candles, sequence, limit, tolerance=0.005) -> Dict[int, List[IOUResult]]`
-- Haber: `load_news_data_from_directory(dir) -> Dict[str, List[Dict]]`, `find_news_in_timerange(...) -> List[Dict]`, `is_holiday_event(event) -> bool`
-- Converter: `adjust_to_output_tz(...)`, `convert_12m_to_48m`, `convert_12m_to_72m`, `convert_20m_to_80m`, `convert_30m_to_90m`, `convert_12m_to_96m`, `convert_60m_to_120m`
+**CSV & Veri**
+- `load_candles(path: str) -> List[Candle]` — CSV yükle, parse et, sırala
+- `load_candles_from_text(text: str) -> List[Candle]` — String CSV (web upload için)
+- `estimate_timeframe_minutes(candles) -> Optional[float]` — TF otomatik tespit (median)
+
+**DC & Counting**
+- `compute_dc_flags(candles: List[Candle]) -> List[Optional[bool]]` — DC bayrakları hesapla
+- `find_start_index(candles, start_tod) -> (int, str)` — 18:00 base bulma
+- `determine_offset_start(candles, base_idx, offset, minutes_per_step?, dc_flags?) -> (idx?, ts?, status)` — Non-DC offset hesaplama
+- `compute_sequence_allocations(candles, dc_flags, start_idx, seq_values) -> List[SequenceAllocation]` — Sequence allocation
+- `compute_offset_alignment(candles, dc_flags, base_idx, seq_values, offset) -> OffsetComputation` — Tüm offset hesaplama wrapper
+
+**Prediction (Weekend Jump)**
+- `predict_next_candle_time(current_ts, minutes_per_step) -> datetime` — Haftasonu jump ile bir sonraki mum
+- `predict_time_after_n_steps(base_ts, n_steps, minutes_per_step) -> datetime` — n adım sonrası (72/80/90/96/120)
+
+**IOU/IOV Analysis**
+- `analyze_iou(candles, sequence, limit, tolerance=0.005) -> Dict[int, List[IOUResult]]` — Tüm offsetler için IOU
+- `analyze_iov(candles, sequence, limit) -> Dict[int, List[IOVResult]]` — IOV (sadece app120)
+
+**News Integration**
+- `load_news_data_from_directory(dir_path) -> Dict[str, List[Dict]]` — news_data/ JSON merge
+- `find_news_in_timerange(events_by_date, start_ts, duration_minutes) -> List[Dict]` — Zaman aralığında haber bul
+- `categorize_news_event(event) -> str` — HOLIDAY/SPEECH/ALLDAY/NORMAL kategorize
+- `format_news_events(events) -> str` — HTML için haber formatla
+
+**Pattern Analysis (app72)**
+- `find_valid_patterns(xyz_data, max_branches=1000) -> List[PatternResult]` — Geçerli pattern'ler bul
+- `format_pattern_results(results) -> str` — HTML renklendirme ile pattern göster
+
+**Converters**
+- `adjust_to_output_tz(candles, input_tz) -> (List[Candle], str)` — UTC-5→UTC-4 shift
+- `convert_12m_to_48m(candles) -> List[Candle]` — app48
+- `convert_12m_to_72m(candles) -> List[Candle]` — app72
+- `convert_20m_to_80m(candles) -> List[Candle]` — app80
+- `convert_30m_to_90m(candles) -> List[Candle]` — app90
+- `convert_12m_to_96m(candles) -> List[Candle]` — app96
+- `convert_60m_to_120m(candles) -> List[Candle]` — app120
+- `insert_synthetic_48m(candles, start_day) -> (List[Candle], int)` — app48 sentetik mum
+
+**Web Utilities**
+- `page(title, body, active_tab?) -> bytes` — HTML page wrapper
+- `format_price(value: float) -> str` — Fiyat formatı (6 decimal, trailing zero trim)
+- `fmt_ts(dt: Optional[datetime]) -> str` — Timestamp format
+- `fmt_pip(delta: Optional[float]) -> str` — OC/PrevOC format (+/- işaretli)
 
 —
 
 Kapsamlı örnekler ve komutlar için WARP.md ve app modüllerine bakın.
 
-agents.md — v3.3 — 2025-10-23
+---
+
+## 🔧 Deployment & Configuration
+
+**Docker**
+```bash
+docker build -t x1 .
+docker run --rm -e PORT=2000 -p 2000:2000 x1
+```
+
+**Railway**
+- Config: `railway.toml`
+- Build: NIXPACKS (auto-detect)
+- Start: `python -m appsuite.web --host 0.0.0.0 --port $PORT`
+
+**Render**
+- Config: `render.yaml`
+- Region: frankfurt (veya oregon, singapore)
+- Health: `/health`
+- Free plan: 1 service, auto-sleep
+
+**Environment Variables**
+- `PORT`: Web server port (Railway/Render inject eder)
+- `PYTHON_VERSION`: 3.11+ (requirements.txt belirtir)
+
+**Requirements**
+- Python: 3.11+
+- Dependencies: Sadece `gunicorn` (production için opsiyonel)
+- Stdlib: csv, http.server, datetime, dataclasses, argparse, json, io, zipfile
+
+---
+
+agents.md — v3.6 — 2025-10-30
