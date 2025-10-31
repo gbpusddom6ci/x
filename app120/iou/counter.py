@@ -408,8 +408,13 @@ def analyze_iou(
             candle = candles[idx]
             prev_candle = candles[idx - 1]
             
-            # IOU restriction: 18:00 cannot be IOU (all days)
             ts = candle.ts
+            
+            # IOU restriction: Sunday candles cannot be IOU (all Sunday candles)
+            if ts.weekday() == 6:  # Pazar günü
+                continue  # Cannot be IOU
+            
+            # IOU restriction: 18:00 cannot be IOU (all days)
             if ts.hour == 18 and ts.minute == 0:
                 continue  # Cannot be IOU
             
