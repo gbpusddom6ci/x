@@ -407,6 +407,20 @@ def analyze_iov(
             candle = candles[idx]
             prev_candle = candles[idx - 1]
             
+            # IOV restriction: 18:00 cannot be IOV (all days)
+            ts = candle.ts
+            if ts.hour == 18 and ts.minute == 0:
+                continue  # Cannot be IOV
+            
+            # IOV restriction: 20:00 cannot be IOV (except Sunday)
+            if ts.hour == 20 and ts.minute == 0:
+                if ts.weekday() != 6:  # Pazar değilse
+                    continue  # Cannot be IOV
+            
+            # IOV restriction: 16:00 cannot be IOV (all days)
+            if ts.hour == 16 and ts.minute == 0:
+                continue  # Cannot be IOV
+            
             oc = candle.close - candle.open
             prev_oc = prev_candle.close - prev_candle.open
             

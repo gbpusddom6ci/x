@@ -413,9 +413,10 @@ def analyze_iou(
             if ts.hour == 18 and ts.minute == 0:
                 continue  # Cannot be IOU
             
-            # IOU restriction: 20:00 cannot be IOU (all days)
+            # IOU restriction: 20:00 cannot be IOU (except Sunday)
             if ts.hour == 20 and ts.minute == 0:
-                continue  # Cannot be IOU
+                if ts.weekday() != 6:  # Pazar değilse
+                    continue  # Cannot be IOU
             
             # IOU restriction: 16:00 cannot be IOU (all days)
             if ts.hour == 16 and ts.minute == 0:
