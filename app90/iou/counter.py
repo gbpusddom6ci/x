@@ -130,10 +130,10 @@ def analyze_iou(
                 if ts.weekday() != 6:  # 6 = Pazar
                     continue
             
-            # Cuma günündeki 16:30 mumları asla IOU olamaz
-            if ts.hour == 16 and ts.minute == 30:
-                if ts.weekday() == 4:  # 4 = Cuma
-                    continue
+            # IOU restriction: 15:00 and 16:40 cannot be IOU (all days)
+            if (ts.hour == 15 and ts.minute == 0) or \
+               (ts.hour == 16 and ts.minute == 40):
+                continue  # Cannot be IOU
             
             oc = candle.close - candle.open
             prev_oc = prev_candle.close - prev_candle.open

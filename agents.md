@@ -2,7 +2,7 @@
 
 > **Purpose:** Bu dokümantasyon, x1 reposundaki tüm kod detaylarını bir sonraki AI context'inin tam olarak anlayabileceği şekilde açıklar.
 > 
-> **Last Updated:** 2025-01-30
+> **Last Updated:** 2025-01-31
 > 
 > **Status:** 🚧 IN PROGRESS - Section by section being filled
 
@@ -211,6 +211,13 @@ abs(|OC| - limit) ≥ tolerance (default: 0.005)  # Limitte çok yakın elenir
 - Cuma hafta kapanışı: IOU olamaz
 - 2. Pazar istisnası: app72'de 2. hafta Pazar günü için bazı kısıtlamalar kaldırılır
 
+**IOU Geçersiz Saatler (Her Gün):**
+- **app72:** 15:36, 16:48 ❌ IOU olamaz
+- **app80:** 15:20, 16:40 ❌ IOU olamaz
+- **app90:** 15:00, 16:40 ❌ IOU olamaz
+- **app96:** 14:48, 16:24 ❌ IOU olamaz
+- **app120:** 16:00 ❌ IOU olamaz
+
 **News Integration:**
 - `news_data/*.json` dosyaları otomatik merge edilir
 - Mum başlangıç zamanından TF süresi boyunca haberler taranır
@@ -356,6 +363,7 @@ if input_tz in {"UTC-5", "UTC-05"}:
 **IOU Restrictions:**
 - 18:00, 19:12, 20:24: IOU olamaz (2. Pazar hariç)
 - Cuma 16:48: IOU olamaz
+- **15:36, 16:48:** IOU olamaz (her gün)
 
 **Converter:** 72 dakikalık blocklara 18:00 anchor ile hizalama
 
@@ -373,6 +381,9 @@ if input_tz in {"UTC-5", "UTC-05"}:
 - Pazar hariç: 19:20 ve 20:40 DC olamaz
 - **Cuma 16:40:** DC olamaz (hafta kapanışı)
 
+**IOU Restrictions:**
+- **15:20, 16:40:** IOU olamaz (her gün)
+
 **Hafta Kapanışı:** Cuma 16:40 (yeterli gap varsa)
 
 ### 4.4 app90 - 90 Minute System
@@ -383,6 +394,9 @@ if input_tz in {"UTC-5", "UTC-05"}:
 - 18:00: DC olamaz
 - 19:30: Pazar hariç DC olamaz
 - Cuma 16:30: DC olamaz
+
+**IOU Restrictions:**
+- **15:00, 16:40:** IOU olamaz (her gün)
 
 **Modüller:**
 - `iou/`: IOU counter, pattern analysis, web interface
@@ -396,6 +410,9 @@ if input_tz in {"UTC-5", "UTC-05"}:
 - 19:36: Pazar hariç DC olamaz
 - Cuma 16:24: DC olamaz
 
+**IOU Restrictions:**
+- **14:48, 16:24:** IOU olamaz (her gün)
+
 **Modüller:**
 - `iou/`: IOU counter, pattern analysis, web interface
 
@@ -407,6 +424,9 @@ if input_tz in {"UTC-5", "UTC-05"}:
 - 18:00: DC olamaz (Pazar dahil)
 - 20:00: Pazar hariç DC olamaz
 - Cuma 16:00: Hafta kapanışı (gap varsa) DC olamaz
+
+**IOU Restrictions:**
+- **16:00:** IOU olamaz (her gün)
 
 **Modüller:**
 - `iou/`: IOU counter, pattern, web
@@ -771,6 +791,18 @@ html = f"""<!DOCTYPE html>
 - **Sıra:** 14:00 → 15:20 → 16:40
 - **Fix:** counter.py, README.md, web.py, agents.md düzeltildi
 
+**IOU Invalid Times Added (2025-01-31):**
+- **Değişiklik:** Her app için günlük DC saatinden önceki belirli mumlar artık IOU olamaz
+- **Sebep:** Bu saatler geçersiz kabul ediliyor, IOU analizinden hariç tutulmalı
+- **Eklenen saatler:**
+  - app72: 15:36, 16:48
+  - app80: 15:20, 16:40
+  - app90: 15:00, 16:40
+  - app96: 14:48, 16:24
+  - app120: 16:00
+- **Kapsam:** Her gün için geçerli (sadece Cuma değil)
+- **Dosyalar:** app72/counter.py, app80/counter.py, app90/iou/counter.py, app96/iou/counter.py, app120/iou/counter.py
+
 ### 10.4 TODOs & Improvements
 - **Automated tests:** Pytest suite eklenebilir (DC rules, offset logic, pattern matching)
 - **Performance:** Pattern matching branch exploration optimize edilebilir
@@ -889,8 +921,8 @@ for filename, content in files.items():
 
 ## ✅ Document Status: COMPLETE
 
-**Total Lines:** ~850
-**Last Updated:** 2025-01-30
+**Total Lines:** ~920
+**Last Updated:** 2025-01-31
 **Sections Filled:** 10/10 + Quick Reference + Code Index
 
 **Key Achievements:**
@@ -898,6 +930,7 @@ for filename, content in files.items():
 - ✅ DC rules clarified (incl. app80 critical fix)
 - ✅ Offset system NEW logic explained
 - ✅ IOU/IOV/Pattern analysis detailed
+- ✅ IOU invalid times added (2025-01-31)
 - ✅ Deployment configs covered
 - ✅ Quick reference tables added
 

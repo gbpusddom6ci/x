@@ -746,8 +746,9 @@ def analyze_iou(
                 if not (second_sunday and candle.ts.date() == second_sunday):
                     continue  # Cannot be IOU
             
-            # IOU restriction: Friday 16:48 cannot be IOU (all Fridays)
-            if candle.ts.weekday() == 4 and candle.ts.hour == 16 and candle.ts.minute == 48:
+            # IOU restriction: 15:36 and 16:48 cannot be IOU (all days)
+            if (candle.ts.hour == 15 and candle.ts.minute == 36) or \
+               (candle.ts.hour == 16 and candle.ts.minute == 48):
                 continue  # Cannot be IOU
             
             oc = candle.close - candle.open
