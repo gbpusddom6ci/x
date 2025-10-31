@@ -849,6 +849,7 @@ class App96Handler(BaseHTTPRequestHandler):
 
                 xyz_analysis = "xyz_analysis" in params
                 xyz_summary_table = "xyz_summary_table" in params
+                pattern_analysis = "pattern_analysis" in params
                 
                 # Get previous results if this is an appended analysis
                 previous_results = params.get("previous_results", "")
@@ -859,8 +860,8 @@ class App96Handler(BaseHTTPRequestHandler):
                 )
                 events_by_date = load_news_data_from_directory(news_dir)
                 
-                # Stage 1: If XYZ analysis enabled, render joker selection interface
-                if xyz_analysis:
+                # Stage 1: If both XYZ and Pattern analysis enabled, render joker selection interface
+                if xyz_analysis and pattern_analysis:
                     self._render_joker_selection(files, sequence, limit, xyz_analysis, events_by_date, previous_results)
                     return
 

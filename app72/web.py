@@ -1018,8 +1018,8 @@ class App72Handler(BaseHTTPRequestHandler):
                 )
                 events_by_date = load_news_data_from_directory(news_dir)
                 
-                # Stage 1: Just calculate XYZ and show joker selection if pattern analysis enabled
-                if pattern_analysis:
+                # Stage 1: If both XYZ and Pattern analysis enabled, render joker selection interface
+                if xyz_analysis and pattern_analysis:
                     return self._render_joker_selection(
                         files, sequence, limit, tolerance, xyz_analysis, events_by_date, previous_results
                     )
