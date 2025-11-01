@@ -291,6 +291,19 @@ def page(title: str, body: str) -> bytes:
     <meta name='viewport' content='width=device-width, initial-scale=1'/>
     <title>{html.escape(title)}</title>
     <style>
+      /* Theme variables (default 'dark' via script) */
+      :root {{
+        --bg: #ffffff; --text: #0b1220; --muted: #475569;
+        --card: #ffffff; --border: #e5e7eb; --th: #f5f5f5; --code:#f5f5f5;
+        --link: #0366d6; --accent:#1a73e8; --summary:#e8f0fe; --soft:#f8f9fa;
+        color-scheme: light dark;
+      }}
+      @media (prefers-color-scheme: dark) {{
+        :root {{ --bg:#0d1117; --text:#e6edf3; --muted:#9aa4b2; --card:#0f172a; --border:#30363d; --th:#161b22; --code:#161b22; --link:#58a6ff; --accent:#1f6feb; --summary:#1f6feb22; --soft:#0f172a; }}
+      }}
+      :root[data-theme="light"] {{ --bg:#ffffff; --text:#0b1220; --muted:#475569; --card:#ffffff; --border:#e5e7eb; --th:#f5f5f5; --code:#f5f5f5; --link:#0366d6; --accent:#1a73e8; --summary:#e8f0fe; --soft:#f8f9fa; }}
+      :root[data-theme="dark"]  {{ --bg:#0d1117; --text:#e6edf3; --muted:#9aa4b2; --card:#0f172a; --border:#30363d; --th:#161b22; --code:#161b22; --link:#58a6ff; --accent:#1f6feb; --summary:#1f6feb22; --soft:#0f172a; }}
+
       body{{font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin:20px; background:#f5f5f5;}}
       header{{margin-bottom:16px; padding:20px; background:white; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1);}}
       h1{{margin:0 0 8px 0; color:#1a73e8;}}
@@ -311,9 +324,39 @@ def page(title: str, body: str) -> bytes:
       th, td{{padding:8px; text-align:left; border-bottom:1px solid #e0e0e0;}}
       th{{background:#f8f9fa; font-weight:600;}}
       .summary{{background:#e8f0fe; padding:12px; border-radius:4px; margin:16px 0;}}
+
+      /* Dark overrides */
+      [data-theme="dark"] body {{ background: var(--bg) !important; color: var(--text) !important; }}
+      [data-theme="dark"] header {{ background: var(--card) !important; color: var(--text) !important; border-color: var(--border) !important; }}
+      [data-theme="dark"] .card {{ background: var(--card) !important; color: var(--text) !important; }}
+      [data-theme="dark"] .iov-section {{ background: var(--soft) !important; border-left-color: var(--accent) !important; }}
+      [data-theme="dark"] .iov-item {{ background: var(--card) !important; border-color: var(--border) !important; }}
+      [data-theme="dark"] .timestamp {{ color: var(--muted) !important; }}
+      [data-theme="dark"] table {{ color: var(--text) !important; }}
+      [data-theme="dark"] th, [data-theme="dark"] td {{ border-color: var(--border) !important; }}
+      [data-theme="dark"] th {{ background: var(--th) !important; }}
+      [data-theme="dark"] .summary {{ background: var(--summary) !important; }}
+      [data-theme="dark"] input, [data-theme="dark"] select, [data-theme="dark"] button {{ background: var(--card) !important; color: var(--text) !important; border-color: var(--border) !important; }}
+      [data-theme="dark"] a {{ color: var(--link) !important; }}
+      .theme-toggle {{ position: fixed; right: 14px; top: 12px; z-index: 9999; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font: 13px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; cursor: pointer; opacity: .9; }}
+      .theme-toggle:hover {{ opacity: 1; }}
     </style>
   </head>
   <body>
+    <button id='theme-toggle' class='theme-toggle' type='button' aria-label='Tema'>🌑 Dark</button>
+    <script>
+      (function() {{
+        const KEY = 'x1-theme';
+        const doc = document.documentElement;
+        const btn = document.getElementById('theme-toggle');
+        function label(v) {{ return (v||'auto').replace(/^./, c=>c.toUpperCase()); }}
+        function icon(v) {{ return {{auto:'🌙', dark:'🌑', light:'☀️'}}[v||'auto']; }}
+        function apply(v) {{ if (v==='auto') {{ delete doc.dataset.theme; }} else {{ doc.dataset.theme = v; }} localStorage.setItem(KEY, v); btn.textContent = icon(v)+' '+label(v); }}
+        function next(v) {{ return v==='auto' ? 'dark' : v==='dark' ? 'light' : 'auto'; }}
+        apply(localStorage.getItem(KEY) || 'dark');
+        btn.addEventListener('click', () => apply(next(localStorage.getItem(KEY) || 'dark')));
+      }})();
+    </script>
     <header>
       <h1>🎯 app120_iou - IOU Candle Analysis</h1>
       <p>Inverse OC - Uniform sign (IOU) mum analizi - 120m timeframe</p>
