@@ -212,17 +212,17 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
 
     <script>
       // Persisted theme selection, default dark for consistency
-      (function() {{
+      (function() {
         const KEY = 'x1-theme';
         const doc = document.documentElement;
         const btn = document.getElementById('theme-toggle');
-        function label(v){{return (v||'auto').replace(/^./,c=>c.toUpperCase());}}
-        function icon(v){{return {{auto:'🌙', dark:'🌑', light:'☀️'}}[v||'auto'];}}
-        function apply(v){{ if(v==='auto'){{ delete doc.dataset.theme; }} else {{ doc.dataset.theme=v; }} localStorage.setItem(KEY,v); if(btn){{btn.textContent=icon(v)+' '+label(v);}} }}
-        function next(v){{ return v==='auto' ? 'dark' : v==='dark' ? 'light' : 'auto'; }}
+        function label(v){return (v||'auto').replace(/^./,c=>c.toUpperCase());}
+        function icon(v){return {auto:'🌙', dark:'🌑', light:'☀️'}[v||'auto'];}
+        function apply(v){ if(v==='auto'){ delete doc.dataset.theme; } else { doc.dataset.theme=v; } localStorage.setItem(KEY,v); if(btn){btn.textContent=icon(v)+' '+label(v);} }
+        function next(v){ return v==='auto' ? 'dark' : v==='dark' ? 'light' : 'auto'; }
         apply(localStorage.getItem(KEY) || 'dark');
-        if(btn){{ btn.addEventListener('click', ()=>apply(next(localStorage.getItem(KEY) || 'dark'))); }}
-      }})();
+        if(btn){ btn.addEventListener('click', ()=>apply(next(localStorage.getItem(KEY) || 'dark'))); }
+      })();
     </script>
     <script>
       // Subtle mouse parallax (keeps the stars reactive)
