@@ -21,18 +21,6 @@ def page(title: str, body: str) -> bytes:
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png?v=2">
     <link rel="shortcut icon" href="/favicon/favicon.ico?v=2">
     <style>
-      /* Theme variables (default 'dark' via script) */
-      :root {{
-        --bg: #ffffff; --text: #0b1220; --muted: #475569;
-        --card: #ffffff; --border: #e5e7eb; --th: #f5f5f5;
-        --code: #f5f5f5; --link: #0366d6;
-        color-scheme: light dark;
-      }}
-      @media (prefers-color-scheme: dark) {{
-        :root {{ --bg:#0d1117; --text:#e6edf3; --muted:#9aa4b2; --card:#0f172a; --border:#30363d; --th:#161b22; --code:#161b22; --link:#58a6ff; }}
-      }}
-      :root[data-theme="light"] {{ --bg:#ffffff; --text:#0b1220; --muted:#475569; --card:#ffffff; --border:#e5e7eb; --th:#f5f5f5; --code:#f5f5f5; --link:#0366d6; }}
-      :root[data-theme="dark"]  {{ --bg:#0d1117; --text:#e6edf3; --muted:#9aa4b2; --card:#0f172a; --border:#30363d; --th:#161b22; --code:#161b22; --link:#58a6ff; }}
       body{{font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin:20px;}}
       header{{margin-bottom:16px;}}
       form label{{display:block; margin:8px 0 4px;}}
@@ -46,35 +34,9 @@ def page(title: str, body: str) -> bytes:
       code{{background:#f5f5f5; padding:2px 4px; border-radius:4px;}}
       .success{{color:#0a8a0a; font-weight:600;}}
       .error{{color:#d32f2f; font-weight:600;}}
-
-      /* Dark overrides */
-      [data-theme="dark"] body {{ background: var(--bg) !important; color: var(--text) !important; }}
-      [data-theme="dark"] .card {{ background: var(--card) !important; border-color: var(--border) !important; color: var(--text) !important; }}
-      [data-theme="dark"] table {{ color: var(--text) !important; }}
-      [data-theme="dark"] th {{ background: var(--th) !important; color: var(--text) !important; }}
-      [data-theme="dark"] th, [data-theme="dark"] td {{ border-color: var(--border) !important; }}
-      [data-theme="dark"] code {{ background: var(--code) !important; color: var(--text) !important; }}
-      [data-theme="dark"] a {{ color: var(--link) !important; }}
-      [data-theme="dark"] input, [data-theme="dark"] select, [data-theme="dark"] button {{ background: var(--card) !important; color: var(--text) !important; border-color: var(--border) !important; }}
-      .theme-toggle {{ position: fixed; right: 14px; top: 12px; z-index: 9999; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font: 13px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; cursor: pointer; opacity: .9; }}
-      .theme-toggle:hover {{ opacity: 1; }}
     </style>
   </head>
   <body>
-    <button id='theme-toggle' class='theme-toggle' type='button' aria-label='Tema'>🌑 Dark</button>
-    <script>
-      (function() {{
-        const KEY = 'x1-theme';
-        const doc = document.documentElement;
-        const btn = document.getElementById('theme-toggle');
-        function label(v) {{ return (v||'auto').replace(/^./, c=>c.toUpperCase()); }}
-        function icon(v) {{ return {{auto:'🌙', dark:'🌑', light:'☀️'}}[v||'auto']; }}
-        function apply(v) {{ if (v==='auto') {{ delete doc.dataset.theme; }} else {{ doc.dataset.theme = v; }} localStorage.setItem(KEY, v); btn.textContent = icon(v)+' '+label(v); }}
-        function next(v) {{ return v==='auto' ? 'dark' : v==='dark' ? 'light' : 'auto'; }}
-        apply(localStorage.getItem(KEY) || 'dark');
-        btn.addEventListener('click', () => apply(next(localStorage.getItem(KEY) || 'dark')));
-      }})();
-    </script>
     <header>
       <h2>News Converter (MD → JSON)</h2>
     </header>

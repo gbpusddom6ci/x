@@ -108,10 +108,6 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
 
       .scene {{ position: relative; z-index: 2; height: 100%; display: grid; place-items: stretch; }}
 
-      /* Theme toggle for consistency across apps */
-      .theme-toggle {{ position: fixed; right: 14px; top: 12px; z-index: 9999; background: rgba(0,0,0,0.55); color: #eee; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 6px 10px; font: 13px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; cursor: pointer; opacity: .9; }}
-      .theme-toggle:hover {{ opacity: 1; }}
-
       /* Central wormhole */
       .portal {{
         position: relative; width: var(--portal-size); height: var(--portal-size);
@@ -186,7 +182,6 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
     </style>
   </head>
   <body>
-    <button id='theme-toggle' class='theme-toggle' type='button' aria-label='Tema'>🌑 Dark</button>
     <div class='scene'>
       <!-- DVD-style floating apps -->
       <div id='stage' class='stage'>
@@ -210,20 +205,6 @@ def build_html(app_links: Dict[str, Dict[str, str]]) -> bytes:
       </filter>
     </svg>
 
-    <script>
-      // Persisted theme selection, default dark for consistency
-      (function() {
-        const KEY = 'x1-theme';
-        const doc = document.documentElement;
-        const btn = document.getElementById('theme-toggle');
-        function label(v){return (v||'auto').replace(/^./,c=>c.toUpperCase());}
-        function icon(v){return {auto:'🌙', dark:'🌑', light:'☀️'}[v||'auto'];}
-        function apply(v){ if(v==='auto'){ delete doc.dataset.theme; } else { doc.dataset.theme=v; } localStorage.setItem(KEY,v); if(btn){btn.textContent=icon(v)+' '+label(v);} }
-        function next(v){ return v==='auto' ? 'dark' : v==='dark' ? 'light' : 'auto'; }
-        apply(localStorage.getItem(KEY) || 'dark');
-        if(btn){ btn.addEventListener('click', ()=>apply(next(localStorage.getItem(KEY) || 'dark'))); }
-      })();
-    </script>
     <script>
       // Subtle mouse parallax (keeps the stars reactive)
       (function() {{
