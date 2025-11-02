@@ -723,6 +723,9 @@ class App72Handler(BaseHTTPRequestHandler):
         
         # Parse URL-encoded form data
         content_length = int(self.headers.get('Content-Length', 0))
+        MAX_FORM_SIZE = 50 * 1024 * 1024  # 50 MB
+        if content_length > MAX_FORM_SIZE:
+            raise ValueError(f"Form boyutu çok büyük (maksimum {MAX_FORM_SIZE // (1024*1024)} MB)")
         body = self.rfile.read(content_length).decode('utf-8')
         parsed = parse_qs(body)
         
@@ -800,13 +803,15 @@ class App72Handler(BaseHTTPRequestHandler):
         # Check if there are previous results to display
         import base64
         import json
+        import sys
         previous_html = params.get("previous_results", "")
         previous_pattern_results_json = params.get("previous_pattern_results", "")
+        print(f"DEBUG: previous_pattern_results_json length: {len(previous_pattern_results_json)}", file=sys.stderr)
         
-        # Decode previous HTML
+        # Decode previous HTML (URL-safe)
         if previous_html:
             try:
-                previous_html = base64.b64decode(previous_html.encode('ascii')).decode('utf-8')
+                previous_html = base64.urlsafe_b64decode(previous_html.encode('ascii')).decode('utf-8')
             except:
                 previous_html = ""
         
@@ -814,7 +819,8 @@ class App72Handler(BaseHTTPRequestHandler):
         all_group_results = []
         if previous_pattern_results_json:
             try:
-                previous_data = json.loads(base64.b64decode(previous_pattern_results_json.encode('ascii')).decode('utf-8'))
+                # Use URL-safe base64 decode
+                previous_data = json.loads(base64.urlsafe_b64decode(previous_pattern_results_json.encode('ascii')).decode('utf-8'))
                 # Reconstruct PatternResult objects from JSON
                 from .pattern import PatternResult
                 for group_data in previous_data:
@@ -828,8 +834,10 @@ class App72Handler(BaseHTTPRequestHandler):
                             expected_next=set(p['expected_next'])
                         ))
                     all_group_results.append(group_patterns)
-            except:
-                pass
+            except Exception as e:
+                # Log error for debugging
+                import sys
+                print(f"DEBUG: Error loading previous pattern results: {e}", file=sys.stderr)
         
         # Add current group results
         all_group_results.append(pattern_results)
@@ -849,7 +857,8 @@ class App72Handler(BaseHTTPRequestHandler):
             serialized_groups.append(serialized_group)
         
         pattern_results_json = json.dumps(serialized_groups)
-        pattern_results_base64 = base64.b64encode(pattern_results_json.encode('utf-8')).decode('ascii')
+        # Use URL-safe base64 to prevent corruption in form POST
+        pattern_results_base64 = base64.urlsafe_b64encode(pattern_results_json.encode('utf-8')).decode('ascii')
         
         # Build current results
         current_results = f"""
@@ -869,13 +878,17 @@ class App72Handler(BaseHTTPRequestHandler):
         # Combine previous and current results
         all_results_html = previous_html + current_results if previous_html else current_results
         
-        # Encode all results for next iteration
-        all_results_base64 = base64.b64encode(all_results_html.encode('utf-8')).decode('ascii')
+        # Encode all results for next iteration (URL-safe)
+        all_results_base64 = base64.urlsafe_b64encode(all_results_html.encode('utf-8')).decode('ascii')
         
         # Multi-Group Pattern Chaining (only if we have 2+ groups)
         chained_patterns_html = ""
+        import sys
+        print(f"DEBUG: Total groups loaded: {len(all_group_results)}", file=sys.stderr)
         if len(all_group_results) >= 2:
+            print(f"DEBUG: Running chain analysis with {len(all_group_results)} groups", file=sys.stderr)
             chained_patterns = chain_pattern_groups(all_group_results, max_chains=10000)
+            print(f"DEBUG: Found {len(chained_patterns)} chains", file=sys.stderr)
             if chained_patterns:
                 chained_html = format_chained_patterns(chained_patterns)
                 chained_patterns_html = f"""
