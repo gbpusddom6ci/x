@@ -267,6 +267,172 @@ def _get_expected_next(current_offset: int, current_state: str, direction: Optio
     return set()
 
 
+@dataclass
+class ChainedPattern:
+    """Represents a chained pattern across multiple groups."""
+    chain: List[Tuple[int, int]]  # [(group_idx, pattern_idx), ...]
+    full_pattern: List[int]  # Complete offset sequence
+    group_patterns: List[PatternResult]  # Pattern objects from each group
+    is_complete: bool  # Whether final pattern ends with 0
+
+
+def chain_pattern_groups(
+    group_results: List[List[PatternResult]],
+    max_chains: int = 10000,
+) -> List[ChainedPattern]:
+    """
+    Chain patterns across multiple groups.
+    
+    Rules:
+    1. If pattern ends with 0 and next is in {-3, -1, +1, +3}:
+       - Next pattern must start with that value
+       - Second value must be ±2 (cannot be 0, as 0-X-0 is impossible)
+    2. If pattern ends with non-zero:
+       - Next pattern must start with expected_next value
+       - Second value must be 0
+    
+    Args:
+        group_results: List of pattern result lists, one per group
+        max_chains: Maximum number of chains to generate
+    
+    Returns:
+        List of valid chained patterns
+    """
+    if not group_results or len(group_results) < 2:
+        return []
+    
+    # Start with all patterns from first group
+    active_chains: List[ChainedPattern] = []
+    for idx, pattern in enumerate(group_results[0]):
+        active_chains.append(ChainedPattern(
+            chain=[(0, idx)],
+            full_pattern=pattern.pattern[:],
+            group_patterns=[pattern],
+            is_complete=pattern.is_complete,
+        ))
+    
+    # Process each subsequent group
+    for group_idx in range(1, len(group_results)):
+        new_chains: List[ChainedPattern] = []
+        current_group = group_results[group_idx]
+        
+        for chain in active_chains:
+            last_pattern = chain.group_patterns[-1]
+            last_offset = last_pattern.pattern[-1] if last_pattern.pattern else None
+            expected_next = last_pattern.expected_next
+            
+            if last_offset is None or not expected_next:
+                continue
+            
+            # Try to extend with patterns from current group
+            for pattern_idx, candidate in enumerate(current_group):
+                if not candidate.pattern or len(candidate.pattern) < 1:
+                    continue
+                
+                first_offset = candidate.pattern[0]
+                
+                # Check if first offset matches expected
+                if first_offset not in expected_next:
+                    continue
+                
+                # Special rule: if last_offset is 0 and first_offset in {-3, -1, +1, +3}
+                if last_offset == 0 and first_offset in {-3, -1, 1, 3}:
+                    # Second value must be ±2 (cannot be 0)
+                    if len(candidate.pattern) < 2:
+                        continue
+                    second_offset = candidate.pattern[1]
+                    expected_second = 2 if first_offset > 0 else -2
+                    if second_offset != expected_second:
+                        continue
+                
+                # Special rule: if last_offset is non-zero
+                elif last_offset != 0:
+                    # Second value must be 0
+                    if len(candidate.pattern) < 2:
+                        continue
+                    second_offset = candidate.pattern[1]
+                    if second_offset != 0:
+                        continue
+                
+                # Valid continuation found!
+                new_chain = ChainedPattern(
+                    chain=chain.chain + [(group_idx, pattern_idx)],
+                    full_pattern=chain.full_pattern + candidate.pattern,
+                    group_patterns=chain.group_patterns + [candidate],
+                    is_complete=candidate.is_complete,
+                )
+                new_chains.append(new_chain)
+                
+                # Limit check
+                if len(new_chains) >= max_chains:
+                    break
+            
+            if len(new_chains) >= max_chains:
+                break
+        
+        active_chains = new_chains
+        
+        if not active_chains:
+            break
+    
+    # Sort by completion status and length
+    active_chains.sort(key=lambda x: (not x.is_complete, -len(x.full_pattern)))
+    
+    return active_chains
+
+
+def format_chained_patterns(chains: List[ChainedPattern]) -> str:
+    """
+    Format chained patterns for HTML display.
+    
+    Returns HTML string with chained pattern analysis.
+    """
+    if not chains:
+        return "<p><strong>❌ Geçerli chain bulunamadı</strong> - Gruplar arası bağlantı kurulamadı.</p>"
+    
+    html_parts = [f"<p><strong>✅ {len(chains)} geçerli chain bulundu:</strong></p>"]
+    html_parts.append("<ol style='max-height: 600px; overflow-y: auto;'>")
+    
+    for idx, chain in enumerate(chains, 1):
+        # Build chain path string
+        chain_path_parts = []
+        for group_idx, pattern_idx in chain.chain:
+            chain_path_parts.append(f"G{group_idx+1}-P{pattern_idx+1}")
+        chain_path_str = " → ".join(chain_path_parts)
+        
+        # Build full pattern string
+        pattern_parts = []
+        for offset in chain.full_pattern:
+            offset_str = f"{offset:+d}" if offset != 0 else "0"
+            pattern_parts.append(offset_str)
+        pattern_str = " → ".join(pattern_parts)
+        
+        # Completion status
+        status_icon = "✅" if chain.is_complete else "⏳"
+        status_text = "Complete" if chain.is_complete else "Incomplete"
+        
+        # Expected next
+        last_pattern = chain.group_patterns[-1]
+        if last_pattern.expected_next:
+            next_offsets = sorted(last_pattern.expected_next)
+            next_str = ", ".join([f"{o:+d}" if o != 0 else "0" for o in next_offsets])
+            next_html = f'<span style="color: {"green" if chain.is_complete else "orange"};">(→ next: {next_str})</span>'
+        else:
+            next_html = '<span style="color: gray;">(→ next: none)</span>'
+        
+        html_parts.append(f"""
+        <li style='margin-bottom: 16px;'>
+            <div><strong>Chain {idx}:</strong> <code style='font-size:11px; color:#666;'>{chain_path_str}</code> {status_icon} {status_text}</div>
+            <div style='margin-top: 4px;'><code style='font-size:13px;'>{pattern_str}</code> {next_html}</div>
+            <div style='margin-top: 4px; font-size: 11px; color: #666;'>Length: {len(chain.full_pattern)} offsets</div>
+        </li>
+        """)
+    
+    html_parts.append("</ol>")
+    
+    return "".join(html_parts)
+
+
 def format_pattern_results(results: List[PatternResult]) -> str:
     """
     Format pattern results for HTML display.
