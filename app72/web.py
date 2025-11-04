@@ -23,7 +23,7 @@ from .counter import (
     analyze_iou,
     IOUResult,
 )
-from .pattern import find_valid_patterns, format_pattern_results, chain_pattern_groups, format_chained_patterns
+from .pattern import find_valid_patterns, format_pattern_results
 from .main import (
     Candle as ConverterCandle,
     estimate_timeframe_minutes,
@@ -582,7 +582,7 @@ def parse_multipart(handler: BaseHTTPRequestHandler) -> Dict[str, Dict[str, Any]
 
 class App72Handler(BaseHTTPRequestHandler):
     def _render_joker_selection(
-        self, files, sequence, limit, tolerance, xyz_analysis, events_by_date, previous_results="", previous_pattern_results=""
+        self, files, sequence, limit, tolerance, xyz_analysis, events_by_date, previous_results=""
     ):
         """Stage 1: Calculate XYZ for all files and show joker selection interface."""
         import base64
@@ -671,7 +671,6 @@ class App72Handler(BaseHTTPRequestHandler):
             <input type='hidden' name='limit' value='{limit}' />
             <input type='hidden' name='tolerance' value='{tolerance}' />
             <input type='hidden' name='previous_results' value='{html.escape(previous_results)}' />
-            <input type='hidden' name='previous_pattern_results' value='{html.escape(previous_pattern_results)}' />
             <table style='margin-top:12px;'>
               <tr>
                 <th>Dosya Adı</th>
@@ -799,57 +798,12 @@ class App72Handler(BaseHTTPRequestHandler):
         
         # Check if there are previous results to display
         import base64
-        import json
         previous_html = params.get("previous_results", "")
-        previous_pattern_results_json = params.get("previous_pattern_results", "")
-        
-        # Decode previous HTML
         if previous_html:
             try:
                 previous_html = base64.b64decode(previous_html.encode('ascii')).decode('utf-8')
             except:
                 previous_html = ""
-        
-        # Decode and reconstruct previous pattern results
-        all_group_results = []
-        if previous_pattern_results_json:
-            try:
-                previous_data = json.loads(base64.b64decode(previous_pattern_results_json.encode('ascii')).decode('utf-8'))
-                # Reconstruct PatternResult objects from JSON
-                from .pattern import PatternResult
-                for group_data in previous_data:
-                    group_patterns = []
-                    for p in group_data:
-                        group_patterns.append(PatternResult(
-                            pattern=p['pattern'],
-                            file_sequence=[(t[0], t[1]) for t in p['file_sequence']],
-                            is_complete=p['is_complete'],
-                            length=p['length'],
-                            expected_next=set(p['expected_next'])
-                        ))
-                    all_group_results.append(group_patterns)
-            except:
-                pass
-        
-        # Add current group results
-        all_group_results.append(pattern_results)
-        
-        # Serialize all group results for next iteration
-        serialized_groups = []
-        for group in all_group_results:
-            serialized_group = []
-            for p in group:
-                serialized_group.append({
-                    'pattern': p.pattern,
-                    'file_sequence': p.file_sequence,
-                    'is_complete': p.is_complete,
-                    'length': p.length,
-                    'expected_next': list(p.expected_next)
-                })
-            serialized_groups.append(serialized_group)
-        
-        pattern_results_json = json.dumps(serialized_groups)
-        pattern_results_base64 = base64.b64encode(pattern_results_json.encode('utf-8')).decode('ascii')
         
         # Build current results
         current_results = f"""
@@ -872,26 +826,6 @@ class App72Handler(BaseHTTPRequestHandler):
         # Encode all results for next iteration
         all_results_base64 = base64.b64encode(all_results_html.encode('utf-8')).decode('ascii')
         
-        # Multi-Group Pattern Chaining (only if we have 2+ groups)
-        chained_patterns_html = ""
-        if len(all_group_results) >= 2:
-            chained_patterns = chain_pattern_groups(all_group_results, max_chains=10000)
-            if chained_patterns:
-                chained_html = format_chained_patterns(chained_patterns)
-                chained_patterns_html = f"""
-                <details style='margin-top: 40px;'>
-                  <summary style='cursor: pointer; font-size: 18px; font-weight: bold; padding: 12px; background: #f0f9ff; border: 2px solid #0ea5e9; border-radius: 8px;'>
-                    🔗 Toplu Pattern Analizi ({len(chained_patterns)} chain) - Tıklayın
-                  </summary>
-                  <div class='card' style='margin-top: 12px; padding: 16px; background: #f0f9ff; border: 2px solid #0ea5e9;'>
-                    <h3>🔗 Multi-Group Pattern Chaining</h3>
-                    <p><strong>Toplam Grup Sayısı:</strong> {len(all_group_results)}</p>
-                    <p><strong>Geçerli Chain Sayısı:</strong> {len(chained_patterns)}</p>
-                    {chained_html}
-                  </div>
-                </details>
-                """
-        
         # Add "Additional Analysis" form at the bottom
         additional_form = f"""
         <hr style='margin: 40px 0; border: none; border-top: 2px dashed #ccc;'>
@@ -900,7 +834,6 @@ class App72Handler(BaseHTTPRequestHandler):
           <p>Üstteki sonuçlar korunarak yeni analiz ekleyebilirsiniz.</p>
           <form method='post' action='/iou' enctype='multipart/form-data'>
             <input type='hidden' name='previous_results' value='{html.escape(all_results_base64)}' />
-            <input type='hidden' name='previous_pattern_results' value='{html.escape(pattern_results_base64)}' />
             <div class='row'>
               <div>
                 <label>CSV Dosyaları (2 haftalık 72m) - En fazla 25 dosya</label>
@@ -933,7 +866,7 @@ class App72Handler(BaseHTTPRequestHandler):
         </div>
         """
         
-        body = all_results_html + chained_patterns_html + additional_form
+        body = all_results_html + additional_form
         
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
@@ -1078,7 +1011,6 @@ class App72Handler(BaseHTTPRequestHandler):
                 
                 # Get previous results if this is an appended analysis
                 previous_results = params.get("previous_results", "")
-                previous_pattern_results = params.get("previous_pattern_results", "")
                 
                 # Load news data from directory (auto-detects all JSON files)
                 news_dir = os.path.join(
@@ -1089,7 +1021,7 @@ class App72Handler(BaseHTTPRequestHandler):
                 # Stage 1: If both XYZ and Pattern analysis enabled, render joker selection interface
                 if xyz_analysis and pattern_analysis:
                     return self._render_joker_selection(
-                        files, sequence, limit, tolerance, xyz_analysis, events_by_date, previous_results, previous_pattern_results
+                        files, sequence, limit, tolerance, xyz_analysis, events_by_date, previous_results
                     )
 
                 # Count loaded files
